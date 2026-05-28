@@ -89,10 +89,9 @@ const appThemeOptions = {
     },
     MuiDialog: {
       styleOverrides: {
-        paper: ({ theme }) => ({
+        paper: {
           backgroundImage: "none",
-          border: `1px solid ${theme.palette.divider}`,
-        }),
+        },
       },
     },
     MuiOutlinedInput: {
@@ -108,28 +107,25 @@ const appThemeOptions = {
         elevation: 0,
       },
       styleOverrides: {
-        root: ({ theme }) => ({
+        root: {
           backgroundImage: "none",
-          border: `1px solid ${theme.palette.divider}`,
-        }),
+        },
       },
     },
     MuiTableCell: {
       styleOverrides: {
         head: ({ theme }) => ({
           backgroundColor: theme.palette.background.paper,
-          borderBottom: `1px solid ${theme.palette.divider}`,
-          borderTop: `1px solid ${theme.palette.divider}`,
           color: theme.palette.text.secondary,
           fontSize: "0.7rem",
           fontWeight: 800,
           letterSpacing: 0,
           textTransform: "uppercase",
         }),
-        root: ({ theme }) => ({
-          borderColor: theme.palette.divider,
+        root: {
+          borderBottom: 0,
           verticalAlign: "top",
-        }),
+        },
       },
     },
     MuiTextField: {

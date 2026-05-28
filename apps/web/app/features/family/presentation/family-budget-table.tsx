@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import type { KeyboardEvent } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
@@ -18,7 +19,14 @@ import { alpha } from "@mui/material/styles";
 
 import { getCategoryGroups, getMonthlyRange } from "../domain/family-budget";
 import type { FamilyCategory, RecurringLine } from "../domain/family";
-import { formatCurrency, formatRecurrence } from "./family-format";
+import {
+  formatCurrency,
+  formatLineAmount,
+  formatRecurrence,
+} from "./family-format";
+
+const lineHoverBackground = "#f2e5c9";
+const lineHoverRadius = 14;
 
 interface FamilyBudgetTableProps {
   categories: FamilyCategory[];
@@ -27,6 +35,7 @@ interface FamilyBudgetTableProps {
   onAddLine: () => void;
   onDeleteLine: (line: RecurringLine) => void;
   onEditLine: (line: RecurringLine) => void;
+  onViewLine?: (line: RecurringLine) => void;
 }
 
 export function FamilyBudgetTable({
@@ -36,8 +45,29 @@ export function FamilyBudgetTable({
   onAddLine,
   onDeleteLine,
   onEditLine,
+  onViewLine,
 }: FamilyBudgetTableProps) {
   const categoryGroups = getCategoryGroups(categories, lines);
+
+  function handleLineClick(line: RecurringLine) {
+    if (!disabled) {
+      onViewLine?.(line);
+    }
+  }
+
+  function handleLineKeyDown(
+    event: KeyboardEvent<HTMLTableRowElement>,
+    line: RecurringLine,
+  ) {
+    if (disabled) {
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onViewLine?.(line);
+    }
+  }
 
   return (
     <Paper
@@ -74,13 +104,16 @@ export function FamilyBudgetTable({
         <Table
           aria-label="Configuration des dépenses et revenus récurrents"
           stickyHeader
-          sx={{ minWidth: 740 }}
+          sx={{
+            borderCollapse: "separate",
+            borderSpacing: 0,
+            minWidth: 740,
+          }}
         >
           <TableHead>
             <TableRow
               sx={{
                 "& > .MuiTableCell-root": {
-                  borderTop: 0,
                   pt: 0,
                   pb: 1,
                 },
@@ -104,9 +137,7 @@ export function FamilyBudgetTable({
                     scope="rowgroup"
                     sx={(theme) => ({
                       bgcolor: alpha(theme.palette.primary.main, 0.08),
-                      borderTop: "1px solid",
-                      borderTopColor: "divider",
-                      py: 1.25,
+                      p: 0,
                     })}
                   >
                     <Box
@@ -116,6 +147,8 @@ export function FamilyBudgetTable({
                         flexDirection: { sm: "row", xs: "column" },
                         gap: 0.75,
                         justifyContent: "space-between",
+                        px: { md: 2, xs: 1.5 },
+                        py: 0.85,
                       }}
                     >
                       <Typography sx={{ fontWeight: 800 }}>
@@ -135,13 +168,34 @@ export function FamilyBudgetTable({
 
                 {group.lines.map((line) => (
                   <TableRow
-                    hover
+                    aria-disabled={disabled || undefined}
+                    aria-label={`Voir ${line.title}`}
                     key={line.id}
+                    onClick={() => handleLineClick(line)}
+                    onKeyDown={(event) => handleLineKeyDown(event, line)}
+                    role="button"
                     sx={{
+                      cursor: disabled ? "default" : "pointer",
+                      "& > .MuiTableCell-root": {
+                        transition:
+                          "background-color 150ms ease,border-radius 260ms ease",
+                      },
                       "& > td:not(:first-of-type)": {
                         verticalAlign: "middle",
                       },
+                      "&:hover > .MuiTableCell-root": {
+                        backgroundColor: lineHoverBackground,
+                      },
+                      "&:hover > .MuiTableCell-root:first-of-type": {
+                        borderBottomLeftRadius: lineHoverRadius,
+                        borderTopLeftRadius: lineHoverRadius,
+                      },
+                      "&:hover > .MuiTableCell-root:last-of-type": {
+                        borderBottomRightRadius: lineHoverRadius,
+                        borderTopRightRadius: lineHoverRadius,
+                      },
                     }}
+                    tabIndex={disabled ? -1 : 0}
                   >
                     <TableCell>
                       <Typography sx={{ fontWeight: 800 }}>
@@ -179,7 +233,10 @@ export function FamilyBudgetTable({
                             <IconButton
                               aria-label={`Modifier ${line.title}`}
                               disabled={disabled}
-                              onClick={() => onEditLine(line)}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                onEditLine(line);
+                              }}
                               size="small"
                             >
                               <EditIcon fontSize="small" />
@@ -191,7 +248,10 @@ export function FamilyBudgetTable({
                             <IconButton
                               aria-label={`Supprimer ${line.title}`}
                               disabled={disabled}
-                              onClick={() => onDeleteLine(line)}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                onDeleteLine(line);
+                              }}
                               size="small"
                             >
                               <DeleteIcon fontSize="small" />
@@ -209,23 +269,6 @@ export function FamilyBudgetTable({
       </TableContainer>
     </Paper>
   );
-}
-
-function formatLineAmount(line: RecurringLine): string {
-  if (!line.isEstimate) {
-    return formatCurrency(getSignedAmount(line, line.amount));
-  }
-
-  const minAmount = getSignedAmount(line, line.minAmount ?? line.amount);
-  const maxAmount = getSignedAmount(line, line.maxAmount ?? line.amount);
-
-  return `${formatCurrency(Math.min(minAmount, maxAmount))} à ${formatCurrency(
-    Math.max(minAmount, maxAmount),
-  )}`;
-}
-
-function getSignedAmount(line: RecurringLine, amount: number): number {
-  return line.movement === "positive" ? amount : -amount;
 }
 
 function formatCategoryTotal(lines: RecurringLine[]): string {

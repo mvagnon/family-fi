@@ -22,6 +22,7 @@ import { FamilyPageShell } from "./family-page-shell";
 import { FamilySidebar } from "./family-sidebar";
 import { FamilySummaryStrip } from "./family-summary-strip";
 import { LineEditDialog } from "./line-edit-dialog";
+import { LineSummaryDialog } from "./line-summary-dialog";
 
 interface FamilyDashboardProps {
   family: Family;
@@ -54,6 +55,7 @@ export function FamilyDashboard({
   const [lineDialogMode, setLineDialogMode] = useState<"create" | "edit">(
     "edit",
   );
+  const [summaryLine, setSummaryLine] = useState<RecurringLine | null>(null);
   const [selectedLine, setSelectedLine] = useState<RecurringLine | null>(null);
 
   function handleAddLine() {
@@ -64,6 +66,10 @@ export function FamilyDashboard({
   function handleEditLine(line: RecurringLine) {
     setLineDialogMode("edit");
     setSelectedLine(line);
+  }
+
+  function handleViewLine(line: RecurringLine) {
+    setSummaryLine(line);
   }
 
   async function handleSaveCategory(input: CreateFamilyCategoryInput) {
@@ -130,6 +136,7 @@ export function FamilyDashboard({
           onAddLine={handleAddLine}
           onDeleteLine={handleDeleteLine}
           onEditLine={handleEditLine}
+          onViewLine={handleViewLine}
         />
         <FamilySidebar
           categories={family.categories}
@@ -161,6 +168,23 @@ export function FamilyDashboard({
         onSave={handleSaveLine}
         open={selectedLine !== null}
       />
+      <LineSummaryDialog
+        categoryLabel={getCategoryLabel(family, summaryLine)}
+        line={summaryLine}
+        onClose={() => setSummaryLine(null)}
+        open={summaryLine !== null}
+      />
     </FamilyPageShell>
+  );
+}
+
+function getCategoryLabel(family: Family, line: RecurringLine | null): string {
+  if (!line) {
+    return "";
+  }
+
+  return (
+    family.categories.find((category) => category.id === line.categoryId)
+      ?.label ?? line.categoryId
   );
 }

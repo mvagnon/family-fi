@@ -65,18 +65,16 @@ export function FamilySidebar({
         </Stack>
 
         <Stack spacing={1.5} sx={{ mt: 2 }}>
-          {members.map((member, index) => (
+          {members.map((member) => (
             <Box
               key={member.id}
-              sx={(theme) => ({
+              sx={{
                 alignItems: "center",
-                borderTop:
-                  index === 0 ? 0 : `1px solid ${theme.palette.divider}`,
                 display: "grid",
                 gap: 1.25,
                 gridTemplateColumns: "40px minmax(0, 1fr)",
                 py: 1.25,
-              })}
+              }}
             >
               <Avatar
                 sx={{
@@ -139,7 +137,6 @@ export function FamilySidebar({
               color="secondary"
               key={category.id}
               label={category.label}
-              variant="outlined"
             />
           ))}
         </Box>
