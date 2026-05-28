@@ -14,7 +14,7 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
 import type { FamilyCategory, RecurringLine } from "../domain/family";
-import { formatRecurrence } from "../domain/family-format";
+import { formatRecurrence } from "./family-format";
 
 const recurrenceOptions = [1, 2, 3, 6, 12];
 

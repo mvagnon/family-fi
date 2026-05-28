@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createApiApp } from "../../../../app.js";
-import { createInMemoryFamilyRepository } from "../persistence/in-memory-family-repository.js";
+import { createApiApp } from "../../../../../app.js";
+import { createInMemoryFamilyRepository } from "../../persistence/in-memory-family-repository.js";
 
 test("family routes expose and mutate the current family snapshot", async () => {
   const app = createApiApp({

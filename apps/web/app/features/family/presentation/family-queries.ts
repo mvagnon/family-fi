@@ -1,12 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import {
-  addFamilyCategory,
-  addFamilyMember,
-  createFamilyRecurringLine,
-  fetchFamily,
-  updateFamilyRecurringLine,
-} from "../infrastructure/family-api";
+import type { FamilyRepository } from "../application/family-repository";
 import type {
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
@@ -19,42 +13,43 @@ export const familyQueryKeys = {
   detail: () => ["family", "detail"] as const,
 };
 
-export function useFamily() {
+export function useFamily(repository: FamilyRepository) {
   return useQuery({
-    queryFn: fetchFamily,
+    queryFn: () => repository.getFamily(),
     queryKey: familyQueryKeys.detail(),
   });
 }
 
-export function useAddFamilyMember() {
+export function useAddFamilyMember(repository: FamilyRepository) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: CreateFamilyMemberInput) => addFamilyMember(input),
+    mutationFn: (input: CreateFamilyMemberInput) => repository.addMember(input),
     onSuccess: (family) => setFamilyCache(queryClient, family),
   });
 }
 
-export function useAddFamilyCategory() {
+export function useAddFamilyCategory(repository: FamilyRepository) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: CreateFamilyCategoryInput) => addFamilyCategory(input),
+    mutationFn: (input: CreateFamilyCategoryInput) =>
+      repository.addCategory(input),
     onSuccess: (family) => setFamilyCache(queryClient, family),
   });
 }
 
-export function useCreateFamilyRecurringLine() {
+export function useCreateFamilyRecurringLine(repository: FamilyRepository) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (input: CreateRecurringLineInput) =>
-      createFamilyRecurringLine(input),
+      repository.createRecurringLine(input),
     onSuccess: (family) => setFamilyCache(queryClient, family),
   });
 }
 
-export function useUpdateFamilyRecurringLine() {
+export function useUpdateFamilyRecurringLine(repository: FamilyRepository) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -64,7 +59,7 @@ export function useUpdateFamilyRecurringLine() {
     }: {
       input: UpdateRecurringLineInput;
       lineId: string;
-    }) => updateFamilyRecurringLine(lineId, input),
+    }) => repository.updateRecurringLine(lineId, input),
     onSuccess: (family) => setFamilyCache(queryClient, family),
   });
 }

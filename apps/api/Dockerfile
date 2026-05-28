@@ -6,34 +6,30 @@ ENV TURBO_TELEMETRY_DISABLED=1
 FROM base AS pruner
 COPY . .
 RUN bun install --frozen-lockfile
-RUN bun run turbo prune web --docker
+RUN bun run turbo prune api --docker
 
 FROM base AS dependencies
 COPY --from=pruner /app/out/json/ .
 RUN bun install --frozen-lockfile
 
 FROM dependencies AS builder
-ARG VITE_API_BASE_URL=http://localhost:3000
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 COPY --from=pruner /app/out/full/ .
 COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/apps/web/node_modules ./apps/web/node_modules
-RUN bun run turbo run build --filter=web
+COPY --from=dependencies /app/apps/api/node_modules ./apps/api/node_modules
+RUN bun run turbo run build --filter=api
 
 FROM base AS production-dependencies
 COPY --from=pruner /app/out/json/ .
 RUN bun install --frozen-lockfile --production
 
-FROM node:22-bookworm-slim AS runner
-WORKDIR /app
+FROM base AS runner
 ENV NODE_ENV=production
-ENV HOST=0.0.0.0
-ENV PORT=5173
+ENV PORT=3000
 
 COPY --from=production-dependencies /app ./
-COPY --from=builder /app/apps/web/build ./apps/web/build
-COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
 
-WORKDIR /app/apps/web
-EXPOSE 5173
-CMD ["./node_modules/.bin/react-router-serve", "./build/server/index.js"]
+WORKDIR /app/apps/api
+EXPOSE 3000
+CMD ["bun", "dist/src/index.js"]

@@ -2,13 +2,14 @@
   "name": "api",
   "type": "module",
   "scripts": {
-    "dev": "prisma generate && tsx watch src/index.ts",
+    "dev": "docker compose --project-directory ../.. -f ../../docker-compose.yml up --build api",
     "test": "node --import tsx --test \"src/**/*.test.ts\"",
-    "build": "prisma generate && tsc",
-    "prisma:deploy": "prisma migrate deploy",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "start": "node dist/index.js"
+    "build": "bun run prisma generate && bun run tsc",
+    "check-types": "bun run prisma generate && bun run tsc --noEmit",
+    "prisma:deploy": "bun run prisma migrate deploy",
+    "prisma:generate": "bun run prisma generate",
+    "prisma:migrate": "bun run prisma migrate dev",
+    "start": "bun dist/src/index.js"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.14",

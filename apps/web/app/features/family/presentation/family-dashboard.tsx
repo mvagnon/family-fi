@@ -2,13 +2,18 @@ import { useState } from "react";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 
+import {
+  createDraftRecurringLine,
+  toCreateRecurringLineInput,
+  toUpdateRecurringLineInput,
+} from "../application/family-line-commands";
 import type {
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
   CreateRecurringLineInput,
   Family,
-  RecurringLine,
   UpdateRecurringLineInput,
+  RecurringLine,
 } from "../domain/family";
 import { FamilyBudgetTable } from "./family-budget-table";
 import { FamilyCategoryModal } from "./family-category-modal";
@@ -51,7 +56,7 @@ export function FamilyDashboard({
 
   function handleAddLine() {
     setLineDialogMode("create");
-    setSelectedLine(createDraftLine(family));
+    setSelectedLine(createDraftRecurringLine(family, `new-line-${Date.now()}`));
   }
 
   function handleEditLine(line: RecurringLine) {
@@ -147,33 +152,4 @@ export function FamilyDashboard({
       />
     </FamilyPageShell>
   );
-}
-
-function createDraftLine(family: Family): RecurringLine {
-  return {
-    amount: 0,
-    categoryId: family.categories[0]?.id ?? "budget",
-    description: "",
-    id: `new-line-${Date.now()}`,
-    isEstimate: false,
-    movement: "negative",
-    recurrenceMonths: 1,
-    title: "Nouvelle ligne",
-  };
-}
-
-function toCreateRecurringLineInput(
-  line: RecurringLine,
-): CreateRecurringLineInput {
-  const { id: _id, ...input } = line;
-
-  return input;
-}
-
-function toUpdateRecurringLineInput(
-  line: RecurringLine,
-): UpdateRecurringLineInput {
-  const { id: _id, ...input } = line;
-
-  return input;
 }

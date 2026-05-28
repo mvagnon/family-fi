@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { DEV_USER_ID } from "../domain/family.js";
-import { FamilyService } from "./family-service.js";
-import { createInMemoryFamilyRepository } from "../infrastructure/persistence/in-memory-family-repository.js";
+import { DEV_USER_ID } from "../../domain/family.js";
+import { FamilyService } from "../family-service.js";
+import { createInMemoryFamilyRepository } from "../../infrastructure/persistence/in-memory-family-repository.js";
 
 test("bootstraps the development family when none exists", async () => {
   const repository = createInMemoryFamilyRepository();

@@ -13,12 +13,13 @@ import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 
+import { getCategoryGroups, getMonthlyRange } from "../domain/family-budget";
 import type { FamilyCategory, RecurringLine } from "../domain/family";
 import {
   formatCurrency,
+  formatLineCount,
   formatRecurrence,
-  getMonthlyValue,
-} from "../domain/family-format";
+} from "./family-format";
 import { EditIcon, PlusIcon } from "./icons";
 
 interface FamilyBudgetTableProps {
@@ -205,74 +206,14 @@ export function FamilyBudgetTable({
   );
 }
 
-interface CategoryGroup {
-  id: string;
-  label: string;
-  lines: RecurringLine[];
-}
-
-function getCategoryGroups(
-  categories: FamilyCategory[],
-  lines: RecurringLine[],
-): CategoryGroup[] {
-  const linesByCategory = new Map<string, RecurringLine[]>();
-
-  for (const line of lines) {
-    const categoryLines = linesByCategory.get(line.categoryId) ?? [];
-    categoryLines.push(line);
-    linesByCategory.set(line.categoryId, categoryLines);
-  }
-
-  const knownCategoryIds = new Set(categories.map((category) => category.id));
-  const knownGroups = categories.flatMap((category) => {
-    const categoryLines = linesByCategory.get(category.id);
-
-    if (!categoryLines?.length) {
-      return [];
-    }
-
-    return [
-      {
-        id: category.id,
-        label: category.label,
-        lines: categoryLines,
-      },
-    ];
-  });
-  const orphanGroups = Array.from(linesByCategory.entries()).flatMap(
-    ([categoryId, categoryLines]) => {
-      if (knownCategoryIds.has(categoryId)) {
-        return [];
-      }
-
-      return [
-        {
-          id: categoryId,
-          label: categoryId,
-          lines: categoryLines,
-        },
-      ];
-    },
-  );
-
-  return [...knownGroups, ...orphanGroups];
-}
-
 function formatCategoryTotal(lines: RecurringLine[]): string {
   const total = lines.reduce(
     (summary, line) => {
-      const minAmount = line.isEstimate
-        ? (line.minAmount ?? line.amount)
-        : line.amount;
-      const maxAmount = line.isEstimate
-        ? (line.maxAmount ?? line.amount)
-        : line.amount;
-      const minMonthlyValue = getMonthlyValue(line, minAmount);
-      const maxMonthlyValue = getMonthlyValue(line, maxAmount);
+      const range = getMonthlyRange(line);
 
       return {
-        high: summary.high + Math.max(minMonthlyValue, maxMonthlyValue),
-        low: summary.low + Math.min(minMonthlyValue, maxMonthlyValue),
+        high: summary.high + range.max,
+        low: summary.low + range.min,
       };
     },
     { high: 0, low: 0 },
@@ -283,8 +224,4 @@ function formatCategoryTotal(lines: RecurringLine[]): string {
   }
 
   return `${formatCurrency(total.low)} à ${formatCurrency(total.high)}`;
-}
-
-function formatLineCount(count: number): string {
-  return count > 1 ? `${count} lignes` : "1 ligne";
 }

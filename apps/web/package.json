@@ -3,10 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "react-router build",
-    "dev": "react-router dev",
-    "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc"
+    "build": "bun run react-router build",
+    "check-types": "bun run react-router typegen && bun run tsc",
+    "dev": "bun run react-router dev",
+    "start": "bun run react-router-serve ./build/server/index.js",
+    "test": "bun test app",
+    "typecheck": "bun run check-types"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

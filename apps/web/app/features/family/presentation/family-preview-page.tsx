@@ -4,10 +4,15 @@ import type {
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
   CreateRecurringLineInput,
-  FamilyCategory,
-  FamilyMember,
   UpdateRecurringLineInput,
 } from "../domain/family";
+import {
+  addLocalFamilyCategory,
+  addLocalFamilyMember,
+  createLocalRecurringLine,
+  createSluggedFamilyEntityId,
+  updateLocalRecurringLine,
+} from "../application/family-local-commands";
 import { createPreviewFamily } from "../domain/preview-family";
 import { FamilyDashboard } from "./family-dashboard";
 
@@ -15,49 +20,34 @@ export function FamilyPreviewPage() {
   const [family, setFamily] = useState(createPreviewFamily);
 
   function handleAddCategory(input: CreateFamilyCategoryInput) {
-    setFamily((currentFamily) => ({
-      ...currentFamily,
-      categories: [...currentFamily.categories, createCategory(input.label)],
-    }));
+    setFamily((currentFamily) =>
+      addLocalFamilyCategory(currentFamily, input, createPreviewEntityId),
+    );
   }
 
   function handleAddMember(input: CreateFamilyMemberInput) {
-    setFamily((currentFamily) => {
-      const member = createMember(input);
-      const category = input.categoryLabel
-        ? createCategory(input.categoryLabel, member.id)
-        : null;
-
-      return {
-        ...currentFamily,
-        categories: category
-          ? [...currentFamily.categories, category]
-          : currentFamily.categories,
-        members: [...currentFamily.members, member],
-      };
-    });
+    setFamily((currentFamily) =>
+      addLocalFamilyMember(currentFamily, input, createPreviewEntityId),
+    );
   }
 
   function handleCreateRecurringLine(input: CreateRecurringLineInput) {
-    setFamily((currentFamily) => ({
-      ...currentFamily,
-      recurringLines: [
-        ...currentFamily.recurringLines,
-        { ...input, id: `line-${Date.now()}` },
-      ],
-    }));
+    setFamily((currentFamily) =>
+      createLocalRecurringLine(
+        currentFamily,
+        input,
+        createPreviewEntityId("line", input.title),
+      ),
+    );
   }
 
   function handleUpdateRecurringLine(
     lineId: string,
     input: UpdateRecurringLineInput,
   ) {
-    setFamily((currentFamily) => ({
-      ...currentFamily,
-      recurringLines: currentFamily.recurringLines.map((line) =>
-        line.id === lineId ? { ...input, id: lineId } : line,
-      ),
-    }));
+    setFamily((currentFamily) =>
+      updateLocalRecurringLine(currentFamily, lineId, input),
+    );
   }
 
   return (
@@ -71,30 +61,6 @@ export function FamilyPreviewPage() {
   );
 }
 
-function createMember(input: CreateFamilyMemberInput): FamilyMember {
-  return {
-    id: createEntityId("member", input.name),
-    name: input.name,
-    role: input.role,
-  };
-}
-
-function createCategory(label: string, ownerId?: string): FamilyCategory {
-  return {
-    id: createEntityId("category", label),
-    kind: ownerId ? "professional" : "shared",
-    label,
-    ownerId,
-  };
-}
-
-function createEntityId(prefix: string, label: string): string {
-  const normalizedLabel = label
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-
-  return `${prefix}-${normalizedLabel || "item"}-${Date.now()}`;
+function createPreviewEntityId(prefix: string, label: string): string {
+  return createSluggedFamilyEntityId(prefix, label, String(Date.now()));
 }

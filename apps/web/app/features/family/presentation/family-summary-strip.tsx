@@ -2,23 +2,19 @@ import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 
-import { formatCurrency, getMonthlyValue } from "../domain/family-format";
+import { getFamilyBudgetSummary } from "../domain/family-budget";
 import type { RecurringLine } from "../domain/family";
+import { formatCurrency } from "./family-format";
 
 interface FamilySummaryStripProps {
   lines: RecurringLine[];
 }
 
 export function FamilySummaryStrip({ lines }: FamilySummaryStripProps) {
-  const monthlyTotals = getPeriodTotals(lines);
-  const annualTotals = {
-    avg: monthlyTotals.avg * 12,
-    max: monthlyTotals.max * 12,
-    min: monthlyTotals.min * 12,
-  };
+  const summary = getFamilyBudgetSummary(lines);
   const summaryCards = [
-    { label: "Mensuel", totals: monthlyTotals },
-    { label: "Annuel", totals: annualTotals },
+    { label: "Mensuel", totals: summary.monthly },
+    { label: "Annuel", totals: summary.annual },
   ];
 
   return (
@@ -82,33 +78,5 @@ export function FamilySummaryStrip({ lines }: FamilySummaryStripProps) {
         </Paper>
       ))}
     </Box>
-  );
-}
-
-interface PeriodTotals {
-  avg: number;
-  max: number;
-  min: number;
-}
-
-function getPeriodTotals(lines: RecurringLine[]): PeriodTotals {
-  return lines.reduce(
-    (summary, line) => {
-      const minAmount = line.isEstimate
-        ? (line.minAmount ?? line.amount)
-        : line.amount;
-      const maxAmount = line.isEstimate
-        ? (line.maxAmount ?? line.amount)
-        : line.amount;
-      const minMonthlyValue = getMonthlyValue(line, minAmount);
-      const maxMonthlyValue = getMonthlyValue(line, maxAmount);
-
-      return {
-        avg: summary.avg + (minMonthlyValue + maxMonthlyValue) / 2,
-        max: summary.max + Math.max(minMonthlyValue, maxMonthlyValue),
-        min: summary.min + Math.min(minMonthlyValue, maxMonthlyValue),
-      };
-    },
-    { avg: 0, max: 0, min: 0 },
   );
 }

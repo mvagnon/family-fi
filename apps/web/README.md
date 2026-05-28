@@ -1,90 +1,39 @@
-# Welcome to React Router!
+# Web
 
-A modern, production-ready template for building full-stack React applications using React Router.
+React Router app for Family Fi.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
-
-## Features
-
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
-
-## Getting Started
-
-### Installation
-
-Install the dependencies:
+## Local
 
 ```bash
-npm install
+bun run --filter=web dev
 ```
 
-### Development
+The app runs on `http://localhost:5173`.
+`/family` calls `http://localhost:3000` by default.
 
-Start the development server with HMR:
+Override the API URL at build time with `VITE_API_BASE_URL`.
+
+## Frontend architecture
+
+Feature code under `app/features/*` follows a hexagonal split:
+
+- `domain`: pure model and business calculations.
+- `application`: ports and framework-free commands.
+- `infrastructure`: adapters such as HTTP and DTO parsing.
+- `presentation`: React components, formatting, and frontend hooks.
+- `<layer>/tests`: feature-owned tests, colocated under the layer they verify.
+
+Routes compose infrastructure adapters with presentation entry points.
+
+## Docker
+
+Run from the repository root:
 
 ```bash
-bun run dev
+docker build \
+  -f apps/web/Dockerfile \
+  --build-arg VITE_API_BASE_URL=http://localhost:3000 \
+  -t family-fi-web .
+
+docker run --rm -p 5173:5173 family-fi-web
 ```
-
-Your application will be available at `http://localhost:5173`.
-
-`/family` calls the API at `http://localhost:3000` by default. Override it with
-`VITE_API_BASE_URL` when the API runs elsewhere.
-
-## Building for Production
-
-Create a production build:
-
-```bash
-npm run build
-```
-
-## Deployment
-
-### Docker Deployment
-
-To build and run using Docker:
-
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.

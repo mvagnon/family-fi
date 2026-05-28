@@ -4,17 +4,22 @@ import {
   useCreateFamilyRecurringLine,
   useFamily,
   useUpdateFamilyRecurringLine,
-} from "../application/family-queries";
+} from "./family-queries";
+import type { FamilyRepository } from "../application/family-repository";
 import { FamilyDashboard } from "./family-dashboard";
 import { FamilyErrorState } from "./family-error-state";
 import { FamilyLoadingState } from "./family-loading-state";
 
-export function FamilyPage() {
-  const familyQuery = useFamily();
-  const addMemberMutation = useAddFamilyMember();
-  const addCategoryMutation = useAddFamilyCategory();
-  const createLineMutation = useCreateFamilyRecurringLine();
-  const updateLineMutation = useUpdateFamilyRecurringLine();
+interface FamilyPageProps {
+  repository: FamilyRepository;
+}
+
+export function FamilyPage({ repository }: FamilyPageProps) {
+  const familyQuery = useFamily(repository);
+  const addMemberMutation = useAddFamilyMember(repository);
+  const addCategoryMutation = useAddFamilyCategory(repository);
+  const createLineMutation = useCreateFamilyRecurringLine(repository);
+  const updateLineMutation = useUpdateFamilyRecurringLine(repository);
   const isSaving =
     addMemberMutation.isPending ||
     addCategoryMutation.isPending ||
