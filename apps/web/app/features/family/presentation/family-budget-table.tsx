@@ -1,9 +1,7 @@
-import { Fragment, forwardRef } from "react";
-import type { MouseEvent } from "react";
+import { Fragment } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import ButtonBase from "@mui/material/ButtonBase";
-import type { ButtonBaseProps } from "@mui/material/ButtonBase";
 import IconButton from "@mui/material/IconButton";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -28,7 +26,15 @@ import {
 } from "./family-format";
 
 const lineHoverBackground = "#f2e5c9";
-const lineHoverRadius = 14;
+const lineHoverRadius = 2;
+const tableGridColumns = "minmax(300px, 1fr) 170px 170px 120px";
+const tableHeaderTextSx = {
+  color: "inherit",
+  fontSize: "inherit",
+  fontWeight: "inherit",
+  px: 2,
+  textTransform: "inherit",
+};
 
 interface FamilyBudgetTableProps {
   categories: FamilyCategory[];
@@ -51,11 +57,8 @@ export function FamilyBudgetTable({
 }: FamilyBudgetTableProps) {
   const categoryGroups = getCategoryGroups(categories, lines);
 
-  function handleLineClick(
-    event: MouseEvent<HTMLElement>,
-    line: RecurringLine,
-  ) {
-    if (!disabled && !isLineActionTarget(event.target)) {
+  function handleLineClick(line: RecurringLine) {
+    if (!disabled) {
       onViewLine?.(line);
     }
   }
@@ -98,23 +101,26 @@ export function FamilyBudgetTable({
           sx={{
             borderCollapse: "separate",
             borderSpacing: 0,
-            minWidth: 740,
+            minWidth: 760,
           }}
         >
           <TableHead>
-            <TableRow
-              sx={{
-                "& > .MuiTableCell-root": {
-                  pt: 0,
-                  pb: 1,
-                },
-              }}
-            >
-              <TableCell sx={{ width: 300 }}>Intitulé</TableCell>
-              <TableCell sx={{ width: 170 }}>Montant</TableCell>
-              <TableCell sx={{ width: 170 }}>Récurrence</TableCell>
-              <TableCell align="right" sx={{ width: 120 }}>
-                Actions
+            <TableRow>
+              <TableCell colSpan={4} sx={{ p: 0 }}>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: tableGridColumns,
+                    pb: 1,
+                  }}
+                >
+                  <Typography sx={tableHeaderTextSx}>Intitulé</Typography>
+                  <Typography sx={tableHeaderTextSx}>Montant</Typography>
+                  <Typography sx={tableHeaderTextSx}>Récurrence</Typography>
+                  <Typography align="right" sx={tableHeaderTextSx}>
+                    Actions
+                  </Typography>
+                </Box>
               </TableCell>
             </TableRow>
           </TableHead>
@@ -134,10 +140,9 @@ export function FamilyBudgetTable({
                     <Box
                       sx={{
                         alignItems: { sm: "center", xs: "flex-start" },
-                        display: "flex",
-                        flexDirection: { sm: "row", xs: "column" },
+                        display: "grid",
                         gap: 0.75,
-                        justifyContent: "space-between",
+                        gridTemplateColumns: tableGridColumns,
                         px: { md: 2, xs: 1.5 },
                         py: 0.85,
                       }}
@@ -147,7 +152,9 @@ export function FamilyBudgetTable({
                       </Typography>
                       <Typography
                         sx={{
+                          gridColumn: "2 / -1",
                           fontWeight: 800,
+                          justifySelf: "end",
                           whiteSpace: "nowrap",
                         }}
                       >
@@ -158,104 +165,97 @@ export function FamilyBudgetTable({
                 </TableRow>
 
                 {group.lines.map((line) => (
-                  <TableRow
-                    aria-disabled={disabled || undefined}
-                    aria-label={`Voir ${line.title}`}
-                    component={TableRowButton}
-                    disabled={disabled}
-                    key={line.id}
-                    onClick={(event) => handleLineClick(event, line)}
-                    role="button"
-                    sx={{
-                      display: "table-row",
-                      "& > .MuiTableCell-root": {
-                        transition:
-                          "background-color 150ms ease,border-radius 260ms ease",
-                      },
-                      "& > td:not(:first-of-type)": {
-                        verticalAlign: "middle",
-                      },
-                      "&:hover > .MuiTableCell-root": {
-                        backgroundColor: lineHoverBackground,
-                      },
-                      "&:hover > .MuiTableCell-root:first-of-type": {
-                        borderBottomLeftRadius: lineHoverRadius,
-                        borderTopLeftRadius: lineHoverRadius,
-                      },
-                      "&:hover > .MuiTableCell-root:last-of-type": {
-                        borderBottomRightRadius: lineHoverRadius,
-                        borderTopRightRadius: lineHoverRadius,
-                      },
-                    }}
-                    tabIndex={disabled ? -1 : 0}
-                  >
-                    <TableCell>
-                      <Typography sx={{ fontWeight: 800 }}>
-                        {line.title}
-                      </Typography>
-                      <Typography
-                        sx={(theme) => ({
-                          color: alpha(theme.palette.text.secondary, 0.76),
-                          display: "-webkit-box",
-                          mt: 0.5,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          WebkitBoxOrient: "vertical",
-                          WebkitLineClamp: 1,
-                        })}
-                        variant="body2"
-                      >
-                        {line.description}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>{formatLineAmount(line)}</TableCell>
-                    <TableCell>
-                      {formatRecurrence(line.recurrenceMonths)}
-                    </TableCell>
-                    <TableCell
-                      align="right"
-                      data-line-action="true"
-                      onClick={(event) => event.stopPropagation()}
-                      onKeyDown={(event) => event.stopPropagation()}
-                    >
-                      <Box
+                  <TableRow aria-disabled={disabled || undefined} key={line.id}>
+                    <TableCell colSpan={4} sx={{ p: 0 }}>
+                      <ButtonBase
+                        aria-label={`Voir ${line.title}`}
+                        disabled={disabled}
+                        onClick={() => handleLineClick(line)}
                         sx={{
-                          display: "flex",
-                          gap: 0.5,
-                          justifyContent: "flex-end",
+                          borderRadius: 0,
+                          color: "inherit",
+                          display: "grid",
+                          gridTemplateColumns: tableGridColumns,
+                          justifyItems: "stretch",
+                          textAlign: "left",
+                          transition:
+                            "background-color 150ms ease,border-radius 360ms ease",
+                          width: "100%",
+                          "&:hover": {
+                            backgroundColor: lineHoverBackground,
+                            borderRadius: lineHoverRadius,
+                          },
                         }}
                       >
-                        <Tooltip title="Modifier la ligne">
-                          <span>
-                            <IconButton
-                              aria-label={`Modifier ${line.title}`}
-                              disabled={disabled}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                onEditLine(line);
-                              }}
-                              size="small"
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                        <Tooltip title="Supprimer la ligne">
-                          <span>
-                            <IconButton
-                              aria-label={`Supprimer ${line.title}`}
-                              disabled={disabled}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                onDeleteLine(line);
-                              }}
-                              size="small"
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      </Box>
+                        <Box sx={{ minWidth: 0, px: 2, py: 1.5 }}>
+                          <Typography sx={{ fontWeight: 800 }}>
+                            {line.title}
+                          </Typography>
+                          <Typography
+                            sx={(theme) => ({
+                              color: alpha(theme.palette.text.secondary, 0.76),
+                              display: "-webkit-box",
+                              mt: 0.5,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              WebkitBoxOrient: "vertical",
+                              WebkitLineClamp: 1,
+                            })}
+                            variant="body2"
+                          >
+                            {line.description}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ alignSelf: "center", px: 2, py: 1.5 }}>
+                          {formatLineAmount(line)}
+                        </Box>
+                        <Box sx={{ alignSelf: "center", px: 2, py: 1.5 }}>
+                          {formatRecurrence(line.recurrenceMonths)}
+                        </Box>
+                        <Box
+                          sx={{
+                            alignItems: "center",
+                            display: "flex",
+                            gap: 0.5,
+                            justifyContent: "flex-end",
+                            px: 2,
+                            py: 1.5,
+                          }}
+                        >
+                          <Tooltip title="Modifier la ligne">
+                            <span>
+                              <IconButton
+                                aria-label={`Modifier ${line.title}`}
+                                component="span"
+                                disabled={disabled}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  onEditLine(line);
+                                }}
+                                size="small"
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                          <Tooltip title="Supprimer la ligne">
+                            <span>
+                              <IconButton
+                                aria-label={`Supprimer ${line.title}`}
+                                component="span"
+                                disabled={disabled}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  onDeleteLine(line);
+                                }}
+                                size="small"
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </Box>
+                      </ButtonBase>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -265,22 +265,6 @@ export function FamilyBudgetTable({
         </Table>
       </TableContainer>
     </Paper>
-  );
-}
-
-const TableRowButton = forwardRef<HTMLTableRowElement, ButtonBaseProps>(
-  function TableRowButton(props, ref) {
-    return <ButtonBase component="tr" ref={ref} {...props} />;
-  },
-);
-
-function isLineActionTarget(target: EventTarget): boolean {
-  const closest = (target as { closest?: (selector: string) => unknown })
-    .closest;
-
-  return (
-    typeof closest === "function" &&
-    Boolean(closest.call(target, "[data-line-action]"))
   );
 }
 

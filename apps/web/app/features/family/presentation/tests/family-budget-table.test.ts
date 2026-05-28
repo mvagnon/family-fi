@@ -175,7 +175,7 @@ test("renders estimated amounts as signed ranges", () => {
   assert.match(markup, /-\s*1[^\d]*400[^\d]*€\s+à\s+-\s*1[^\d]*000[^\d]*€/);
 });
 
-test("renders recurring line rows as clickable summary targets", () => {
+test("renders recurring line details trigger as a MUI button", () => {
   const markup = renderToStaticMarkup(
     createElement(FamilyBudgetTable, {
       categories: [{ id: "housing", kind: "shared", label: "Logement" }],
@@ -196,16 +196,16 @@ test("renders recurring line rows as clickable summary targets", () => {
       onEditLine: () => {},
     }),
   );
-  const lineRow = markup.match(/<tr[^>]*aria-label="Voir Loyer"[^>]*>/)?.[0];
+  const detailButton = markup.match(
+    /<button[^>]*aria-label="Voir Loyer"[^>]*>/,
+  )?.[0];
 
   assert.equal(markup.includes('aria-label="Voir Loyer"'), true);
-  assert.equal(lineRow?.includes("MuiButtonBase-root"), true);
-  assert.equal(markup.includes('role="button"'), true);
-  assert.equal(markup.includes('tabindex="0"'), true);
-  assert.equal(lineRow?.includes('aria-disabled="true"'), false);
+  assert.equal(detailButton?.includes("MuiButtonBase-root"), true);
+  assert.equal(detailButton?.includes('tabindex="0"'), true);
 });
 
-test("keeps delete action clicks separate from row summary clicks", () => {
+test("keeps delete action clicks separate from details button clicks", () => {
   const deletedLineIds: string[] = [];
   const viewedLineIds: string[] = [];
   const tree = FamilyBudgetTable({
@@ -216,20 +216,24 @@ test("keeps delete action clicks separate from row summary clicks", () => {
     onEditLine: () => {},
     onViewLine: (line) => viewedLineIds.push(line.id),
   });
-  const row = findElement(
+  const detailButton = findElement(
     tree,
     (element) => element.props["aria-label"] === "Voir Loyer",
   );
 
-  assert.ok(row);
+  assert.ok(detailButton);
 
   const deleteButton = findElement(
-    row,
+    detailButton,
     (element) => element.props["aria-label"] === "Supprimer Loyer",
   );
   let propagationStopped = false;
 
   assert.ok(deleteButton);
+
+  getEventHandler(detailButton, "onClick")({});
+
+  assert.deepEqual(viewedLineIds, ["rent"]);
 
   getEventHandler(deleteButton, "onClick")({
     stopPropagation: () => {
@@ -239,15 +243,7 @@ test("keeps delete action clicks separate from row summary clicks", () => {
 
   assert.deepEqual(deletedLineIds, ["rent"]);
   assert.equal(propagationStopped, true);
-
-  getEventHandler(row, "onClick")({
-    target: {
-      closest: (selector: string) =>
-        selector === "[data-line-action]" ? {} : null,
-    },
-  });
-
-  assert.deepEqual(viewedLineIds, []);
+  assert.deepEqual(viewedLineIds, ["rent"]);
 });
 
 function findElement(

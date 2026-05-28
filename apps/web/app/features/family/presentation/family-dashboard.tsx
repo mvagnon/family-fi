@@ -15,9 +15,10 @@ import type {
   CreateFamilyMemberInput,
   CreateRecurringLineInput,
   Family,
-  UpdateRecurringLineInput,
   RecurringLine,
+  UpdateRecurringLineInput,
 } from "../domain/family";
+import { DangerousActionConfirmationDialog } from "./dangerous-action-confirmation-dialog";
 import { FamilyBudgetTable } from "./family-budget-table";
 import { FamilyCategoryModal } from "./family-category-modal";
 import { FamilyErrorSnackbar } from "./family-error-snackbar";
@@ -63,6 +64,8 @@ export function FamilyDashboard({
   const [lineDialogMode, setLineDialogMode] = useState<"create" | "edit">(
     "edit",
   );
+  const [linePendingDeletion, setLinePendingDeletion] =
+    useState<RecurringLine | null>(null);
   const [summaryLine, setSummaryLine] = useState<RecurringLine | null>(null);
   const [selectedLine, setSelectedLine] = useState<RecurringLine | null>(null);
 
@@ -133,9 +136,18 @@ export function FamilyDashboard({
     }
   }
 
-  async function handleDeleteLine(line: RecurringLine) {
+  function handleRequestDeleteLine(line: RecurringLine) {
+    setLinePendingDeletion(line);
+  }
+
+  async function handleConfirmDeleteLine() {
+    if (!linePendingDeletion) {
+      return;
+    }
+
     try {
-      await onDeleteRecurringLine(line.id);
+      await onDeleteRecurringLine(linePendingDeletion.id);
+      setLinePendingDeletion(null);
     } catch {
       return;
     }
@@ -173,7 +185,7 @@ export function FamilyDashboard({
           disabled={isSaving}
           lines={family.recurringLines}
           onAddLine={handleAddLine}
-          onDeleteLine={handleDeleteLine}
+          onDeleteLine={handleRequestDeleteLine}
           onEditLine={handleEditLine}
           onViewLine={handleViewLine}
         />
@@ -213,6 +225,14 @@ export function FamilyDashboard({
         onClose={() => setSummaryLine(null)}
         open={summaryLine !== null}
       />
+      <DangerousActionConfirmationDialog
+        description={getDeleteLineDescription(linePendingDeletion)}
+        isPending={isSaving}
+        onCancel={() => setLinePendingDeletion(null)}
+        onConfirm={handleConfirmDeleteLine}
+        open={linePendingDeletion !== null}
+        title="Supprimer cette ligne ?"
+      />
     </FamilyPageShell>
   );
 }
@@ -226,4 +246,12 @@ function getCategoryLabel(family: Family, line: RecurringLine | null): string {
     family.categories.find((category) => category.id === line.categoryId)
       ?.label ?? line.categoryId
   );
+}
+
+function getDeleteLineDescription(line: RecurringLine | null): string {
+  if (!line) {
+    return "";
+  }
+
+  return `La ligne "${line.title}" sera supprimée définitivement.`;
 }
