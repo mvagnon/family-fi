@@ -3,17 +3,19 @@ import type { ReactNode } from "react";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 
-interface FamilyErrorSnackbarProps {
+interface FeedbackSnackbarProps {
   action?: ReactNode;
   autoHideDuration?: number | null;
   message?: string;
+  severity?: "error" | "info" | "success" | "warning";
 }
 
-export function FamilyErrorSnackbar({
+export function FeedbackSnackbar({
   action,
   autoHideDuration = 6000,
   message,
-}: FamilyErrorSnackbarProps) {
+  severity = "error",
+}: FeedbackSnackbarProps) {
   const [open, setOpen] = useState(Boolean(message));
 
   useEffect(() => {
@@ -40,7 +42,7 @@ export function FamilyErrorSnackbar({
       <Alert
         action={action}
         onClose={action ? undefined : () => setOpen(false)}
-        severity="error"
+        severity={severity}
         variant="filled"
       >
         {message}

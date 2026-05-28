@@ -1,12 +1,14 @@
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Skeleton from "@mui/material/Skeleton";
-
-import { FamilyPageShell } from "./family-page-shell";
+import { PageShell } from "@repo/ui/page-shell";
 
 export function FamilyLoadingState() {
   return (
-    <FamilyPageShell>
+    <PageShell
+      subtitle="Dépenses, revenus et récurrences du foyer"
+      title="Foyer"
+    >
       <Box
         aria-label="Chargement du foyer"
         sx={{
@@ -65,6 +67,6 @@ export function FamilyLoadingState() {
           ))}
         </Paper>
       </Box>
-    </FamilyPageShell>
+    </PageShell>
   );
 }

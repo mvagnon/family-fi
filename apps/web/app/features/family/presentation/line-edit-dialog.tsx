@@ -1,17 +1,11 @@
 import type { FormEvent } from "react";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
-import CircularProgress from "@mui/material/CircularProgress";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import InputAdornment from "@mui/material/InputAdornment";
 import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
+import { FormDialog } from "@repo/ui/form-dialog";
 
 import type { FamilyCategory, RecurringLine } from "../domain/family";
 import { formatRecurrence } from "./family-format";
@@ -80,155 +74,143 @@ export function LineEditDialog({
   }
 
   return (
-    <Dialog fullWidth maxWidth="md" onClose={onClose} open={open}>
-      <DialogTitle>
-        {mode === "create" ? "Ajouter une ligne" : "Modifier une ligne"}
-      </DialogTitle>
-      <Box component="form" onSubmit={handleSubmit}>
-        <DialogContent>
-          <Stack spacing={2.25} sx={{ pt: 1 }}>
-            <Stack direction={{ sm: "row", xs: "column" }} spacing={2}>
-              <TextField
-                defaultValue={line.title}
-                disabled={isSaving}
-                fullWidth
-                id={`${line.id}-edit-title`}
-                label="Intitulé"
-                name="title"
-              />
-              <TextField
-                defaultValue={line.categoryId}
-                disabled={isSaving}
-                fullWidth
-                id={`${line.id}-edit-category`}
-                label="Catégorie"
-                name="categoryId"
-                select
-              >
-                {categories.map((category) => (
-                  <MenuItem key={category.id} value={category.id}>
-                    {category.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Stack>
-
-            <TextField
-              defaultValue={line.description}
-              disabled={isSaving}
-              fullWidth
-              id={`${line.id}-edit-description`}
-              label="Description"
-              minRows={3}
-              multiline
-              name="description"
-            />
-
-            <Stack direction={{ sm: "row", xs: "column" }} spacing={2}>
-              <TextField
-                defaultValue={line.movement}
-                disabled={isSaving}
-                fullWidth
-                id={`${line.id}-edit-movement`}
-                label="Mouvement"
-                name="movement"
-                select
-              >
-                <MenuItem value="positive">Entrée</MenuItem>
-                <MenuItem value="negative">Sortie</MenuItem>
-              </TextField>
-              <TextField
-                defaultValue={line.amount}
-                disabled={isSaving}
-                fullWidth
-                id={`${line.id}-edit-amount`}
-                label="Montant"
-                name="amount"
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">€</InputAdornment>
-                    ),
-                  },
-                }}
-              />
-              <TextField
-                defaultValue={line.recurrenceMonths}
-                disabled={isSaving}
-                fullWidth
-                id={`${line.id}-edit-recurrence`}
-                label="Récurrence"
-                name="recurrenceMonths"
-                select
-              >
-                {recurrenceOptions.map((months) => (
-                  <MenuItem key={months} value={months}>
-                    {formatRecurrence(months)}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Stack>
-
-            <FormControlLabel
-              control={
-                <Checkbox
-                  defaultChecked={line.isEstimate}
-                  disabled={isSaving}
-                  name="isEstimate"
-                />
-              }
-              label="Utiliser une estimation"
-            />
-
-            <Stack direction={{ sm: "row", xs: "column" }} spacing={2}>
-              <TextField
-                defaultValue={minValue}
-                disabled={isSaving}
-                fullWidth
-                id={`${line.id}-edit-min-value`}
-                label="Valeur minimum"
-                name="minAmount"
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">€</InputAdornment>
-                    ),
-                  },
-                }}
-              />
-              <TextField
-                defaultValue={maxValue}
-                disabled={isSaving}
-                fullWidth
-                id={`${line.id}-edit-max-value`}
-                label="Valeur maximum"
-                name="maxAmount"
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">€</InputAdornment>
-                    ),
-                  },
-                }}
-              />
-            </Stack>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button disabled={isSaving} onClick={onClose} type="button">
-            Annuler
-          </Button>
-          <Button
+    <FormDialog
+      isSubmitting={isSaving}
+      maxWidth="md"
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      open={open}
+      submitLabel={mode === "create" ? "Ajouter" : "Enregistrer"}
+      title={mode === "create" ? "Ajouter une ligne" : "Modifier une ligne"}
+    >
+      <Stack spacing={2.25} sx={{ pt: 1 }}>
+        <Stack direction={{ sm: "row", xs: "column" }} spacing={2}>
+          <TextField
+            defaultValue={line.title}
             disabled={isSaving}
-            startIcon={isSaving ? <CircularProgress size={16} /> : undefined}
-            type="submit"
-            variant="contained"
+            fullWidth
+            id={`${line.id}-edit-title`}
+            label="Intitulé"
+            name="title"
+          />
+          <TextField
+            defaultValue={line.categoryId}
+            disabled={isSaving}
+            fullWidth
+            id={`${line.id}-edit-category`}
+            label="Catégorie"
+            name="categoryId"
+            select
           >
-            {mode === "create" ? "Ajouter" : "Enregistrer"}
-          </Button>
-        </DialogActions>
-      </Box>
-    </Dialog>
+            {categories.map((category) => (
+              <MenuItem key={category.id} value={category.id}>
+                {category.label}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Stack>
+
+        <TextField
+          defaultValue={line.description}
+          disabled={isSaving}
+          fullWidth
+          id={`${line.id}-edit-description`}
+          label="Description"
+          minRows={3}
+          multiline
+          name="description"
+        />
+
+        <Stack direction={{ sm: "row", xs: "column" }} spacing={2}>
+          <TextField
+            defaultValue={line.movement}
+            disabled={isSaving}
+            fullWidth
+            id={`${line.id}-edit-movement`}
+            label="Mouvement"
+            name="movement"
+            select
+          >
+            <MenuItem value="positive">Entrée</MenuItem>
+            <MenuItem value="negative">Sortie</MenuItem>
+          </TextField>
+          <TextField
+            defaultValue={line.amount}
+            disabled={isSaving}
+            fullWidth
+            id={`${line.id}-edit-amount`}
+            label="Montant"
+            name="amount"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">€</InputAdornment>
+                ),
+              },
+            }}
+          />
+          <TextField
+            defaultValue={line.recurrenceMonths}
+            disabled={isSaving}
+            fullWidth
+            id={`${line.id}-edit-recurrence`}
+            label="Récurrence"
+            name="recurrenceMonths"
+            select
+          >
+            {recurrenceOptions.map((months) => (
+              <MenuItem key={months} value={months}>
+                {formatRecurrence(months)}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Stack>
+
+        <FormControlLabel
+          control={
+            <Checkbox
+              defaultChecked={line.isEstimate}
+              disabled={isSaving}
+              name="isEstimate"
+            />
+          }
+          label="Utiliser une estimation"
+        />
+
+        <Stack direction={{ sm: "row", xs: "column" }} spacing={2}>
+          <TextField
+            defaultValue={minValue}
+            disabled={isSaving}
+            fullWidth
+            id={`${line.id}-edit-min-value`}
+            label="Valeur minimum"
+            name="minAmount"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">€</InputAdornment>
+                ),
+              },
+            }}
+          />
+          <TextField
+            defaultValue={maxValue}
+            disabled={isSaving}
+            fullWidth
+            id={`${line.id}-edit-max-value`}
+            label="Valeur maximum"
+            name="maxAmount"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">€</InputAdornment>
+                ),
+              },
+            }}
+          />
+        </Stack>
+      </Stack>
+    </FormDialog>
   );
 }
 

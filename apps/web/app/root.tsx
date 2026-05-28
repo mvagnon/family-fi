@@ -9,15 +9,14 @@ import {
 import { useState } from "react";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
+import { fontPreloadLinks } from "@repo/ui/font-preloads";
+import { appTheme } from "@repo/ui/theme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import "@fontsource-variable/sora/wght.css";
-import "@fontsource-variable/fraunces/wght.css";
 
 import type { Route } from "./+types/root";
-import { appTheme } from "./theme";
 import "./app.css";
 
-export const links: Route.LinksFunction = () => [];
+export const links: Route.LinksFunction = () => [...fontPreloadLinks];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (

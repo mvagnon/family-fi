@@ -1,12 +1,11 @@
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
-import IconButton from "@mui/material/IconButton";
-import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
-import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import AddIcon from "@mui/icons-material/Add";
+import { ActionIconButton } from "@repo/ui/action-icon-button";
+import { SectionPanel } from "@repo/ui/section-panel";
 
 import type { FamilyCategory, FamilyMember } from "../domain/family";
 
@@ -34,37 +33,23 @@ export function FamilySidebar({
 
   return (
     <Stack component="aside" spacing={2.5}>
-      <Paper
-        aria-labelledby="family-members-title"
-        component="section"
-        sx={{ p: { md: 2.5, xs: 2 } }}
+      <SectionPanel
+        action={
+          <ActionIconButton
+            disabled={disabled}
+            icon={<AddIcon />}
+            label="Ajouter un membre"
+            onClick={onAddMember}
+          />
+        }
+        contentSx={{ pb: { md: 2.5, xs: 2 }, px: { md: 2.5, xs: 2 } }}
+        headerSx={{ p: { md: 2.5, xs: 2 } }}
+        subtitle={`${members.length} personnes`}
+        title="Membres"
+        titleId="family-members-title"
+        titleVariant="h3"
       >
-        <Stack
-          direction="row"
-          sx={{ alignItems: "center", justifyContent: "space-between" }}
-        >
-          <Box>
-            <Typography id="family-members-title" variant="h3">
-              Membres
-            </Typography>
-            <Typography color="text.secondary" variant="body2">
-              {members.length} personnes
-            </Typography>
-          </Box>
-          <Tooltip title="Ajouter un membre">
-            <span>
-              <IconButton
-                aria-label="Ajouter un membre"
-                disabled={disabled}
-                onClick={onAddMember}
-              >
-                <AddIcon />
-              </IconButton>
-            </span>
-          </Tooltip>
-        </Stack>
-
-        <Stack spacing={1.5} sx={{ mt: 2 }}>
+        <Stack spacing={1.5}>
           {members.map((member) => (
             <Box
               key={member.id}
@@ -98,36 +83,24 @@ export function FamilySidebar({
             </Box>
           ))}
         </Stack>
-      </Paper>
+      </SectionPanel>
 
-      <Paper
-        aria-labelledby="family-categories-title"
-        component="section"
-        sx={{ p: { md: 2.5, xs: 2 } }}
+      <SectionPanel
+        action={
+          <ActionIconButton
+            disabled={disabled}
+            icon={<AddIcon />}
+            label="Ajouter une catégorie"
+            onClick={onAddCategory}
+          />
+        }
+        contentSx={{ pb: { md: 2.5, xs: 2 }, px: { md: 2.5, xs: 2 } }}
+        headerSx={{ p: { md: 2.5, xs: 2 } }}
+        title="Catégories"
+        titleId="family-categories-title"
+        titleVariant="h3"
       >
-        <Stack
-          direction="row"
-          sx={{ alignItems: "center", justifyContent: "space-between" }}
-        >
-          <Box>
-            <Typography id="family-categories-title" variant="h3">
-              Catégories
-            </Typography>
-          </Box>
-          <Tooltip title="Ajouter une catégorie">
-            <span>
-              <IconButton
-                aria-label="Ajouter une catégorie"
-                disabled={disabled}
-                onClick={onAddCategory}
-              >
-                <AddIcon />
-              </IconButton>
-            </span>
-          </Tooltip>
-        </Stack>
-
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 2 }}>
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
           {sharedCategories.map((category) => (
             <Chip key={category.id} label={category.label} />
           ))}
@@ -142,7 +115,7 @@ export function FamilySidebar({
             />
           ))}
         </Box>
-      </Paper>
+      </SectionPanel>
     </Stack>
   );
 }

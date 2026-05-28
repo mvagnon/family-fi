@@ -1,21 +1,20 @@
 import { Fragment } from "react";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import ButtonBase from "@mui/material/ButtonBase";
-import IconButton from "@mui/material/IconButton";
-import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { alpha } from "@mui/material/styles";
+import { ActionIconButton } from "@repo/ui/action-icon-button";
+import { LoadingButton } from "@repo/ui/loading-button";
+import { SectionPanel } from "@repo/ui/section-panel";
 
 import { getCategoryGroups, getMonthlyRange } from "../domain/family-budget";
 import type { FamilyCategory, RecurringLine } from "../domain/family";
@@ -64,36 +63,25 @@ export function FamilyBudgetTable({
   }
 
   return (
-    <Paper
-      aria-labelledby="family-budget-title"
-      component="section"
-      sx={{ overflow: "hidden" }}
-    >
-      <Box
-        sx={{
-          alignItems: { sm: "center" },
-          display: "flex",
-          flexDirection: { sm: "row", xs: "column" },
-          gap: 1.5,
-          justifyContent: "space-between",
-          p: { md: 3, xs: 2 },
-        }}
-      >
-        <Box>
-          <Typography id="family-budget-title" variant="h2">
-            Budget récurrent
-          </Typography>
-        </Box>
-        <Button
+    <SectionPanel
+      action={
+        <LoadingButton
           disabled={disabled}
           onClick={onAddLine}
           startIcon={<AddIcon />}
           variant="contained"
         >
           Ajouter une ligne
-        </Button>
-      </Box>
-
+        </LoadingButton>
+      }
+      contentSx={{ p: 0 }}
+      headerSx={{
+        alignItems: { sm: "center", xs: "flex-start" },
+        flexDirection: { sm: "row", xs: "column" },
+      }}
+      title="Budget récurrent"
+      titleId="family-budget-title"
+    >
       <TableContainer sx={{ maxWidth: "100%", overflowX: "auto" }}>
         <Table
           aria-label="Configuration des dépenses et revenus récurrents"
@@ -222,38 +210,30 @@ export function FamilyBudgetTable({
                             py: 1.5,
                           }}
                         >
-                          <Tooltip title="Modifier la ligne">
-                            <span>
-                              <IconButton
-                                aria-label={`Modifier ${line.title}`}
-                                component="span"
-                                disabled={disabled}
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  onEditLine(line);
-                                }}
-                                size="small"
-                              >
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                            </span>
-                          </Tooltip>
-                          <Tooltip title="Supprimer la ligne">
-                            <span>
-                              <IconButton
-                                aria-label={`Supprimer ${line.title}`}
-                                component="span"
-                                disabled={disabled}
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  onDeleteLine(line);
-                                }}
-                                size="small"
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </span>
-                          </Tooltip>
+                          <ActionIconButton
+                            component="span"
+                            disabled={disabled}
+                            icon={<EditIcon fontSize="small" />}
+                            label={`Modifier ${line.title}`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              onEditLine(line);
+                            }}
+                            size="small"
+                            tooltip="Modifier la ligne"
+                          />
+                          <ActionIconButton
+                            component="span"
+                            disabled={disabled}
+                            icon={<DeleteIcon fontSize="small" />}
+                            label={`Supprimer ${line.title}`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              onDeleteLine(line);
+                            }}
+                            size="small"
+                            tooltip="Supprimer la ligne"
+                          />
                         </Box>
                       </ButtonBase>
                     </TableCell>
@@ -264,7 +244,7 @@ export function FamilyBudgetTable({
           </TableBody>
         </Table>
       </TableContainer>
-    </Paper>
+    </SectionPanel>
   );
 }
 

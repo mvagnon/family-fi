@@ -1,5 +1,8 @@
 import { useState } from "react";
 import Box from "@mui/material/Box";
+import { ConfirmationDialog } from "@repo/ui/confirmation-dialog";
+import { FeedbackSnackbar } from "@repo/ui/feedback-snackbar";
+import { PageShell } from "@repo/ui/page-shell";
 
 import {
   getDuplicateFamilyCategoryLabelMessage,
@@ -18,12 +21,9 @@ import type {
   RecurringLine,
   UpdateRecurringLineInput,
 } from "../domain/family";
-import { DangerousActionConfirmationDialog } from "./dangerous-action-confirmation-dialog";
 import { FamilyBudgetTable } from "./family-budget-table";
 import { FamilyCategoryModal } from "./family-category-modal";
-import { FamilyErrorSnackbar } from "./family-error-snackbar";
 import { FamilyMemberModal } from "./family-member-modal";
-import { FamilyPageShell } from "./family-page-shell";
 import { FamilySidebar } from "./family-sidebar";
 import { FamilySummaryStrip } from "./family-summary-strip";
 import { LineEditDialog } from "./line-edit-dialog";
@@ -161,8 +161,11 @@ export function FamilyDashboard({
   }
 
   return (
-    <FamilyPageShell>
-      <FamilyErrorSnackbar
+    <PageShell
+      subtitle="Dépenses, revenus et récurrences du foyer"
+      title="Foyer"
+    >
+      <FeedbackSnackbar
         key={localError ? `local-${localError.revision}` : mutationError}
         message={localError?.message ?? mutationError}
       />
@@ -225,7 +228,10 @@ export function FamilyDashboard({
         onClose={() => setSummaryLine(null)}
         open={summaryLine !== null}
       />
-      <DangerousActionConfirmationDialog
+      <ConfirmationDialog
+        confirmColor="error"
+        confirmFirst
+        confirmLabel="Supprimer"
         description={getDeleteLineDescription(linePendingDeletion)}
         isPending={isSaving}
         onCancel={() => setLinePendingDeletion(null)}
@@ -233,7 +239,7 @@ export function FamilyDashboard({
         open={linePendingDeletion !== null}
         title="Supprimer cette ligne ?"
       />
-    </FamilyPageShell>
+    </PageShell>
   );
 }
 

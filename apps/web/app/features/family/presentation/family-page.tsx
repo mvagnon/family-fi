@@ -1,3 +1,7 @@
+import Button from "@mui/material/Button";
+import { FeedbackSnackbar } from "@repo/ui/feedback-snackbar";
+import { PageShell } from "@repo/ui/page-shell";
+
 import {
   useAddFamilyCategory,
   useAddFamilyMember,
@@ -8,7 +12,6 @@ import {
 } from "../application/family-queries";
 import type { FamilyRepository } from "../domain/family-repository";
 import { FamilyDashboard } from "./family-dashboard";
-import { FamilyErrorState } from "./family-error-state";
 import { FamilyLoadingState } from "./family-loading-state";
 
 interface FamilyPageProps {
@@ -41,12 +44,26 @@ export function FamilyPage({ repository }: FamilyPageProps) {
 
   if (familyQuery.isError) {
     return (
-      <FamilyErrorState
-        message={
-          getErrorMessage(familyQuery.error) ?? "Le foyer est indisponible."
-        }
-        onRetry={() => void familyQuery.refetch()}
-      />
+      <PageShell
+        subtitle="Dépenses, revenus et récurrences du foyer"
+        title="Foyer"
+      >
+        <FeedbackSnackbar
+          action={
+            <Button
+              color="inherit"
+              onClick={() => void familyQuery.refetch()}
+              size="small"
+            >
+              Réessayer
+            </Button>
+          }
+          autoHideDuration={null}
+          message={
+            getErrorMessage(familyQuery.error) ?? "Le foyer est indisponible."
+          }
+        />
+      </PageShell>
     );
   }
 

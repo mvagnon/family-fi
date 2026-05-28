@@ -4,6 +4,7 @@ import test from "node:test";
 import type { ReactElement, ReactNode } from "react";
 import { createElement, isValidElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { ActionIconButton } from "@repo/ui/action-icon-button";
 
 import type { RecurringLine } from "../../domain/family";
 import { FamilyBudgetTable } from "../family-budget-table";
@@ -225,7 +226,9 @@ test("keeps delete action clicks separate from details button clicks", () => {
 
   const deleteButton = findElement(
     detailButton,
-    (element) => element.props["aria-label"] === "Supprimer Loyer",
+    (element) =>
+      element.type === ActionIconButton &&
+      element.props.label === "Supprimer Loyer",
   );
   let propagationStopped = false;
 
@@ -235,7 +238,10 @@ test("keeps delete action clicks separate from details button clicks", () => {
 
   assert.deepEqual(viewedLineIds, ["rent"]);
 
-  getEventHandler(deleteButton, "onClick")({
+  getEventHandler(
+    deleteButton,
+    "onClick",
+  )({
     stopPropagation: () => {
       propagationStopped = true;
     },

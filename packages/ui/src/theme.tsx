@@ -1,3 +1,5 @@
+import "@fontsource-variable/sora/wght.css";
+import "@fontsource-variable/fraunces/wght.css";
 import { alpha, createTheme } from "@mui/material/styles";
 import type { ThemeOptions } from "@mui/material/styles";
 

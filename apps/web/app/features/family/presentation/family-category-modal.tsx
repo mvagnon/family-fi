@@ -1,12 +1,7 @@
 import type { FormEvent } from "react";
-import Button from "@mui/material/Button";
-import CircularProgress from "@mui/material/CircularProgress";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
+import { FormDialog } from "@repo/ui/form-dialog";
 
 import type { CreateFamilyCategoryInput } from "../domain/family";
 
@@ -34,42 +29,26 @@ export function FamilyCategoryModal({
   }
 
   return (
-    <Dialog fullWidth maxWidth="sm" onClose={onClose} open={open}>
-      <DialogTitle>Ajouter une catégorie</DialogTitle>
-      <DialogContent>
-        <Stack
-          component="form"
-          id="new-category-form"
-          onSubmit={handleSubmit}
-          spacing={2}
-          sx={{ pt: 1 }}
-        >
-          <TextField
-            autoFocus
-            defaultValue="Nouvelle catégorie"
-            disabled={isSaving}
-            fullWidth
-            id="new-category-label"
-            label="Nom"
-            name="label"
-          />
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button disabled={isSaving} onClick={onClose} type="button">
-          Annuler
-        </Button>
-        <Button
+    <FormDialog
+      isSubmitting={isSaving}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      open={open}
+      submitLabel="Ajouter"
+      title="Ajouter une catégorie"
+    >
+      <Stack spacing={2} sx={{ pt: 1 }}>
+        <TextField
+          autoFocus
+          defaultValue="Nouvelle catégorie"
           disabled={isSaving}
-          form="new-category-form"
-          startIcon={isSaving ? <CircularProgress size={16} /> : undefined}
-          type="submit"
-          variant="contained"
-        >
-          Ajouter
-        </Button>
-      </DialogActions>
-    </Dialog>
+          fullWidth
+          id="new-category-label"
+          label="Nom"
+          name="label"
+        />
+      </Stack>
+    </FormDialog>
   );
 }
 
