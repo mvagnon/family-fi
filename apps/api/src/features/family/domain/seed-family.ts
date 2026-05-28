@@ -1,0 +1,92 @@
+import { DEV_USER_ID } from "./family.js";
+import type { FamilySnapshot } from "./family.js";
+
+export function createSeedFamily(userId = DEV_USER_ID): FamilySnapshot {
+  return {
+    categories: [
+      { id: "budget", label: "Budget", kind: "shared" },
+      { id: "heart", label: "Cœur", kind: "shared" },
+      { id: "credit", label: "Crédit", kind: "shared" },
+      { id: "leisure", label: "Loisir", kind: "shared" },
+      { id: "pro-lea", label: "Léa", kind: "professional", ownerId: "lea" },
+      {
+        id: "pro-marc",
+        label: "Marc",
+        kind: "professional",
+        ownerId: "marc",
+      },
+    ],
+    id: "family-dev",
+    members: [
+      { id: "lea", name: "Léa", role: "Parent" },
+      { id: "marc", name: "Marc", role: "Parent" },
+    ],
+    recurringLines: [
+      {
+        amount: 1850,
+        categoryId: "budget",
+        description: "Appartement familial et charges incluses",
+        id: "rent",
+        isEstimate: false,
+        movement: "negative",
+        recurrenceMonths: 1,
+        title: "Loyer",
+      },
+      {
+        amount: 4200,
+        categoryId: "pro-lea",
+        description: "Revenu salarié net",
+        id: "lea-salary",
+        isEstimate: false,
+        movement: "positive",
+        recurrenceMonths: 1,
+        title: "Salaire Léa",
+      },
+      {
+        amount: 690,
+        categoryId: "heart",
+        description: "Alimentation, hygiène et produits maison",
+        id: "groceries",
+        isEstimate: true,
+        maxAmount: 760,
+        minAmount: 620,
+        movement: "negative",
+        recurrenceMonths: 1,
+        title: "Courses",
+      },
+      {
+        amount: 315,
+        categoryId: "credit",
+        description: "Mensualité du véhicule familial",
+        id: "car-loan",
+        isEstimate: false,
+        movement: "negative",
+        recurrenceMonths: 1,
+        title: "Crédit auto",
+      },
+      {
+        amount: 90,
+        categoryId: "leisure",
+        description: "Activité enfant",
+        id: "piano",
+        isEstimate: false,
+        movement: "negative",
+        recurrenceMonths: 1,
+        title: "Cours piano",
+      },
+      {
+        amount: 950,
+        categoryId: "pro-marc",
+        description: "Revenu variable facturé tous les deux mois",
+        id: "marc-freelance",
+        isEstimate: true,
+        maxAmount: 1200,
+        minAmount: 700,
+        movement: "positive",
+        recurrenceMonths: 2,
+        title: "Mission freelance Marc",
+      },
+    ],
+    userIds: [userId],
+  };
+}

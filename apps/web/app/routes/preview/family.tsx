@@ -1,4 +1,4 @@
-import { FamilyPreviewPage } from "~/features/family-preview/family-preview-page";
+import { FamilyPreviewPage } from "~/features/family/presentation/family-preview-page";
 
 export function meta() {
   return [

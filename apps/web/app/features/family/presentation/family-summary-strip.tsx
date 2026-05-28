@@ -2,8 +2,8 @@ import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 
-import { formatCurrency, getMonthlyValue } from "./preview-format";
-import type { RecurringLine } from "./types";
+import { formatCurrency, getMonthlyValue } from "../domain/family-format";
+import type { RecurringLine } from "../domain/family";
 
 interface FamilySummaryStripProps {
   lines: RecurringLine[];
@@ -16,7 +16,6 @@ export function FamilySummaryStrip({ lines }: FamilySummaryStripProps) {
     max: monthlyTotals.max * 12,
     min: monthlyTotals.min * 12,
   };
-
   const summaryCards = [
     { label: "Mensuel", totals: monthlyTotals },
     { label: "Annuel", totals: annualTotals },

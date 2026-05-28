@@ -2,6 +2,7 @@ import type { FormEvent } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
+import CircularProgress from "@mui/material/CircularProgress";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -12,22 +13,24 @@ import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
-import { formatRecurrence } from "./preview-format";
-import type { FamilyCategory, RecurringLine } from "./types";
+import type { FamilyCategory, RecurringLine } from "../domain/family";
+import { formatRecurrence } from "../domain/family-format";
 
 const recurrenceOptions = [1, 2, 3, 6, 12];
 
 interface LineEditDialogProps {
   categories: FamilyCategory[];
+  isSaving?: boolean;
   line: RecurringLine | null;
   mode: "create" | "edit";
   onClose: () => void;
-  onSave: (line: RecurringLine) => void;
+  onSave: (line: RecurringLine) => Promise<void> | void;
   open: boolean;
 }
 
 export function LineEditDialog({
   categories,
+  isSaving = false,
   line,
   mode,
   onClose,
@@ -87,6 +90,7 @@ export function LineEditDialog({
             <Stack direction={{ sm: "row", xs: "column" }} spacing={2}>
               <TextField
                 defaultValue={line.title}
+                disabled={isSaving}
                 fullWidth
                 id={`${line.id}-edit-title`}
                 label="Intitulé"
@@ -94,6 +98,7 @@ export function LineEditDialog({
               />
               <TextField
                 defaultValue={line.categoryId}
+                disabled={isSaving}
                 fullWidth
                 id={`${line.id}-edit-category`}
                 label="Catégorie"
@@ -110,6 +115,7 @@ export function LineEditDialog({
 
             <TextField
               defaultValue={line.description}
+              disabled={isSaving}
               fullWidth
               id={`${line.id}-edit-description`}
               label="Description"
@@ -121,6 +127,7 @@ export function LineEditDialog({
             <Stack direction={{ sm: "row", xs: "column" }} spacing={2}>
               <TextField
                 defaultValue={line.movement}
+                disabled={isSaving}
                 fullWidth
                 id={`${line.id}-edit-movement`}
                 label="Mouvement"
@@ -132,6 +139,7 @@ export function LineEditDialog({
               </TextField>
               <TextField
                 defaultValue={line.amount}
+                disabled={isSaving}
                 fullWidth
                 id={`${line.id}-edit-amount`}
                 label="Montant"
@@ -146,6 +154,7 @@ export function LineEditDialog({
               />
               <TextField
                 defaultValue={line.recurrenceMonths}
+                disabled={isSaving}
                 fullWidth
                 id={`${line.id}-edit-recurrence`}
                 label="Récurrence"
@@ -162,7 +171,11 @@ export function LineEditDialog({
 
             <FormControlLabel
               control={
-                <Checkbox defaultChecked={line.isEstimate} name="isEstimate" />
+                <Checkbox
+                  defaultChecked={line.isEstimate}
+                  disabled={isSaving}
+                  name="isEstimate"
+                />
               }
               label="Utiliser une estimation"
             />
@@ -170,6 +183,7 @@ export function LineEditDialog({
             <Stack direction={{ sm: "row", xs: "column" }} spacing={2}>
               <TextField
                 defaultValue={minValue}
+                disabled={isSaving}
                 fullWidth
                 id={`${line.id}-edit-min-value`}
                 label="Valeur minimum"
@@ -184,6 +198,7 @@ export function LineEditDialog({
               />
               <TextField
                 defaultValue={maxValue}
+                disabled={isSaving}
                 fullWidth
                 id={`${line.id}-edit-max-value`}
                 label="Valeur maximum"
@@ -200,10 +215,15 @@ export function LineEditDialog({
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} type="button">
+          <Button disabled={isSaving} onClick={onClose} type="button">
             Annuler
           </Button>
-          <Button type="submit" variant="contained">
+          <Button
+            disabled={isSaving}
+            startIcon={isSaving ? <CircularProgress size={16} /> : undefined}
+            type="submit"
+            variant="contained"
+          >
             {mode === "create" ? "Ajouter" : "Enregistrer"}
           </Button>
         </DialogActions>

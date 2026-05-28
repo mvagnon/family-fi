@@ -29,10 +29,13 @@ npm install
 Start the development server with HMR:
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 Your application will be available at `http://localhost:5173`.
+
+`/family` calls the API at `http://localhost:3000` by default. Override it with
+`VITE_API_BASE_URL` when the API runs elsewhere.
 
 ## Building for Production
 

@@ -7,11 +7,12 @@ import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 
+import type { FamilyCategory, FamilyMember } from "../domain/family";
 import { PlusIcon } from "./icons";
-import type { FamilyCategory, FamilyMember } from "./types";
 
 interface FamilySidebarProps {
   categories: FamilyCategory[];
+  disabled?: boolean;
   members: FamilyMember[];
   onAddCategory: () => void;
   onAddMember: () => void;
@@ -19,6 +20,7 @@ interface FamilySidebarProps {
 
 export function FamilySidebar({
   categories,
+  disabled = false,
   members,
   onAddCategory,
   onAddMember,
@@ -50,9 +52,15 @@ export function FamilySidebar({
             </Typography>
           </Box>
           <Tooltip title="Ajouter un membre">
-            <IconButton aria-label="Ajouter un membre" onClick={onAddMember}>
-              <PlusIcon />
-            </IconButton>
+            <span>
+              <IconButton
+                aria-label="Ajouter un membre"
+                disabled={disabled}
+                onClick={onAddMember}
+              >
+                <PlusIcon />
+              </IconButton>
+            </span>
           </Tooltip>
         </Stack>
 
@@ -110,12 +118,15 @@ export function FamilySidebar({
             </Typography>
           </Box>
           <Tooltip title="Ajouter une catégorie">
-            <IconButton
-              aria-label="Ajouter une catégorie"
-              onClick={onAddCategory}
-            >
-              <PlusIcon />
-            </IconButton>
+            <span>
+              <IconButton
+                aria-label="Ajouter une catégorie"
+                disabled={disabled}
+                onClick={onAddCategory}
+              >
+                <PlusIcon />
+              </IconButton>
+            </span>
           </Tooltip>
         </Stack>
 

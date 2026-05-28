@@ -1,0 +1,57 @@
+import Box from "@mui/material/Box";
+import CssBaseline from "@mui/material/CssBaseline";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import { ThemeProvider } from "@mui/material/styles";
+
+import { familyTheme } from "./family-theme";
+
+interface FamilyPageShellProps {
+  children: React.ReactNode;
+}
+
+export function FamilyPageShell({ children }: FamilyPageShellProps) {
+  return (
+    <ThemeProvider theme={familyTheme}>
+      <CssBaseline />
+      <Box
+        component="main"
+        sx={{
+          bgcolor: "background.default",
+          color: "text.primary",
+          minHeight: "100vh",
+          px: { lg: 5, md: 3, xs: 2 },
+          py: { md: 4, xs: 2.5 },
+        }}
+      >
+        <Stack spacing={{ md: 3, xs: 2.25 }}>
+          <Stack
+            component="header"
+            direction={{ md: "row", xs: "column" }}
+            spacing={2}
+            sx={{
+              alignItems: { md: "flex-end", xs: "flex-start" },
+              justifyContent: "space-between",
+            }}
+          >
+            <Box>
+              <Typography color="text.secondary" variant="overline">
+                Family-Fi SaaS
+              </Typography>
+              <Typography variant="h1">Foyer</Typography>
+              <Typography
+                color="text.secondary"
+                sx={{ maxWidth: 680, mt: 1.25 }}
+                variant="body1"
+              >
+                Dépenses, revenus et récurrences du foyer
+              </Typography>
+            </Box>
+          </Stack>
+
+          {children}
+        </Stack>
+      </Box>
+    </ThemeProvider>
+  );
+}

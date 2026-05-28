@@ -25,3 +25,25 @@ export interface RecurringLine {
   minAmount?: number;
   maxAmount?: number;
 }
+
+export interface Family {
+  id: string;
+  userIds: string[];
+  members: FamilyMember[];
+  categories: FamilyCategory[];
+  recurringLines: RecurringLine[];
+}
+
+export interface CreateFamilyMemberInput {
+  categoryLabel?: string;
+  name: string;
+  role: string;
+}
+
+export interface CreateFamilyCategoryInput {
+  label: string;
+}
+
+export type CreateRecurringLineInput = Omit<RecurringLine, "id">;
+
+export type UpdateRecurringLineInput = Omit<RecurringLine, "id">;

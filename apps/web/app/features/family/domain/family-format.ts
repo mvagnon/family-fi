@@ -1,4 +1,4 @@
-import type { RecurringLine } from "./types";
+import type { RecurringLine } from "./family";
 
 const currencyFormatter = new Intl.NumberFormat("fr-FR", {
   currency: "EUR",

@@ -1,15 +1,19 @@
-import { serve } from '@hono/node-server'
-import { Hono } from 'hono'
+import { serve } from "@hono/node-server";
 
-const app = new Hono()
+import { createApiApp } from "./app.js";
+import { PrismaFamilyRepository } from "./features/family/infrastructure/persistence/prisma-family-repository.js";
+import { prisma } from "./infrastructure/prisma.js";
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
+const app = createApiApp({
+  familyRepository: new PrismaFamilyRepository(prisma),
+});
 
-serve({
-  fetch: app.fetch,
-  port: 3000
-}, (info) => {
-  console.log(`Server is running on http://localhost:${info.port}`)
-})
+serve(
+  {
+    fetch: app.fetch,
+    port: 3000,
+  },
+  (info) => {
+    console.log(`Server is running on http://localhost:${info.port}`);
+  },
+);

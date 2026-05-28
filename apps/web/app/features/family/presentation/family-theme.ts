@@ -3,7 +3,7 @@ import type { ThemeOptions } from "@mui/material/styles";
 
 import { sharedThemeOptions } from "~/theme";
 
-const familyPreviewThemeOptions = {
+const familyThemeOptions = {
   cssVariables: true,
   palette: {
     mode: "light",
@@ -130,11 +130,11 @@ const familyPreviewThemeOptions = {
   },
 } satisfies ThemeOptions;
 
-export const familyPreviewTheme = createTheme({
+export const familyTheme = createTheme({
   ...sharedThemeOptions,
-  ...familyPreviewThemeOptions,
+  ...familyThemeOptions,
   components: {
     ...sharedThemeOptions.components,
-    ...familyPreviewThemeOptions.components,
+    ...familyThemeOptions.components,
   },
 });

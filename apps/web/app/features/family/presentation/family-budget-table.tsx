@@ -13,16 +13,17 @@ import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 
-import { EditIcon, PlusIcon } from "./icons";
+import type { FamilyCategory, RecurringLine } from "../domain/family";
 import {
   formatCurrency,
   formatRecurrence,
   getMonthlyValue,
-} from "./preview-format";
-import type { FamilyCategory, RecurringLine } from "./types";
+} from "../domain/family-format";
+import { EditIcon, PlusIcon } from "./icons";
 
 interface FamilyBudgetTableProps {
   categories: FamilyCategory[];
+  disabled?: boolean;
   lines: RecurringLine[];
   onAddLine: () => void;
   onEditLine: (line: RecurringLine) => void;
@@ -30,6 +31,7 @@ interface FamilyBudgetTableProps {
 
 export function FamilyBudgetTable({
   categories,
+  disabled = false,
   lines,
   onAddLine,
   onEditLine,
@@ -58,6 +60,7 @@ export function FamilyBudgetTable({
           </Typography>
         </Box>
         <Button
+          disabled={disabled}
           onClick={onAddLine}
           startIcon={<PlusIcon />}
           variant="contained"
@@ -179,13 +182,16 @@ export function FamilyBudgetTable({
                     </TableCell>
                     <TableCell align="right">
                       <Tooltip title="Modifier la ligne">
-                        <IconButton
-                          aria-label={`Modifier ${line.title}`}
-                          onClick={() => onEditLine(line)}
-                          size="small"
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
+                        <span>
+                          <IconButton
+                            aria-label={`Modifier ${line.title}`}
+                            disabled={disabled}
+                            onClick={() => onEditLine(line)}
+                            size="small"
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </span>
                       </Tooltip>
                     </TableCell>
                   </TableRow>

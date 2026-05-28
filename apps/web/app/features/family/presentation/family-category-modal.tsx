@@ -1,5 +1,6 @@
 import type { FormEvent } from "react";
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -7,15 +8,17 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
-import type { FamilyCategory } from "./types";
+import type { CreateFamilyCategoryInput } from "../domain/family";
 
 interface FamilyCategoryModalProps {
+  isSaving?: boolean;
   onClose: () => void;
-  onSave: (category: FamilyCategory) => void;
+  onSave: (category: CreateFamilyCategoryInput) => Promise<void> | void;
   open: boolean;
 }
 
 export function FamilyCategoryModal({
+  isSaving = false,
   onClose,
   onSave,
   open,
@@ -24,12 +27,9 @@ export function FamilyCategoryModal({
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
-    const label = getStringValue(formData, "label", "Nouvelle catégorie");
 
     onSave({
-      id: createCategoryId(label),
-      kind: "shared",
-      label,
+      label: getStringValue(formData, "label", "Nouvelle catégorie"),
     });
   }
 
@@ -47,6 +47,7 @@ export function FamilyCategoryModal({
           <TextField
             autoFocus
             defaultValue="Nouvelle catégorie"
+            disabled={isSaving}
             fullWidth
             id="new-category-label"
             label="Nom"
@@ -55,26 +56,21 @@ export function FamilyCategoryModal({
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} type="button">
+        <Button disabled={isSaving} onClick={onClose} type="button">
           Annuler
         </Button>
-        <Button form="new-category-form" type="submit" variant="contained">
+        <Button
+          disabled={isSaving}
+          form="new-category-form"
+          startIcon={isSaving ? <CircularProgress size={16} /> : undefined}
+          type="submit"
+          variant="contained"
+        >
           Ajouter
         </Button>
       </DialogActions>
     </Dialog>
   );
-}
-
-function createCategoryId(label: string): string {
-  const normalizedLabel = label
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-
-  return `${normalizedLabel || "category"}-${Date.now()}`;
 }
 
 function getStringValue(

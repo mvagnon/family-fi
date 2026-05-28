@@ -1,0 +1,44 @@
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  runtime                = "nodejs"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Family {
+  id             String          @id
+  userIds        String[]        @map("user_ids")
+  members        Json
+  categories     Json
+  recurringLines RecurringLine[]
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  @@map("family")
+}
+
+model RecurringLine {
+  id               String   @id
+  familyId         String   @map("family_id")
+  family           Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  title            String
+  description      String
+  categoryId       String   @map("category_id")
+  movement         String
+  amountCents      Int      @map("amount_cents")
+  isEstimate       Boolean  @map("is_estimate")
+  minAmountCents   Int?     @map("min_amount_cents")
+  maxAmountCents   Int?     @map("max_amount_cents")
+  recurrenceMonths Int      @map("recurrence_months")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@index([familyId])
+  @@map("recurring_lines")
+}

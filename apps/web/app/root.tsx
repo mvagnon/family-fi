@@ -6,8 +6,10 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { useState } from "react";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@fontsource-variable/sora/wght.css";
 import "@fontsource-variable/fraunces/wght.css";
 
@@ -36,11 +38,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: 1,
+            staleTime: 30_000,
+          },
+        },
+      }),
+  );
+
   return (
-    <ThemeProvider theme={appTheme}>
-      <CssBaseline />
-      <Outlet />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={appTheme}>
+        <CssBaseline />
+        <Outlet />
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 
