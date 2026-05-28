@@ -4,8 +4,8 @@ import {
   useCreateFamilyRecurringLine,
   useFamily,
   useUpdateFamilyRecurringLine,
-} from "./family-queries";
-import type { FamilyRepository } from "../application/family-repository";
+} from "../application/family-queries";
+import type { FamilyRepository } from "../domain/family-repository";
 import { FamilyDashboard } from "./family-dashboard";
 import { FamilyErrorState } from "./family-error-state";
 import { FamilyLoadingState } from "./family-loading-state";

@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This is a Bun/Turborepo monorepo. Both projects use hexagonal architecture: `domain` holds business rules and ports, `application` holds use cases, and `infrastructure`/`presentation` hold adapters. `apps/web` is the React Router app; routes live in `app/routes`, and feature code lives under `app/features/<feature>`. `apps/api` is the Hono API with Prisma and follows the same split under `src/features/<feature>`. Prisma files live in `apps/api/prisma`. Shared packages live in `packages/ui`, `packages/eslint-config`, and `packages/typescript-config`. Tests are colocated.
+This is a Bun/Turborepo monorepo. Both projects use hexagonal architecture: `domain` holds business rules and ports, `application` holds use cases and frontend custom hooks, and `infrastructure`/`presentation` hold adapters. `apps/web` is the React Router app; routes live in `app/routes`, and feature code lives under `app/features/<feature>`. In web features, TanStack Query hooks live in `application`, and `presentation` contains feature components only. `apps/api` is the Hono API with Prisma and follows the same split under `src/features/<feature>`. Prisma files live in `apps/api/prisma`. Shared packages live in `packages/ui`, `packages/eslint-config`, and `packages/typescript-config`. Tests are colocated.
 
 ## Build, Test, and Development Commands
 
@@ -18,7 +18,7 @@ This is a Bun/Turborepo monorepo. Both projects use hexagonal architecture: `dom
 
 ## Coding Style & Naming Conventions
 
-Use TypeScript, ESM imports, 2-space indentation, semicolons, and double quotes. Use kebab-case for file names, PascalCase for React components, and `useX` for hooks. Keep behavior inside the existing feature layers. On the web, route network access through repositories and TanStack Query hooks. Prefer existing MUI, Tailwind, and shared package patterns before creating UI.
+Use TypeScript, ESM imports, 2-space indentation, semicolons, and double quotes. Use kebab-case for file names, PascalCase for React components, and `useX` for hooks. Keep behavior inside the existing feature layers. On the web, route network access through domain repositories and application-layer TanStack Query hooks. Prefer existing MUI, Tailwind, and shared package patterns before creating UI.
 
 ## Testing Guidelines
 

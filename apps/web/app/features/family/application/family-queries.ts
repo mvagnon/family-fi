@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { FamilyRepository } from "../application/family-repository";
+import type { FamilyRepository } from "../domain/family-repository";
 import type {
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,

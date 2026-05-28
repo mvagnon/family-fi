@@ -4,7 +4,7 @@ import type {
   CreateRecurringLineInput,
   Family,
   UpdateRecurringLineInput,
-} from "../domain/family";
+} from "./family";
 
 export interface FamilyRepository {
   addCategory(input: CreateFamilyCategoryInput): Promise<Family>;

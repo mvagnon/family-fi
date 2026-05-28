@@ -113,9 +113,6 @@ export function FamilySidebar({
             <Typography id="family-categories-title" variant="h3">
               Catégories
             </Typography>
-            <Typography color="text.secondary" variant="body2">
-              Noms utilisés pour classer les lignes.
-            </Typography>
           </Box>
           <Tooltip title="Ajouter une catégorie">
             <span>

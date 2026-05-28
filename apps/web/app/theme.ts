@@ -1,17 +1,32 @@
 import { alpha, createTheme } from "@mui/material/styles";
 import type { ThemeOptions } from "@mui/material/styles";
 
-export const sharedThemeOptions = {
+const appThemeOptions = {
+  shape: {
+    borderRadius: 8,
+  },
   typography: {
     fontFamily: '"Sora Variable", "Sora", sans-serif',
     h1: {
       fontFamily: '"Fraunces Variable", "Fraunces", serif',
+      fontSize: "4rem",
+      fontWeight: 760,
+      letterSpacing: 0,
+      lineHeight: 0.96,
     },
     h2: {
       fontFamily: '"Fraunces Variable", "Fraunces", serif',
+      fontSize: "1.65rem",
+      fontWeight: 720,
+      letterSpacing: 0,
+      lineHeight: 1.05,
     },
     h3: {
       fontFamily: '"Fraunces Variable", "Fraunces", serif',
+      fontSize: "1.25rem",
+      fontWeight: 700,
+      letterSpacing: 0,
+      lineHeight: 1.1,
     },
     h4: {
       fontFamily: '"Fraunces Variable", "Fraunces", serif',
@@ -26,6 +41,11 @@ export const sharedThemeOptions = {
       fontWeight: 700,
       letterSpacing: 0,
       textTransform: "none",
+    },
+    overline: {
+      fontSize: "0.72rem",
+      fontWeight: 800,
+      letterSpacing: 0,
     },
   },
   components: {
@@ -52,29 +72,103 @@ export const sharedThemeOptions = {
         }),
       },
     },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          fontWeight: 700,
+        },
+      },
+    },
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundColor: "#FFF8ED",
+        },
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: ({ theme }) => ({
+          backgroundImage: "none",
+          border: `1px solid ${theme.palette.divider}`,
+        }),
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          backgroundColor: theme.palette.background.paper,
+          borderRadius: theme.shape.borderRadius,
+        }),
+      },
+    },
+    MuiPaper: {
+      defaultProps: {
+        elevation: 0,
+      },
+      styleOverrides: {
+        root: ({ theme }) => ({
+          backgroundImage: "none",
+          border: `1px solid ${theme.palette.divider}`,
+        }),
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        head: ({ theme }) => ({
+          backgroundColor: theme.palette.background.paper,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          borderTop: `1px solid ${theme.palette.divider}`,
+          color: theme.palette.text.secondary,
+          fontSize: "0.7rem",
+          fontWeight: 800,
+          letterSpacing: 0,
+          textTransform: "uppercase",
+        }),
+        root: ({ theme }) => ({
+          borderColor: theme.palette.divider,
+          verticalAlign: "top",
+        }),
+      },
+    },
+    MuiTextField: {
+      defaultProps: {
+        size: "small",
+        variant: "outlined",
+      },
+    },
   },
 } satisfies ThemeOptions;
 
 export const appTheme = createTheme({
-  ...sharedThemeOptions,
+  ...appThemeOptions,
   palette: {
     mode: "light",
     background: {
-      default: "#F4F1E8",
-      paper: "#E8E2D0",
+      default: "#FFF8ED",
+      paper: "#FEF3E2",
     },
-    divider: "#CDD2C9",
+    divider: "#F3D7AA",
     primary: {
-      main: "#2D3A1F",
-      contrastText: "#F4F1E8",
+      main: "#FAB12F",
+      contrastText: "#2C1E10",
     },
     secondary: {
-      main: "#B8A678",
-      contrastText: "#2D3A1F",
+      main: "#FA812F",
+      contrastText: "#2C1E10",
+    },
+    error: {
+      main: "#DD0303",
+      contrastText: "#FFF8ED",
+    },
+    warning: {
+      main: "#DD0303",
+      contrastText: "#FFF8ED",
     },
     text: {
-      primary: "#2D3A1F",
-      secondary: "#2D3A1F",
+      primary: "#2C1E10",
+      secondary: "#65462A",
     },
   },
 });

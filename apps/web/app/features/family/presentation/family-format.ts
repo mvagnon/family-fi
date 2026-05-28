@@ -2,10 +2,6 @@ export function formatCurrency(value: number): string {
   return currencyFormatter.format(value);
 }
 
-export function formatLineCount(count: number): string {
-  return count > 1 ? `${count} lignes` : "1 ligne";
-}
-
 export function formatRecurrence(months: number): string {
   if (months === 1) {
     return "Chaque mois";

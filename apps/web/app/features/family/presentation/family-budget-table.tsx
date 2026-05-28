@@ -15,11 +15,7 @@ import { alpha } from "@mui/material/styles";
 
 import { getCategoryGroups, getMonthlyRange } from "../domain/family-budget";
 import type { FamilyCategory, RecurringLine } from "../domain/family";
-import {
-  formatCurrency,
-  formatLineCount,
-  formatRecurrence,
-} from "./family-format";
+import { formatCurrency, formatRecurrence } from "./family-format";
 import { EditIcon, PlusIcon } from "./icons";
 
 interface FamilyBudgetTableProps {
@@ -77,7 +73,15 @@ export function FamilyBudgetTable({
           sx={{ minWidth: 980 }}
         >
           <TableHead>
-            <TableRow>
+            <TableRow
+              sx={{
+                "&>*": {
+                  borderTop: 0,
+                  pt: 0,
+                  pb: 1,
+                },
+              }}
+            >
               <TableCell sx={{ width: 300 }}>Intitulé</TableCell>
               <TableCell sx={{ width: 150 }}>Mouvement</TableCell>
               <TableCell sx={{ width: 170 }}>Montant</TableCell>
@@ -112,28 +116,16 @@ export function FamilyBudgetTable({
                         justifyContent: "space-between",
                       }}
                     >
-                      <Box
-                        sx={{
-                          alignItems: "baseline",
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: 1,
-                        }}
-                      >
-                        <Typography sx={{ fontWeight: 800 }}>
-                          {group.label}
-                        </Typography>
-                        <Typography color="text.secondary" variant="body2">
-                          {formatLineCount(group.lines.length)}
-                        </Typography>
-                      </Box>
+                      <Typography sx={{ fontWeight: 800 }}>
+                        {group.label}
+                      </Typography>
                       <Typography
                         sx={{
                           fontWeight: 800,
                           whiteSpace: "nowrap",
                         }}
                       >
-                        Total mensuel : {formatCategoryTotal(group.lines)}
+                        {formatCategoryTotal(group.lines)} par mois
                       </Typography>
                     </Box>
                   </TableCell>
@@ -154,15 +146,16 @@ export function FamilyBudgetTable({
                         {line.title}
                       </Typography>
                       <Typography
-                        color="text.secondary"
-                        sx={{
+                        sx={(theme) => ({
+                          color: alpha(theme.palette.text.secondary, 0.76),
                           display: "-webkit-box",
                           mt: 0.5,
                           overflow: "hidden",
                           textOverflow: "ellipsis",
                           WebkitBoxOrient: "vertical",
-                          WebkitLineClamp: 2,
-                        }}
+                          WebkitLineClamp: 1,
+                        })}
+                        variant="body2"
                       >
                         {line.description}
                       </Typography>

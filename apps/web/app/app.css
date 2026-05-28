@@ -7,10 +7,6 @@
 
 html,
 body {
-  @apply bg-white dark:bg-gray-950;
+  background-color: #FFF8ED;
   font-family: "Sora Variable", "Sora", ui-sans-serif, system-ui, sans-serif;
-
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
-  }
 }

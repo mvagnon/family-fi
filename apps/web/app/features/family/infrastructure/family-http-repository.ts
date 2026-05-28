@@ -1,5 +1,5 @@
-import type { FamilyRepository } from "../application/family-repository";
 import type { Family } from "../domain/family";
+import type { FamilyRepository } from "../domain/family-repository";
 import { FamilyApiError, parseFamilyResponse } from "./family-dto";
 
 interface FamilyHttpRepositoryOptions {
