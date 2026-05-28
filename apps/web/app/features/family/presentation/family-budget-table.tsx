@@ -1,7 +1,9 @@
-import { Fragment } from "react";
-import type { KeyboardEvent } from "react";
+import { Fragment, forwardRef } from "react";
+import type { MouseEvent } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import ButtonBase from "@mui/material/ButtonBase";
+import type { ButtonBaseProps } from "@mui/material/ButtonBase";
 import IconButton from "@mui/material/IconButton";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -49,22 +51,11 @@ export function FamilyBudgetTable({
 }: FamilyBudgetTableProps) {
   const categoryGroups = getCategoryGroups(categories, lines);
 
-  function handleLineClick(line: RecurringLine) {
-    if (!disabled) {
-      onViewLine?.(line);
-    }
-  }
-
-  function handleLineKeyDown(
-    event: KeyboardEvent<HTMLTableRowElement>,
+  function handleLineClick(
+    event: MouseEvent<HTMLElement>,
     line: RecurringLine,
   ) {
-    if (disabled) {
-      return;
-    }
-
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
+    if (!disabled && !isLineActionTarget(event.target)) {
       onViewLine?.(line);
     }
   }
@@ -170,12 +161,13 @@ export function FamilyBudgetTable({
                   <TableRow
                     aria-disabled={disabled || undefined}
                     aria-label={`Voir ${line.title}`}
+                    component={TableRowButton}
+                    disabled={disabled}
                     key={line.id}
-                    onClick={() => handleLineClick(line)}
-                    onKeyDown={(event) => handleLineKeyDown(event, line)}
+                    onClick={(event) => handleLineClick(event, line)}
                     role="button"
                     sx={{
-                      cursor: disabled ? "default" : "pointer",
+                      display: "table-row",
                       "& > .MuiTableCell-root": {
                         transition:
                           "background-color 150ms ease,border-radius 260ms ease",
@@ -220,7 +212,12 @@ export function FamilyBudgetTable({
                     <TableCell>
                       {formatRecurrence(line.recurrenceMonths)}
                     </TableCell>
-                    <TableCell align="right">
+                    <TableCell
+                      align="right"
+                      data-line-action="true"
+                      onClick={(event) => event.stopPropagation()}
+                      onKeyDown={(event) => event.stopPropagation()}
+                    >
                       <Box
                         sx={{
                           display: "flex",
@@ -268,6 +265,22 @@ export function FamilyBudgetTable({
         </Table>
       </TableContainer>
     </Paper>
+  );
+}
+
+const TableRowButton = forwardRef<HTMLTableRowElement, ButtonBaseProps>(
+  function TableRowButton(props, ref) {
+    return <ButtonBase component="tr" ref={ref} {...props} />;
+  },
+);
+
+function isLineActionTarget(target: EventTarget): boolean {
+  const closest = (target as { closest?: (selector: string) => unknown })
+    .closest;
+
+  return (
+    typeof closest === "function" &&
+    Boolean(closest.call(target, "[data-line-action]"))
   );
 }
 

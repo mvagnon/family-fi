@@ -73,6 +73,72 @@ test("family routes delete recurring lines", async () => {
   );
 });
 
+test("family routes create members from names only", async () => {
+  const app = createApiApp({
+    familyRepository: createInMemoryFamilyRepository(),
+  });
+
+  const response = await app.request("/api/family/members", {
+    body: JSON.stringify({ name: "Camille" }),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+  const family = await response.json();
+  const member = family.members.find(
+    (item: { name: string }) => item.name === "Camille",
+  );
+
+  assert.equal(response.status, 201);
+  assert.equal(member?.role, "");
+  assert.equal(
+    family.categories.some(
+      (category: { label: string; ownerId?: string }) =>
+        category.label === "Camille" && category.ownerId === member?.id,
+    ),
+    true,
+  );
+});
+
+test("family routes reject duplicate member names", async () => {
+  const app = createApiApp({
+    familyRepository: createInMemoryFamilyRepository(),
+  });
+
+  await app.request("/api/family");
+
+  const response = await app.request("/api/family/members", {
+    body: JSON.stringify({ name: " léa " }),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 400);
+  assert.deepEqual(body, {
+    message: "Un membre avec ce nom existe déjà.",
+  });
+});
+
+test("family routes reject duplicate category labels", async () => {
+  const app = createApiApp({
+    familyRepository: createInMemoryFamilyRepository(),
+  });
+
+  await app.request("/api/family");
+
+  const response = await app.request("/api/family/categories", {
+    body: JSON.stringify({ label: " budget " }),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 400);
+  assert.deepEqual(body, {
+    message: "Une catégorie avec ce nom existe déjà.",
+  });
+});
+
 test("family routes reject malformed JSON request bodies", async () => {
   const app = createApiApp({
     familyRepository: createInMemoryFamilyRepository(),

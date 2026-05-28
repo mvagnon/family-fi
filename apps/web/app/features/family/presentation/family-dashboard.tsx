@@ -2,6 +2,10 @@ import { useState } from "react";
 import Box from "@mui/material/Box";
 
 import {
+  getDuplicateFamilyCategoryLabelMessage,
+  getDuplicateFamilyMemberNameMessage,
+} from "../application/family-local-commands";
+import {
   createDraftRecurringLine,
   toCreateRecurringLineInput,
   toUpdateRecurringLineInput,
@@ -52,6 +56,10 @@ export function FamilyDashboard({
 }: FamilyDashboardProps) {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
+  const [localError, setLocalError] = useState<{
+    message: string;
+    revision: number;
+  } | null>(null);
   const [lineDialogMode, setLineDialogMode] = useState<"create" | "edit">(
     "edit",
   );
@@ -73,8 +81,19 @@ export function FamilyDashboard({
   }
 
   async function handleSaveCategory(input: CreateFamilyCategoryInput) {
+    const duplicateMessage = getDuplicateFamilyCategoryLabelMessage(
+      family.categories,
+      input.label,
+    );
+
+    if (duplicateMessage) {
+      showLocalError(duplicateMessage);
+      return;
+    }
+
     try {
       await onAddCategory(input);
+      setLocalError(null);
       setIsCategoryModalOpen(false);
     } catch {
       return;
@@ -82,8 +101,18 @@ export function FamilyDashboard({
   }
 
   async function handleSaveMember(input: CreateFamilyMemberInput) {
+    const duplicateMessage =
+      getDuplicateFamilyMemberNameMessage(family.members, input.name) ??
+      getDuplicateFamilyCategoryLabelMessage(family.categories, input.name);
+
+    if (duplicateMessage) {
+      showLocalError(duplicateMessage);
+      return;
+    }
+
     try {
       await onAddMember(input);
+      setLocalError(null);
       setIsMemberModalOpen(false);
     } catch {
       return;
@@ -112,9 +141,19 @@ export function FamilyDashboard({
     }
   }
 
+  function showLocalError(message: string) {
+    setLocalError((currentError) => ({
+      message,
+      revision: (currentError?.revision ?? 0) + 1,
+    }));
+  }
+
   return (
     <FamilyPageShell>
-      <FamilyErrorSnackbar message={mutationError} />
+      <FamilyErrorSnackbar
+        key={localError ? `local-${localError.revision}` : mutationError}
+        message={localError?.message ?? mutationError}
+      />
 
       <FamilySummaryStrip lines={family.recurringLines} />
 

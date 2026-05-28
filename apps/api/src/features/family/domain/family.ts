@@ -1,4 +1,8 @@
 export const DEV_USER_ID = "dev-user";
+export const DUPLICATE_FAMILY_CATEGORY_LABEL_MESSAGE =
+  "Une catégorie avec ce nom existe déjà.";
+export const DUPLICATE_FAMILY_MEMBER_NAME_MESSAGE =
+  "Un membre avec ce nom existe déjà.";
 
 export type {
   CreateFamilyCategoryInput,

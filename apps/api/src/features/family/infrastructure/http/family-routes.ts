@@ -77,9 +77,7 @@ function parseCreateMemberInput(
   value: Record<string, unknown>,
 ): CreateFamilyMemberInput {
   return {
-    categoryLabel: getOptionalString(value, "categoryLabel"),
     name: getString(value, "name"),
-    role: getString(value, "role"),
   };
 }
 

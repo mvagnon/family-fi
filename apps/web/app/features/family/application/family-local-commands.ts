@@ -10,14 +10,23 @@ import type {
 
 export type CreateFamilyEntityId = (prefix: string, label: string) => string;
 
+export const duplicateFamilyCategoryLabelMessage =
+  "Une catégorie avec ce nom existe déjà.";
+export const duplicateFamilyMemberNameMessage =
+  "Un membre avec ce nom existe déjà.";
+
 export function addLocalFamilyCategory(
   family: Family,
   input: CreateFamilyCategoryInput,
   createId: CreateFamilyEntityId,
 ): Family {
+  const label = input.label.trim();
+
+  assertUniqueFamilyCategoryLabel(family.categories, label);
+
   return {
     ...family,
-    categories: [...family.categories, createCategory(input.label, createId)],
+    categories: [...family.categories, createCategory(label, createId)],
   };
 }
 
@@ -26,14 +35,17 @@ export function addLocalFamilyMember(
   input: CreateFamilyMemberInput,
   createId: CreateFamilyEntityId,
 ): Family {
-  const member = createMember(input, createId);
-  const category = input.categoryLabel
-    ? createCategory(input.categoryLabel, createId, member.id)
-    : null;
+  const name = input.name.trim();
+
+  assertUniqueFamilyMemberName(family.members, name);
+  assertUniqueFamilyCategoryLabel(family.categories, name);
+
+  const member = createMember(name, createId);
+  const category = createCategory(name, createId, member.id);
 
   return {
     ...family,
-    categories: category ? [...family.categories, category] : family.categories,
+    categories: [...family.categories, category],
     members: [...family.members, member],
   };
 }
@@ -69,6 +81,28 @@ export function deleteLocalRecurringLine(family: Family, lineId: string): Family
   };
 }
 
+export function getDuplicateFamilyCategoryLabelMessage(
+  categories: FamilyCategory[],
+  label: string,
+): string | undefined {
+  if (hasFamilyCategoryLabel(categories, label)) {
+    return duplicateFamilyCategoryLabelMessage;
+  }
+
+  return undefined;
+}
+
+export function getDuplicateFamilyMemberNameMessage(
+  members: FamilyMember[],
+  name: string,
+): string | undefined {
+  if (hasFamilyMemberName(members, name)) {
+    return duplicateFamilyMemberNameMessage;
+  }
+
+  return undefined;
+}
+
 export function createSluggedFamilyEntityId(
   prefix: string,
   label: string,
@@ -84,14 +118,63 @@ export function createSluggedFamilyEntityId(
   return `${prefix}-${normalizedLabel || "item"}-${suffix}`;
 }
 
+function assertUniqueFamilyCategoryLabel(
+  categories: FamilyCategory[],
+  label: string,
+) {
+  const duplicateMessage = getDuplicateFamilyCategoryLabelMessage(
+    categories,
+    label,
+  );
+
+  if (duplicateMessage) {
+    throw new Error(duplicateMessage);
+  }
+}
+
+function assertUniqueFamilyMemberName(members: FamilyMember[], name: string) {
+  const duplicateMessage = getDuplicateFamilyMemberNameMessage(members, name);
+
+  if (duplicateMessage) {
+    throw new Error(duplicateMessage);
+  }
+}
+
+function hasFamilyCategoryLabel(
+  categories: FamilyCategory[],
+  label: string,
+): boolean {
+  const normalizedLabel = normalizeCategoryLabel(label);
+
+  return categories.some(
+    (category) => normalizeCategoryLabel(category.label) === normalizedLabel,
+  );
+}
+
+function normalizeCategoryLabel(label: string): string {
+  return label.trim().toLocaleLowerCase("fr-FR");
+}
+
+function hasFamilyMemberName(members: FamilyMember[], name: string): boolean {
+  const normalizedName = normalizeMemberName(name);
+
+  return members.some(
+    (member) => normalizeMemberName(member.name) === normalizedName,
+  );
+}
+
+function normalizeMemberName(name: string): string {
+  return name.trim().toLocaleLowerCase("fr-FR");
+}
+
 function createMember(
-  input: CreateFamilyMemberInput,
+  name: string,
   createId: CreateFamilyEntityId,
 ): FamilyMember {
   return {
-    id: createId("member", input.name),
-    name: input.name,
-    role: input.role,
+    id: createId("member", name),
+    name,
+    role: "",
   };
 }
 

@@ -32,15 +32,13 @@ test("adds a non-user member and creates the linked professional category", asyn
   });
 
   const family = await service.addMember({
-    categoryLabel: "Camille",
     name: "Camille",
-    role: "Parent",
   });
 
   const member = family.members.find((item) => item.name === "Camille");
 
   assert.ok(member);
-  assert.equal(member.role, "Parent");
+  assert.equal(member.role, "");
   assert.equal(
     family.categories.some(
       (category) =>
@@ -49,6 +47,34 @@ test("adds a non-user member and creates the linked professional category", asyn
         category.ownerId === member.id,
     ),
     true,
+  );
+});
+
+test("rejects duplicate member names", async () => {
+  const repository = createInMemoryFamilyRepository();
+  const service = new FamilyService(repository, {
+    createId: () => "unused-id",
+  });
+
+  await service.getFamilyForCurrentUser();
+
+  await assert.rejects(
+    () => service.addMember({ name: " léa " }),
+    /Un membre avec ce nom existe déjà\./,
+  );
+});
+
+test("rejects duplicate category labels", async () => {
+  const repository = createInMemoryFamilyRepository();
+  const service = new FamilyService(repository, {
+    createId: () => "unused-id",
+  });
+
+  await service.getFamilyForCurrentUser();
+
+  await assert.rejects(
+    () => service.addCategory({ label: " budget " }),
+    /Une catégorie avec ce nom existe déjà\./,
   );
 });
 

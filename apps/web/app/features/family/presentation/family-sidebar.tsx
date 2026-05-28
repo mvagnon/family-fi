@@ -89,9 +89,11 @@ export function FamilySidebar({
               </Avatar>
               <Box sx={{ minWidth: 0 }}>
                 <Typography sx={{ fontWeight: 800 }}>{member.name}</Typography>
-                <Typography color="text.secondary" variant="body2">
-                  {member.role}
-                </Typography>
+                {member.role ? (
+                  <Typography color="text.secondary" variant="body2">
+                    {member.role}
+                  </Typography>
+                ) : null}
               </Box>
             </Box>
           ))}
@@ -134,8 +136,8 @@ export function FamilySidebar({
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1.25 }}>
           {professionalCategories.map((category) => (
             <Chip
-              color="secondary"
-              key={category.id}
+              color="primary"
+              key={getCategoryChipKey(category)}
               label={category.label}
             />
           ))}
@@ -143,4 +145,8 @@ export function FamilySidebar({
       </Paper>
     </Stack>
   );
+}
+
+function getCategoryChipKey(category: FamilyCategory): string {
+  return `${category.kind}-${category.ownerId ?? category.id.replace(/^pro-/, "")}`;
 }

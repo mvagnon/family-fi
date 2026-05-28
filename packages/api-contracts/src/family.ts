@@ -35,9 +35,7 @@ export interface Family {
 }
 
 export interface CreateFamilyMemberInput {
-  categoryLabel?: string;
   name: string;
-  role: string;
 }
 
 export interface CreateFamilyCategoryInput {

@@ -27,12 +27,9 @@ export function FamilyMemberModal({
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
-    const name = getStringValue(formData, "name", "Camille");
 
     onSave({
-      categoryLabel: getStringValue(formData, "categoryLabel", name),
-      name,
-      role: getStringValue(formData, "role", "Parent"),
+      name: getStringValue(formData, "name", "Camille"),
     });
   }
 
@@ -53,24 +50,8 @@ export function FamilyMemberModal({
             disabled={isSaving}
             fullWidth
             id="new-member-name"
-            label="Prénom"
+            label="Nom"
             name="name"
-          />
-          <TextField
-            defaultValue="Parent"
-            disabled={isSaving}
-            fullWidth
-            id="new-member-role"
-            label="Rôle"
-            name="role"
-          />
-          <TextField
-            defaultValue="Camille"
-            disabled={isSaving}
-            fullWidth
-            id="new-member-category"
-            label="Catégorie"
-            name="categoryLabel"
           />
         </Stack>
       </DialogContent>

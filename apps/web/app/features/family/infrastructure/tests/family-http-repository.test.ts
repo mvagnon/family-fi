@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import type { CreateFamilyCategoryInput } from "../../domain/family";
+import type {
+  CreateFamilyCategoryInput,
+  CreateFamilyMemberInput,
+} from "../../domain/family";
 import {
   createFamilyHttpRepository,
   FamilyApiError,
@@ -47,6 +50,29 @@ test("posts family category metadata through the HTTP repository", async () => {
 
   assert.equal(requests.length, 1);
   assert.equal(requests[0]?.url, "http://api.test/api/family/categories");
+  assert.equal(requests[0]?.method, "POST");
+  assert.deepEqual(await requests[0]?.json(), input);
+});
+
+test("posts family member names through the HTTP repository", async () => {
+  const requests: Request[] = [];
+  const repository = createFamilyHttpRepository({
+    apiBaseUrl: "http://api.test/",
+    fetcher: async (input, init) => {
+      const request = new Request(input, init);
+      requests.push(request);
+
+      return Response.json(familyResponse);
+    },
+  });
+  const input: CreateFamilyMemberInput = {
+    name: "Camille",
+  };
+
+  await repository.addMember(input);
+
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0]?.url, "http://api.test/api/family/members");
   assert.equal(requests[0]?.method, "POST");
   assert.deepEqual(await requests[0]?.json(), input);
 });

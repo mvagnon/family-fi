@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 
 import {
   DEV_USER_ID,
+  DUPLICATE_FAMILY_CATEGORY_LABEL_MESSAGE,
+  DUPLICATE_FAMILY_MEMBER_NAME_MESSAGE,
   InvalidFamilyInputError,
   RecurringLineNotFoundError,
 } from "../domain/family.js";
@@ -9,6 +11,8 @@ import type {
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
   CreateRecurringLineInput,
+  FamilyCategory,
+  FamilyMember,
   FamilySnapshot,
   RecurringLine,
   UpdateRecurringLineInput,
@@ -40,7 +44,10 @@ export class FamilyService {
   async addMember(input: CreateFamilyMemberInput): Promise<FamilySnapshot> {
     const family = await this.getOrCreateFamily();
     const name = requireText(input.name, "Member name is required.");
-    const role = requireText(input.role, "Member role is required.");
+
+    assertUniqueMemberName(family.members, name);
+    assertUniqueCategoryLabel(family.categories, name);
+
     const memberId = this.createUniqueId(
       "member",
       name,
@@ -49,24 +56,21 @@ export class FamilyService {
     const member = {
       id: memberId,
       name,
-      role,
+      role: "",
     };
-    const categoryLabel = input.categoryLabel?.trim();
-    const categories = categoryLabel
-      ? [
-          ...family.categories,
-          {
-            id: this.createUniqueId(
-              "category",
-              categoryLabel,
-              family.categories.map((category) => category.id),
-            ),
-            kind: "professional" as const,
-            label: categoryLabel,
-            ownerId: memberId,
-          },
-        ]
-      : family.categories;
+    const categories = [
+      ...family.categories,
+      {
+        id: this.createUniqueId(
+          "category",
+          name,
+          family.categories.map((category) => category.id),
+        ),
+        kind: "professional" as const,
+        label: name,
+        ownerId: memberId,
+      },
+    ];
 
     return this.repository.saveFamily({
       ...family,
@@ -78,6 +82,8 @@ export class FamilyService {
   async addCategory(input: CreateFamilyCategoryInput): Promise<FamilySnapshot> {
     const family = await this.getOrCreateFamily();
     const label = requireText(input.label, "Category label is required.");
+
+    assertUniqueCategoryLabel(family.categories, label);
 
     return this.repository.saveFamily({
       ...family,
@@ -177,6 +183,39 @@ export class FamilyService {
 
     return `${baseId}-${suffix}`;
   }
+}
+
+function assertUniqueCategoryLabel(
+  categories: FamilyCategory[],
+  label: string,
+) {
+  const normalizedLabel = normalizeCategoryLabel(label);
+  const hasDuplicate = categories.some(
+    (category) => normalizeCategoryLabel(category.label) === normalizedLabel,
+  );
+
+  if (hasDuplicate) {
+    throw new InvalidFamilyInputError(DUPLICATE_FAMILY_CATEGORY_LABEL_MESSAGE);
+  }
+}
+
+function assertUniqueMemberName(members: FamilyMember[], name: string) {
+  const normalizedName = normalizeMemberName(name);
+  const hasDuplicate = members.some(
+    (member) => normalizeMemberName(member.name) === normalizedName,
+  );
+
+  if (hasDuplicate) {
+    throw new InvalidFamilyInputError(DUPLICATE_FAMILY_MEMBER_NAME_MESSAGE);
+  }
+}
+
+function normalizeCategoryLabel(label: string): string {
+  return label.trim().toLocaleLowerCase("fr-FR");
+}
+
+function normalizeMemberName(name: string): string {
+  return name.trim().toLocaleLowerCase("fr-FR");
 }
 
 function normalizeRecurringLine(line: RecurringLine): RecurringLine {

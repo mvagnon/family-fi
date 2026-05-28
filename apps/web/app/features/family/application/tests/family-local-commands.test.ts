@@ -32,21 +32,35 @@ const family: Family = {
 test("adds a local member with its linked professional category", () => {
   const result = addLocalFamilyMember(
     family,
-    {
-      categoryLabel: "Camille Pro",
-      name: "Camille",
-      role: "Parent",
-    },
+    { name: "Camille" },
     (prefix, label) => `${prefix}-${label}`,
   );
 
   assert.equal(result.members[0]?.id, "member-Camille");
+  assert.equal(result.members[0]?.name, "Camille");
   assert.deepEqual(result.categories[1], {
-    id: "category-Camille Pro",
+    id: "category-Camille",
     kind: "professional",
-    label: "Camille Pro",
+    label: "Camille",
     ownerId: "member-Camille",
   });
+});
+
+test("rejects duplicate local member names", () => {
+  const familyWithMember: Family = {
+    ...family,
+    members: [{ id: "camille", name: "Camille", role: "" }],
+  };
+
+  assert.throws(
+    () =>
+      addLocalFamilyMember(
+        familyWithMember,
+        { name: " camille " },
+        (prefix, label) => `${prefix}-${label}`,
+      ),
+    /Un membre avec ce nom existe déjà\./,
+  );
 });
 
 test("adds and updates local recurring lines without mutating the source family", () => {
@@ -82,6 +96,18 @@ test("adds and updates local recurring lines without mutating the source family"
   assert.equal(withCategory.categories.at(-1)?.label, "Santé");
   assert.equal(withLine.recurringLines.at(-1)?.id, "line-mutuelle");
   assert.equal(updated.recurringLines.at(-1)?.amount, 75);
+});
+
+test("rejects duplicate local category labels", () => {
+  assert.throws(
+    () =>
+      addLocalFamilyCategory(
+        family,
+        { label: " budget " },
+        (prefix, label) => `${prefix}-${label}`,
+      ),
+    /Une catégorie avec ce nom existe déjà\./,
+  );
 });
 
 test("deletes a local recurring line without mutating the source family", () => {
