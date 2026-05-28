@@ -5,13 +5,11 @@ export const familyMembers: FamilyMember[] = [
     id: "lea",
     name: "Léa",
     role: "Parent",
-    professionalCategory: "Pro. Léa",
   },
   {
     id: "marc",
     name: "Marc",
     role: "Parent",
-    professionalCategory: "Pro. Marc",
   },
 ];
 
@@ -20,8 +18,8 @@ export const familyCategories: FamilyCategory[] = [
   { id: "heart", label: "Cœur", kind: "shared" },
   { id: "credit", label: "Crédit", kind: "shared" },
   { id: "leisure", label: "Loisir", kind: "shared" },
-  { id: "pro-lea", label: "Pro. Léa", kind: "professional", ownerId: "lea" },
-  { id: "pro-marc", label: "Pro. Marc", kind: "professional", ownerId: "marc" },
+  { id: "pro-lea", label: "Léa", kind: "professional", ownerId: "lea" },
+  { id: "pro-marc", label: "Marc", kind: "professional", ownerId: "marc" },
 ];
 
 export const recurringLines: RecurringLine[] = [

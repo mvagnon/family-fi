@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
@@ -10,9 +11,14 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
+import { alpha } from "@mui/material/styles";
 
 import { EditIcon, PlusIcon } from "./icons";
-import { formatCurrency, formatRecurrence } from "./preview-format";
+import {
+  formatCurrency,
+  formatRecurrence,
+  getMonthlyValue,
+} from "./preview-format";
 import type { FamilyCategory, RecurringLine } from "./types";
 
 interface FamilyBudgetTableProps {
@@ -28,9 +34,7 @@ export function FamilyBudgetTable({
   onAddLine,
   onEditLine,
 }: FamilyBudgetTableProps) {
-  const getCategoryLabel = (categoryId: string) =>
-    categories.find((category) => category.id === categoryId)?.label ??
-    categoryId;
+  const categoryGroups = getCategoryGroups(categories, lines);
 
   return (
     <Paper
@@ -71,7 +75,6 @@ export function FamilyBudgetTable({
           <TableHead>
             <TableRow>
               <TableCell sx={{ width: 300 }}>Intitulé</TableCell>
-              <TableCell sx={{ width: 180 }}>Catégorie</TableCell>
               <TableCell sx={{ width: 150 }}>Mouvement</TableCell>
               <TableCell sx={{ width: 170 }}>Montant</TableCell>
               <TableCell sx={{ width: 190 }}>Estimation</TableCell>
@@ -82,59 +85,200 @@ export function FamilyBudgetTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {lines.map((line) => (
-              <TableRow
-                hover
-                key={line.id}
-                sx={{
-                  "& > td:not(:first-of-type)": { verticalAlign: "middle" },
-                }}
-              >
-                <TableCell>
-                  <Typography sx={{ fontWeight: 800 }}>{line.title}</Typography>
-                  <Typography
-                    color="text.secondary"
+            {categoryGroups.map((group) => (
+              <Fragment key={group.id}>
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    component="th"
+                    scope="rowgroup"
+                    sx={(theme) => ({
+                      bgcolor: alpha(theme.palette.primary.main, 0.08),
+                      borderTop: "1px solid",
+                      borderTopColor: "divider",
+                      py: 1.25,
+                    })}
+                  >
+                    <Box
+                      sx={{
+                        alignItems: { sm: "center", xs: "flex-start" },
+                        display: "flex",
+                        flexDirection: { sm: "row", xs: "column" },
+                        gap: 0.75,
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          alignItems: "baseline",
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: 1,
+                        }}
+                      >
+                        <Typography sx={{ fontWeight: 800 }}>
+                          {group.label}
+                        </Typography>
+                        <Typography color="text.secondary" variant="body2">
+                          {formatLineCount(group.lines.length)}
+                        </Typography>
+                      </Box>
+                      <Typography
+                        sx={{
+                          fontWeight: 800,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        Total mensuel : {formatCategoryTotal(group.lines)}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+
+                {group.lines.map((line) => (
+                  <TableRow
+                    hover
+                    key={line.id}
                     sx={{
-                      display: "-webkit-box",
-                      mt: 0.5,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      WebkitBoxOrient: "vertical",
-                      WebkitLineClamp: 2,
+                      "& > td:not(:first-of-type)": {
+                        verticalAlign: "middle",
+                      },
                     }}
                   >
-                    {line.description}
-                  </Typography>
-                </TableCell>
-                <TableCell>{getCategoryLabel(line.categoryId)}</TableCell>
-                <TableCell>
-                  {line.movement === "positive" ? "Entrée" : "Sortie"}
-                </TableCell>
-                <TableCell>
-                  {line.isEstimate
-                    ? `${formatCurrency(line.minAmount ?? line.amount)} à ${formatCurrency(
-                        line.maxAmount ?? line.amount,
-                      )}`
-                    : formatCurrency(line.amount)}
-                </TableCell>
-                <TableCell>{line.isEstimate ? "Oui" : "Non"}</TableCell>
-                <TableCell>{formatRecurrence(line.recurrenceMonths)}</TableCell>
-                <TableCell align="right">
-                  <Tooltip title="Modifier la ligne">
-                    <IconButton
-                      aria-label={`Modifier ${line.title}`}
-                      onClick={() => onEditLine(line)}
-                      size="small"
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </TableCell>
-              </TableRow>
+                    <TableCell>
+                      <Typography sx={{ fontWeight: 800 }}>
+                        {line.title}
+                      </Typography>
+                      <Typography
+                        color="text.secondary"
+                        sx={{
+                          display: "-webkit-box",
+                          mt: 0.5,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          WebkitBoxOrient: "vertical",
+                          WebkitLineClamp: 2,
+                        }}
+                      >
+                        {line.description}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      {line.movement === "positive" ? "Entrée" : "Sortie"}
+                    </TableCell>
+                    <TableCell>
+                      {line.isEstimate
+                        ? `${formatCurrency(line.minAmount ?? line.amount)} à ${formatCurrency(
+                            line.maxAmount ?? line.amount,
+                          )}`
+                        : formatCurrency(line.amount)}
+                    </TableCell>
+                    <TableCell>{line.isEstimate ? "Oui" : "Non"}</TableCell>
+                    <TableCell>
+                      {formatRecurrence(line.recurrenceMonths)}
+                    </TableCell>
+                    <TableCell align="right">
+                      <Tooltip title="Modifier la ligne">
+                        <IconButton
+                          aria-label={`Modifier ${line.title}`}
+                          onClick={() => onEditLine(line)}
+                          size="small"
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </Fragment>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
     </Paper>
   );
+}
+
+interface CategoryGroup {
+  id: string;
+  label: string;
+  lines: RecurringLine[];
+}
+
+function getCategoryGroups(
+  categories: FamilyCategory[],
+  lines: RecurringLine[],
+): CategoryGroup[] {
+  const linesByCategory = new Map<string, RecurringLine[]>();
+
+  for (const line of lines) {
+    const categoryLines = linesByCategory.get(line.categoryId) ?? [];
+    categoryLines.push(line);
+    linesByCategory.set(line.categoryId, categoryLines);
+  }
+
+  const knownCategoryIds = new Set(categories.map((category) => category.id));
+  const knownGroups = categories.flatMap((category) => {
+    const categoryLines = linesByCategory.get(category.id);
+
+    if (!categoryLines?.length) {
+      return [];
+    }
+
+    return [
+      {
+        id: category.id,
+        label: category.label,
+        lines: categoryLines,
+      },
+    ];
+  });
+  const orphanGroups = Array.from(linesByCategory.entries()).flatMap(
+    ([categoryId, categoryLines]) => {
+      if (knownCategoryIds.has(categoryId)) {
+        return [];
+      }
+
+      return [
+        {
+          id: categoryId,
+          label: categoryId,
+          lines: categoryLines,
+        },
+      ];
+    },
+  );
+
+  return [...knownGroups, ...orphanGroups];
+}
+
+function formatCategoryTotal(lines: RecurringLine[]): string {
+  const total = lines.reduce(
+    (summary, line) => {
+      const minAmount = line.isEstimate
+        ? (line.minAmount ?? line.amount)
+        : line.amount;
+      const maxAmount = line.isEstimate
+        ? (line.maxAmount ?? line.amount)
+        : line.amount;
+      const minMonthlyValue = getMonthlyValue(line, minAmount);
+      const maxMonthlyValue = getMonthlyValue(line, maxAmount);
+
+      return {
+        high: summary.high + Math.max(minMonthlyValue, maxMonthlyValue),
+        low: summary.low + Math.min(minMonthlyValue, maxMonthlyValue),
+      };
+    },
+    { high: 0, low: 0 },
+  );
+
+  if (total.low === total.high) {
+    return formatCurrency(total.low);
+  }
+
+  return `${formatCurrency(total.low)} à ${formatCurrency(total.high)}`;
+}
+
+function formatLineCount(count: number): string {
+  return count > 1 ? `${count} lignes` : "1 ligne";
 }

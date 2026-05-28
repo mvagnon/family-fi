@@ -31,10 +31,10 @@ export function FamilyMemberModal({ onClose, open }: FamilyMemberModalProps) {
             label="Rôle"
           />
           <TextField
-            defaultValue="Pro. Camille"
+            defaultValue="Camille"
             fullWidth
             id="new-member-category"
-            label="Catégorie pro."
+            label="Catégorie"
           />
         </Stack>
       </DialogContent>

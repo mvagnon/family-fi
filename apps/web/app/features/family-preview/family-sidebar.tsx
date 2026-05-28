@@ -86,12 +86,6 @@ export function FamilySidebar({
                 <Typography color="text.secondary" variant="body2">
                   {member.role}
                 </Typography>
-                <Chip
-                  label={member.professionalCategory}
-                  size="small"
-                  sx={{ mt: 1 }}
-                  variant="outlined"
-                />
               </Box>
             </Box>
           ))}

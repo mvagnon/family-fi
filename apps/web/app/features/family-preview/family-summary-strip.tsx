@@ -10,42 +10,31 @@ interface FamilySummaryStripProps {
 }
 
 export function FamilySummaryStrip({ lines }: FamilySummaryStripProps) {
-  const totals = lines.reduce(
-    (summary, line) => {
-      const minAmount = line.isEstimate
-        ? (line.minAmount ?? line.amount)
-        : line.amount;
-      const maxAmount = line.isEstimate
-        ? (line.maxAmount ?? line.amount)
-        : line.amount;
+  const monthlyTotals = getPeriodTotals(lines);
+  const annualTotals = {
+    avg: monthlyTotals.avg * 12,
+    max: monthlyTotals.max * 12,
+    min: monthlyTotals.min * 12,
+  };
 
-      return {
-        max: summary.max + getMonthlyValue(line, maxAmount),
-        min: summary.min + getMonthlyValue(line, minAmount),
-      };
-    },
-    { max: 0, min: 0 },
-  );
-
-  const summaryItems = [
-    { label: "Mensuel min.", value: formatCurrency(totals.min) },
-    { label: "Mensuel max.", value: formatCurrency(totals.max) },
-    { label: "Lignes", value: String(lines.length) },
+  const summaryCards = [
+    { label: "Mensuel", totals: monthlyTotals },
+    { label: "Annuel", totals: annualTotals },
   ];
 
   return (
     <Box
-      aria-label="Résumé mensuel du foyer"
+      aria-label="Résumé du foyer"
       sx={{
         display: "grid",
         gap: 1.5,
         gridTemplateColumns: {
-          xs: "repeat(2, minmax(0, 1fr))",
-          md: "repeat(3, minmax(0, 1fr))",
+          md: "repeat(2, minmax(0, 1fr))",
+          xs: "minmax(0, 1fr)",
         },
       }}
     >
-      {summaryItems.map((item) => (
+      {summaryCards.map((item) => (
         <Paper
           component="section"
           key={item.label}
@@ -57,19 +46,70 @@ export function FamilySummaryStrip({ lines }: FamilySummaryStripProps) {
           <Typography color="text.secondary" variant="overline">
             {item.label}
           </Typography>
-          <Typography
+          <Box
             sx={{
-              fontFamily: '"Fraunces Variable", "Fraunces", serif',
-              fontSize: { md: "2rem", xs: "1.55rem" },
-              fontWeight: 760,
-              lineHeight: 1,
-              mt: 0.75,
+              display: "grid",
+              gap: 1.5,
+              gridTemplateColumns: {
+                sm: "repeat(3, minmax(0, 1fr))",
+                xs: "minmax(0, 1fr)",
+              },
+              mt: 1,
             }}
           >
-            {item.value}
-          </Typography>
+            {[
+              { label: "Min.", value: item.totals.min },
+              { label: "Max.", value: item.totals.max },
+              { label: "Moy.", value: item.totals.avg },
+            ].map((metric) => (
+              <Box key={metric.label}>
+                <Typography color="text.secondary" variant="body2">
+                  {metric.label}
+                </Typography>
+                <Typography
+                  sx={{
+                    fontFamily: '"Fraunces Variable", "Fraunces", serif',
+                    fontSize: { md: "1.7rem", xs: "1.45rem" },
+                    fontWeight: 760,
+                    lineHeight: 1,
+                    mt: 0.5,
+                  }}
+                >
+                  {formatCurrency(metric.value)}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
         </Paper>
       ))}
     </Box>
+  );
+}
+
+interface PeriodTotals {
+  avg: number;
+  max: number;
+  min: number;
+}
+
+function getPeriodTotals(lines: RecurringLine[]): PeriodTotals {
+  return lines.reduce(
+    (summary, line) => {
+      const minAmount = line.isEstimate
+        ? (line.minAmount ?? line.amount)
+        : line.amount;
+      const maxAmount = line.isEstimate
+        ? (line.maxAmount ?? line.amount)
+        : line.amount;
+      const minMonthlyValue = getMonthlyValue(line, minAmount);
+      const maxMonthlyValue = getMonthlyValue(line, maxAmount);
+
+      return {
+        avg: summary.avg + (minMonthlyValue + maxMonthlyValue) / 2,
+        max: summary.max + Math.max(minMonthlyValue, maxMonthlyValue),
+        min: summary.min + Math.min(minMonthlyValue, maxMonthlyValue),
+      };
+    },
+    { avg: 0, max: 0, min: 0 },
   );
 }

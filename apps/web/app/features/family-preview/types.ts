@@ -4,7 +4,6 @@ export interface FamilyMember {
   id: string;
   name: string;
   role: string;
-  professionalCategory: string;
 }
 
 export interface FamilyCategory {
