@@ -6,6 +6,8 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import "@fontsource-variable/sora/wght.css";
+import "@fontsource-variable/fraunces/wght.css";
 
 import type { Route } from "./+types/root";
 import "./app.css";
