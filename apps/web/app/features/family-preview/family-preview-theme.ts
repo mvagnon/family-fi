@@ -1,6 +1,9 @@
 import { createTheme } from "@mui/material/styles";
+import type { ThemeOptions } from "@mui/material/styles";
 
-export const familyPreviewTheme = createTheme({
+import { sharedThemeOptions } from "~/theme";
+
+const familyPreviewThemeOptions = {
   cssVariables: true,
   palette: {
     mode: "light",
@@ -60,14 +63,6 @@ export const familyPreviewTheme = createTheme({
     },
   },
   components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          boxShadow: "none",
-        },
-      },
-    },
     MuiChip: {
       styleOverrides: {
         root: {
@@ -132,5 +127,14 @@ export const familyPreviewTheme = createTheme({
         variant: "outlined",
       },
     },
+  },
+} satisfies ThemeOptions;
+
+export const familyPreviewTheme = createTheme({
+  ...sharedThemeOptions,
+  ...familyPreviewThemeOptions,
+  components: {
+    ...sharedThemeOptions.components,
+    ...familyPreviewThemeOptions.components,
   },
 });

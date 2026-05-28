@@ -1,5 +1,5 @@
 import Box from "@mui/material/Box";
-import Chip from "@mui/material/Chip";
+import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -11,19 +11,21 @@ import TableRow from "@mui/material/TableRow";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 
-import { EditIcon } from "./icons";
+import { EditIcon, PlusIcon } from "./icons";
 import { formatCurrency, formatRecurrence } from "./preview-format";
 import type { FamilyCategory, RecurringLine } from "./types";
 
 interface FamilyBudgetTableProps {
   categories: FamilyCategory[];
   lines: RecurringLine[];
+  onAddLine: () => void;
   onEditLine: (line: RecurringLine) => void;
 }
 
 export function FamilyBudgetTable({
   categories,
   lines,
+  onAddLine,
   onEditLine,
 }: FamilyBudgetTableProps) {
   const getCategoryLabel = (categoryId: string) =>
@@ -50,11 +52,14 @@ export function FamilyBudgetTable({
           <Typography id="family-budget-title" variant="h2">
             Budget récurrent
           </Typography>
-          <Typography color="text.secondary" sx={{ mt: 0.75 }} variant="body2">
-            {lines.length} lignes de revenus et dépenses
-          </Typography>
         </Box>
-        <Chip color="secondary" label="Tableau de configuration" />
+        <Button
+          onClick={onAddLine}
+          startIcon={<PlusIcon />}
+          variant="contained"
+        >
+          Ajouter une ligne
+        </Button>
       </Box>
 
       <TableContainer sx={{ maxWidth: "100%", overflowX: "auto" }}>
@@ -78,10 +83,26 @@ export function FamilyBudgetTable({
           </TableHead>
           <TableBody>
             {lines.map((line) => (
-              <TableRow hover key={line.id}>
+              <TableRow
+                hover
+                key={line.id}
+                sx={{
+                  "& > td:not(:first-of-type)": { verticalAlign: "middle" },
+                }}
+              >
                 <TableCell>
                   <Typography sx={{ fontWeight: 800 }}>{line.title}</Typography>
-                  <Typography color="text.secondary" sx={{ mt: 0.5 }}>
+                  <Typography
+                    color="text.secondary"
+                    sx={{
+                      display: "-webkit-box",
+                      mt: 0.5,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      WebkitBoxOrient: "vertical",
+                      WebkitLineClamp: 2,
+                    }}
+                  >
                     {line.description}
                   </Typography>
                 </TableCell>

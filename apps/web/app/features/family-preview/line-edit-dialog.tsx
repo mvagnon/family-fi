@@ -20,6 +20,7 @@ const recurrenceOptions = [1, 2, 3, 6, 12];
 interface LineEditDialogProps {
   categories: FamilyCategory[];
   line: RecurringLine | null;
+  mode: "create" | "edit";
   onClose: () => void;
   onSave: (line: RecurringLine) => void;
   open: boolean;
@@ -28,6 +29,7 @@ interface LineEditDialogProps {
 export function LineEditDialog({
   categories,
   line,
+  mode,
   onClose,
   onSave,
   open,
@@ -76,7 +78,9 @@ export function LineEditDialog({
 
   return (
     <Dialog fullWidth maxWidth="md" onClose={onClose} open={open}>
-      <DialogTitle>Modifier une ligne</DialogTitle>
+      <DialogTitle>
+        {mode === "create" ? "Ajouter une ligne" : "Modifier une ligne"}
+      </DialogTitle>
       <Box component="form" onSubmit={handleSubmit}>
         <DialogContent>
           <Stack spacing={2.25} sx={{ pt: 1 }}>
@@ -200,7 +204,7 @@ export function LineEditDialog({
             Annuler
           </Button>
           <Button type="submit" variant="contained">
-            Enregistrer
+            {mode === "create" ? "Ajouter" : "Enregistrer"}
           </Button>
         </DialogActions>
       </Box>

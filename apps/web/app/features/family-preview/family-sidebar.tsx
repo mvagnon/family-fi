@@ -13,12 +13,14 @@ import type { FamilyCategory, FamilyMember } from "./types";
 interface FamilySidebarProps {
   categories: FamilyCategory[];
   members: FamilyMember[];
+  onAddCategory: () => void;
   onAddMember: () => void;
 }
 
 export function FamilySidebar({
   categories,
   members,
+  onAddCategory,
   onAddMember,
 }: FamilySidebarProps) {
   const sharedCategories = categories.filter(
@@ -101,12 +103,27 @@ export function FamilySidebar({
         component="section"
         sx={{ p: { md: 2.5, xs: 2 } }}
       >
-        <Typography id="family-categories-title" variant="h3">
-          Catégories
-        </Typography>
-        <Typography color="text.secondary" sx={{ mt: 0.5 }} variant="body2">
-          Socle commun et catégories pro.
-        </Typography>
+        <Stack
+          direction="row"
+          sx={{ alignItems: "center", justifyContent: "space-between" }}
+        >
+          <Box>
+            <Typography id="family-categories-title" variant="h3">
+              Catégories
+            </Typography>
+            <Typography color="text.secondary" variant="body2">
+              Noms utilisés pour classer les lignes.
+            </Typography>
+          </Box>
+          <Tooltip title="Ajouter une catégorie">
+            <IconButton
+              aria-label="Ajouter une catégorie"
+              onClick={onAddCategory}
+            >
+              <PlusIcon />
+            </IconButton>
+          </Tooltip>
+        </Stack>
 
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 2 }}>
           {sharedCategories.map((category) => (

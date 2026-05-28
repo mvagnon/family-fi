@@ -20,19 +20,17 @@ export function FamilySummaryStrip({ lines }: FamilySummaryStripProps) {
         : line.amount;
 
       return {
-        estimates: summary.estimates + (line.isEstimate ? 1 : 0),
         max: summary.max + getMonthlyValue(line, maxAmount),
         min: summary.min + getMonthlyValue(line, minAmount),
       };
     },
-    { estimates: 0, max: 0, min: 0 },
+    { max: 0, min: 0 },
   );
 
   const summaryItems = [
     { label: "Mensuel min.", value: formatCurrency(totals.min) },
     { label: "Mensuel max.", value: formatCurrency(totals.max) },
     { label: "Lignes", value: String(lines.length) },
-    { label: "Estimations", value: String(totals.estimates) },
   ];
 
   return (
@@ -43,7 +41,7 @@ export function FamilySummaryStrip({ lines }: FamilySummaryStripProps) {
         gap: 1.5,
         gridTemplateColumns: {
           xs: "repeat(2, minmax(0, 1fr))",
-          md: "repeat(4, minmax(0, 1fr))",
+          md: "repeat(3, minmax(0, 1fr))",
         },
       }}
     >
