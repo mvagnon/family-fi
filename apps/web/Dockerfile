@@ -3,6 +3,18 @@ WORKDIR /app
 ENV CI=1
 ENV TURBO_TELEMETRY_DISABLED=1
 
+FROM base AS development
+ARG VITE_API_BASE_URL=http://localhost:3000
+ENV NODE_ENV=development
+ENV HOST=0.0.0.0
+ENV PORT=5173
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+COPY . .
+RUN bun install --frozen-lockfile
+WORKDIR /app/apps/web
+EXPOSE 5173
+CMD ["bun", "run", "react-router", "dev", "--host", "0.0.0.0", "--port", "5173"]
+
 FROM base AS pruner
 COPY . .
 RUN bun install --frozen-lockfile

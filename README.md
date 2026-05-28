@@ -24,13 +24,23 @@ bun run dev:client
 
 ## Docker
 
-Run the full stack with PostgreSQL, Prisma migrations, API, and web:
+Run the development stack with PostgreSQL, Prisma migrations, API, web, and
+bind-mounted source files:
 
 ```bash
 docker compose up --build
 ```
 
 Then open `http://localhost:5173/family`.
+Changes in `apps/web`, `apps/api`, and shared packages are mounted into the
+containers and reload without rebuilding the images.
+
+If dependencies change, recreate the Docker dependency volumes:
+
+```bash
+docker compose down -v
+docker compose up --build
+```
 
 Build one image from the repository root:
 

@@ -27,7 +27,16 @@ Routes compose infrastructure adapters with presentation entry points.
 
 ## Docker
 
-Run from the repository root:
+Run the dev stack with hot reload from the repository root:
+
+```bash
+docker compose up --build web
+```
+
+The web source is bind-mounted into the container. Rebuild only when
+dependencies change.
+
+Build the production image from the repository root:
 
 ```bash
 docker build \

@@ -32,11 +32,24 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
+      target: development
+    command:
+      [
+        "sh",
+        "-lc",
+        "cd /app && bun install --frozen-lockfile && cd /app/apps/api && bun run prisma generate && bun --watch src/index.ts",
+      ]
     environment:
+      CHOKIDAR_USEPOLLING: "true"
       DATABASE_URL: postgresql://family_fi:family_fi@db:5432/family_fi
       PORT: "3000"
     ports:
       - "3000:3000"
+    volumes:
+      - .:/app
+      - root-node-modules:/app/node_modules
+      - api-node-modules:/app/apps/api/node_modules
+      - api-generated-prisma:/app/apps/api/src/generated/prisma
     depends_on:
       db:
         condition: service_healthy
@@ -47,16 +60,33 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      target: development
       args:
         VITE_API_BASE_URL: http://localhost:3000
+    command:
+      [
+        "sh",
+        "-lc",
+        "cd /app && bun install --frozen-lockfile && cd /app/apps/web && bun run react-router dev --host 0.0.0.0 --port 5173",
+      ]
     environment:
+      CHOKIDAR_USEPOLLING: "true"
       HOST: 0.0.0.0
       PORT: "5173"
+      VITE_API_BASE_URL: http://localhost:3000
     ports:
       - "5173:5173"
+    volumes:
+      - .:/app
+      - root-node-modules:/app/node_modules
+      - web-node-modules:/app/apps/web/node_modules
     depends_on:
       api:
         condition: service_started
 
 volumes:
+  api-generated-prisma:
+  api-node-modules:
   postgres-data:
+  root-node-modules:
+  web-node-modules:

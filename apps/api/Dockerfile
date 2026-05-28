@@ -3,6 +3,15 @@ WORKDIR /app
 ENV CI=1
 ENV TURBO_TELEMETRY_DISABLED=1
 
+FROM base AS development
+ENV NODE_ENV=development
+ENV PORT=3000
+COPY . .
+RUN bun install --frozen-lockfile
+WORKDIR /app/apps/api
+EXPOSE 3000
+CMD ["sh", "-lc", "bun run prisma generate && bun --watch src/index.ts"]
+
 FROM base AS pruner
 COPY . .
 RUN bun install --frozen-lockfile

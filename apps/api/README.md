@@ -21,7 +21,16 @@ Feature code under `src/features/*` follows a hexagonal split:
 
 ## Docker
 
-Run from the repository root:
+Run the dev stack with hot reload from the repository root:
+
+```bash
+docker compose up --build api
+```
+
+The API source is bind-mounted into the container. Rebuild only when
+dependencies change.
+
+Build the production image from the repository root:
 
 ```bash
 docker build -f apps/api/Dockerfile -t family-fi-api .
