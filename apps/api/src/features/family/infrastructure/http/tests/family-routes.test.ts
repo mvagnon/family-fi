@@ -53,3 +53,19 @@ test("family routes expose and mutate the current family snapshot", async () => 
     true,
   );
 });
+
+test("family routes reject malformed JSON request bodies", async () => {
+  const app = createApiApp({
+    familyRepository: createInMemoryFamilyRepository(),
+  });
+
+  const response = await app.request("/api/family/categories", {
+    body: "{",
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 400);
+  assert.deepEqual(body, { message: "Request body must be a JSON object." });
+});

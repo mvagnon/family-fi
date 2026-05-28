@@ -1,6 +1,11 @@
+import type { ApiAppType } from "api/app";
+import { hc } from "hono/client";
+
 import type { Family } from "../domain/family";
 import type { FamilyRepository } from "../domain/family-repository";
 import { FamilyApiError, parseFamilyResponse } from "./family-dto";
+
+export { FamilyApiError } from "./family-dto";
 
 interface FamilyHttpRepositoryOptions {
   apiBaseUrl?: string;
@@ -16,20 +21,12 @@ export function createFamilyHttpRepository(
     options.apiBaseUrl ?? getConfiguredApiBaseUrl(),
   );
   const fetcher = options.fetcher ?? fetch;
+  const client = hc<ApiAppType>(apiBaseUrl, { fetch: fetcher });
 
-  async function requestFamily(
-    path: string,
-    init: RequestInit = {},
-  ): Promise<Family> {
-    const response = await fetcher(`${apiBaseUrl}/api/family${path}`, {
-      ...init,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        ...init.headers,
-      },
-    });
-
+  async function readFamilyResponse(response: {
+    json: () => Promise<unknown>;
+    ok: boolean;
+  }): Promise<Family> {
     if (!response.ok) {
       throw new FamilyApiError(await getErrorMessage(response));
     }
@@ -38,31 +35,32 @@ export function createFamilyHttpRepository(
   }
 
   return {
-    addCategory: (input) =>
-      requestFamily("/categories", {
-        body: JSON.stringify(input),
-        method: "POST",
-      }),
-    addMember: (input) =>
-      requestFamily("/members", {
-        body: JSON.stringify(input),
-        method: "POST",
-      }),
-    createRecurringLine: (input) =>
-      requestFamily("/recurring-lines", {
-        body: JSON.stringify(input),
-        method: "POST",
-      }),
-    getFamily: () => requestFamily(""),
-    updateRecurringLine: (lineId, input) =>
-      requestFamily(`/recurring-lines/${lineId}`, {
-        body: JSON.stringify(input),
-        method: "PUT",
-      }),
+    addCategory: async (input) =>
+      readFamilyResponse(
+        await client.api.family.categories.$post({ json: input }),
+      ),
+    addMember: async (input) =>
+      readFamilyResponse(
+        await client.api.family.members.$post({ json: input }),
+      ),
+    createRecurringLine: async (input) =>
+      readFamilyResponse(
+        await client.api.family["recurring-lines"].$post({ json: input }),
+      ),
+    getFamily: async () => readFamilyResponse(await client.api.family.$get()),
+    updateRecurringLine: async (lineId, input) =>
+      readFamilyResponse(
+        await client.api.family["recurring-lines"][":id"].$put({
+          json: input,
+          param: { id: lineId },
+        }),
+      ),
   };
 }
 
-async function getErrorMessage(response: Response): Promise<string> {
+async function getErrorMessage(response: {
+  json: () => Promise<unknown>;
+}): Promise<string> {
   const value = await response.json().catch(() => null);
 
   if (isRecord(value) && typeof value.message === "string") {

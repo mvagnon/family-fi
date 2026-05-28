@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { HTTPException } from "hono/http-exception";
 
 import { FamilyService } from "./features/family/application/family-service.js";
 import {
@@ -13,25 +14,34 @@ interface CreateApiAppOptions {
   familyRepository: FamilyRepository;
 }
 
-export function createApiApp({ familyRepository }: CreateApiAppOptions): Hono {
+export function createApiApp({ familyRepository }: CreateApiAppOptions) {
   const app = new Hono();
   const familyService = new FamilyService(familyRepository);
 
   app.use("/api/*", cors());
 
-  app.get("/", (context) => {
-    return context.text("Family-Fi API");
-  });
+  const routes = app
+    .get("/", (context) => {
+      return context.text("Family-Fi API");
+    })
+    .route("/api/family", createFamilyRouter(familyService));
 
-  app.route("/api/family", createFamilyRouter(familyService));
-
-  app.notFound((context) => {
+  routes.notFound((context) => {
     return context.json({ message: "Not Found" }, 404);
   });
 
-  app.onError((error, context) => {
+  routes.onError((error, context) => {
     if (error instanceof InvalidFamilyInputError) {
       return context.json({ message: error.message }, 400);
+    }
+
+    if (error instanceof HTTPException && error.status === 400) {
+      const message =
+        error.message === "Malformed JSON in request body"
+          ? "Request body must be a JSON object."
+          : error.message;
+
+      return context.json({ message }, 400);
     }
 
     if (error instanceof RecurringLineNotFoundError) {
@@ -43,5 +53,7 @@ export function createApiApp({ familyRepository }: CreateApiAppOptions): Hono {
     return context.json({ message: "Internal Server Error" }, 500);
   });
 
-  return app;
+  return routes;
 }
+
+export type ApiAppType = ReturnType<typeof createApiApp>;
