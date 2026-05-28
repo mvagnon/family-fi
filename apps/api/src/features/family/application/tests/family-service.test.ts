@@ -51,3 +51,18 @@ test("adds a non-user member and creates the linked professional category", asyn
     true,
   );
 });
+
+test("deletes a recurring line from the current family", async () => {
+  const repository = createInMemoryFamilyRepository();
+  const service = new FamilyService(repository, {
+    createId: () => "unused-id",
+  });
+
+  await service.getFamilyForCurrentUser();
+  const family = await service.deleteRecurringLine("rent");
+
+  assert.equal(
+    family.recurringLines.some((line) => line.id === "rent"),
+    false,
+  );
+});

@@ -6,6 +6,7 @@ import {
   addLocalFamilyCategory,
   addLocalFamilyMember,
   createLocalRecurringLine,
+  deleteLocalRecurringLine,
   updateLocalRecurringLine,
 } from "../family-local-commands";
 
@@ -81,4 +82,11 @@ test("adds and updates local recurring lines without mutating the source family"
   assert.equal(withCategory.categories.at(-1)?.label, "Santé");
   assert.equal(withLine.recurringLines.at(-1)?.id, "line-mutuelle");
   assert.equal(updated.recurringLines.at(-1)?.amount, 75);
+});
+
+test("deletes a local recurring line without mutating the source family", () => {
+  const result = deleteLocalRecurringLine(family, "line-internet");
+
+  assert.equal(family.recurringLines.length, 1);
+  assert.equal(result.recurringLines.length, 0);
 });

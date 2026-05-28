@@ -11,6 +11,7 @@ import {
   addLocalFamilyMember,
   createLocalRecurringLine,
   createSluggedFamilyEntityId,
+  deleteLocalRecurringLine,
   updateLocalRecurringLine,
 } from "../application/family-local-commands";
 import { createPreviewFamily } from "../domain/preview-family";
@@ -50,12 +51,19 @@ export function FamilyPreviewPage() {
     );
   }
 
+  function handleDeleteRecurringLine(lineId: string) {
+    setFamily((currentFamily) =>
+      deleteLocalRecurringLine(currentFamily, lineId),
+    );
+  }
+
   return (
     <FamilyDashboard
       family={family}
       onAddCategory={handleAddCategory}
       onAddMember={handleAddMember}
       onCreateRecurringLine={handleCreateRecurringLine}
+      onDeleteRecurringLine={handleDeleteRecurringLine}
       onUpdateRecurringLine={handleUpdateRecurringLine}
     />
   );

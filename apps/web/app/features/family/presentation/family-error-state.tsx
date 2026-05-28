@@ -1,6 +1,6 @@
-import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 
+import { FamilyErrorSnackbar } from "./family-error-snackbar";
 import { FamilyPageShell } from "./family-page-shell";
 
 interface FamilyErrorStateProps {
@@ -11,16 +11,15 @@ interface FamilyErrorStateProps {
 export function FamilyErrorState({ message, onRetry }: FamilyErrorStateProps) {
   return (
     <FamilyPageShell>
-      <Alert
+      <FamilyErrorSnackbar
         action={
           <Button color="inherit" onClick={onRetry} size="small">
             Réessayer
           </Button>
         }
-        severity="error"
-      >
-        {message}
-      </Alert>
+        autoHideDuration={null}
+        message={message}
+      />
     </FamilyPageShell>
   );
 }

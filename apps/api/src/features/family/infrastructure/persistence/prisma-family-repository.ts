@@ -58,6 +58,24 @@ export class PrismaFamilyRepository implements FamilyRepository {
     return this.getFamilyById(familyId);
   }
 
+  async deleteRecurringLine(
+    familyId: string,
+    lineId: string,
+  ): Promise<FamilySnapshot | null> {
+    const result = await this.prisma.recurringLine.deleteMany({
+      where: {
+        familyId,
+        id: lineId,
+      },
+    });
+
+    if (result.count === 0) {
+      return null;
+    }
+
+    return this.getFamilyById(familyId);
+  }
+
   async findByUserId(userId: string): Promise<FamilySnapshot | null> {
     const family = await this.prisma.family.findFirst({
       include: familyInclude,

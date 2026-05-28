@@ -23,6 +23,22 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
       return cloneFamily(updatedFamily);
     },
 
+    async deleteRecurringLine(familyId, lineId) {
+      const family = getFamily(families, familyId);
+      const recurringLines = family.recurringLines.filter(
+        (line) => line.id !== lineId,
+      );
+
+      if (recurringLines.length === family.recurringLines.length) {
+        return null;
+      }
+
+      const updatedFamily = { ...family, recurringLines };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
+
     async findByUserId(userId) {
       const family = Array.from(families.values()).find((item) =>
         item.userIds.includes(userId),

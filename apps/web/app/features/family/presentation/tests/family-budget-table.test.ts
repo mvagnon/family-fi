@@ -35,6 +35,7 @@ test("omits the line count from category group headers", () => {
         },
       ],
       onAddLine: () => {},
+      onDeleteLine: () => {},
       onEditLine: () => {},
     }),
   );
@@ -59,6 +60,7 @@ test("clamps recurring line descriptions to one row", () => {
         },
       ],
       onAddLine: () => {},
+      onDeleteLine: () => {},
       onEditLine: () => {},
     }),
   );
@@ -86,6 +88,7 @@ test("renders category totals as monthly amounts", () => {
         },
       ],
       onAddLine: () => {},
+      onDeleteLine: () => {},
       onEditLine: () => {},
     }),
   );
@@ -114,6 +117,7 @@ test("uses a subdued table header style", () => {
           },
         ],
         onAddLine: () => {},
+        onDeleteLine: () => {},
         onEditLine: () => {},
       }),
     ),
@@ -136,4 +140,97 @@ test("uses a subdued table header style", () => {
     headStyles.some((style) => style.includes("color:#65462A")),
     true,
   );
+});
+
+test("renders signed amounts without movement or estimation columns", () => {
+  const markup = renderToStaticMarkup(
+    createElement(FamilyBudgetTable, {
+      categories: [{ id: "housing", kind: "shared", label: "Logement" }],
+      lines: [
+        {
+          amount: 1200,
+          categoryId: "housing",
+          description: "Loyer principal",
+          id: "rent",
+          isEstimate: false,
+          movement: "negative",
+          recurrenceMonths: 1,
+          title: "Loyer",
+        },
+        {
+          amount: 3000,
+          categoryId: "housing",
+          description: "Salaire net",
+          id: "salary",
+          isEstimate: false,
+          movement: "positive",
+          recurrenceMonths: 1,
+          title: "Salaire",
+        },
+      ],
+      onAddLine: () => {},
+      onDeleteLine: () => {},
+      onEditLine: () => {},
+    }),
+  );
+
+  assert.equal(markup.includes("Mouvement"), false);
+  assert.equal(markup.includes("Estimation"), false);
+  assert.equal(markup.includes("Sortie"), false);
+  assert.equal(markup.includes("Entrée"), false);
+  assert.match(markup, /-\s*1[^\d]*200[^\d]*€/);
+  assert.match(markup, /3[^\d]*000[^\d]*€/);
+});
+
+test("renders a delete action for each recurring line", () => {
+  const markup = renderToStaticMarkup(
+    createElement(FamilyBudgetTable, {
+      categories: [{ id: "housing", kind: "shared", label: "Logement" }],
+      lines: [
+        {
+          amount: 1200,
+          categoryId: "housing",
+          description: "Loyer principal",
+          id: "rent",
+          isEstimate: false,
+          movement: "negative",
+          recurrenceMonths: 1,
+          title: "Loyer",
+        },
+      ],
+      onAddLine: () => {},
+      onDeleteLine: () => {},
+      onEditLine: () => {},
+    }),
+  );
+
+  assert.equal(markup.includes("Modifier Loyer"), true);
+  assert.equal(markup.includes("Supprimer Loyer"), true);
+});
+
+test("renders estimated amounts as signed ranges", () => {
+  const markup = renderToStaticMarkup(
+    createElement(FamilyBudgetTable, {
+      categories: [{ id: "housing", kind: "shared", label: "Logement" }],
+      lines: [
+        {
+          amount: 1200,
+          categoryId: "housing",
+          description: "Loyer variable",
+          id: "rent",
+          isEstimate: true,
+          maxAmount: 1400,
+          minAmount: 1000,
+          movement: "negative",
+          recurrenceMonths: 1,
+          title: "Loyer",
+        },
+      ],
+      onAddLine: () => {},
+      onDeleteLine: () => {},
+      onEditLine: () => {},
+    }),
+  );
+
+  assert.match(markup, /-\s*1[^\d]*400[^\d]*€\s+à\s+-\s*1[^\d]*000[^\d]*€/);
 });

@@ -62,6 +62,13 @@ export function updateLocalRecurringLine(
   };
 }
 
+export function deleteLocalRecurringLine(family: Family, lineId: string): Family {
+  return {
+    ...family,
+    recurringLines: family.recurringLines.filter((line) => line.id !== lineId),
+  };
+}
+
 export function createSluggedFamilyEntityId(
   prefix: string,
   label: string,

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 
 import {
@@ -17,6 +16,7 @@ import type {
 } from "../domain/family";
 import { FamilyBudgetTable } from "./family-budget-table";
 import { FamilyCategoryModal } from "./family-category-modal";
+import { FamilyErrorSnackbar } from "./family-error-snackbar";
 import { FamilyMemberModal } from "./family-member-modal";
 import { FamilyPageShell } from "./family-page-shell";
 import { FamilySidebar } from "./family-sidebar";
@@ -32,6 +32,7 @@ interface FamilyDashboardProps {
   onCreateRecurringLine: (
     input: CreateRecurringLineInput,
   ) => Promise<void> | void;
+  onDeleteRecurringLine: (lineId: string) => Promise<void> | void;
   onUpdateRecurringLine: (
     lineId: string,
     input: UpdateRecurringLineInput,
@@ -45,6 +46,7 @@ export function FamilyDashboard({
   onAddCategory,
   onAddMember,
   onCreateRecurringLine,
+  onDeleteRecurringLine,
   onUpdateRecurringLine,
 }: FamilyDashboardProps) {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -96,9 +98,17 @@ export function FamilyDashboard({
     }
   }
 
+  async function handleDeleteLine(line: RecurringLine) {
+    try {
+      await onDeleteRecurringLine(line.id);
+    } catch {
+      return;
+    }
+  }
+
   return (
     <FamilyPageShell>
-      {mutationError && <Alert severity="error">{mutationError}</Alert>}
+      <FamilyErrorSnackbar message={mutationError} />
 
       <FamilySummaryStrip lines={family.recurringLines} />
 
@@ -118,6 +128,7 @@ export function FamilyDashboard({
           disabled={isSaving}
           lines={family.recurringLines}
           onAddLine={handleAddLine}
+          onDeleteLine={handleDeleteLine}
           onEditLine={handleEditLine}
         />
         <FamilySidebar

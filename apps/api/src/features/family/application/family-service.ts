@@ -131,6 +131,20 @@ export class FamilyService {
     return updatedFamily;
   }
 
+  async deleteRecurringLine(lineId: string): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily();
+    const updatedFamily = await this.repository.deleteRecurringLine(
+      family.id,
+      lineId,
+    );
+
+    if (!updatedFamily) {
+      throw new RecurringLineNotFoundError(lineId);
+    }
+
+    return updatedFamily;
+  }
+
   private async getOrCreateFamily(): Promise<FamilySnapshot> {
     const existingFamily = await this.repository.findByUserId(
       this.currentUserId,

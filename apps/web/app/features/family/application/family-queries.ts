@@ -64,6 +64,15 @@ export function useUpdateFamilyRecurringLine(repository: FamilyRepository) {
   });
 }
 
+export function useDeleteFamilyRecurringLine(repository: FamilyRepository) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (lineId: string) => repository.deleteRecurringLine(lineId),
+    onSuccess: (family) => setFamilyCache(queryClient, family),
+  });
+}
+
 function setFamilyCache(
   queryClient: ReturnType<typeof useQueryClient>,
   family: Family,

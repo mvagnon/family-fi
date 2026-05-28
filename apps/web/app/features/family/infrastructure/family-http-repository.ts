@@ -47,6 +47,12 @@ export function createFamilyHttpRepository(
       readFamilyResponse(
         await client.api.family["recurring-lines"].$post({ json: input }),
       ),
+    deleteRecurringLine: async (lineId) =>
+      readFamilyResponse(
+        await client.api.family["recurring-lines"][":id"].$delete({
+          param: { id: lineId },
+        }),
+      ),
     getFamily: async () => readFamilyResponse(await client.api.family.$get()),
     updateRecurringLine: async (lineId, input) =>
       readFamilyResponse(

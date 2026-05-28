@@ -6,6 +6,10 @@ export interface FamilyRepository {
     familyId: string,
     line: RecurringLine,
   ): Promise<FamilySnapshot>;
+  deleteRecurringLine(
+    familyId: string,
+    lineId: string,
+  ): Promise<FamilySnapshot | null>;
   findByUserId(userId: string): Promise<FamilySnapshot | null>;
   saveFamily(family: FamilySnapshot): Promise<FamilySnapshot>;
   updateRecurringLine(

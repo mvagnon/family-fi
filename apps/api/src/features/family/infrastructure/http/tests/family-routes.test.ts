@@ -54,6 +54,25 @@ test("family routes expose and mutate the current family snapshot", async () => 
   );
 });
 
+test("family routes delete recurring lines", async () => {
+  const app = createApiApp({
+    familyRepository: createInMemoryFamilyRepository(),
+  });
+
+  await app.request("/api/family");
+
+  const response = await app.request("/api/family/recurring-lines/rent", {
+    method: "DELETE",
+  });
+  const family = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(
+    family.recurringLines.some((line: { id: string }) => line.id === "rent"),
+    false,
+  );
+});
+
 test("family routes reject malformed JSON request bodies", async () => {
   const app = createApiApp({
     familyRepository: createInMemoryFamilyRepository(),

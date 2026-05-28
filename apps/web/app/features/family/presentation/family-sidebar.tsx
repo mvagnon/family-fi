@@ -6,9 +6,9 @@ import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
+import AddIcon from "@mui/icons-material/Add";
 
 import type { FamilyCategory, FamilyMember } from "../domain/family";
-import { PlusIcon } from "./icons";
 
 interface FamilySidebarProps {
   categories: FamilyCategory[];
@@ -58,7 +58,7 @@ export function FamilySidebar({
                 disabled={disabled}
                 onClick={onAddMember}
               >
-                <PlusIcon />
+                <AddIcon />
               </IconButton>
             </span>
           </Tooltip>
@@ -121,7 +121,7 @@ export function FamilySidebar({
                 disabled={disabled}
                 onClick={onAddCategory}
               >
-                <PlusIcon />
+                <AddIcon />
               </IconButton>
             </span>
           </Tooltip>

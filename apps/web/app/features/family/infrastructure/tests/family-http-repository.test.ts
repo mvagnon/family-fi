@@ -51,6 +51,32 @@ test("posts family category metadata through the HTTP repository", async () => {
   assert.deepEqual(await requests[0]?.json(), input);
 });
 
+test("deletes recurring lines through the HTTP repository", async () => {
+  const requests: Request[] = [];
+  const repository = createFamilyHttpRepository({
+    apiBaseUrl: "http://api.test/",
+    fetcher: async (input, init) => {
+      const request = new Request(input, init);
+      requests.push(request);
+
+      return Response.json({
+        ...familyResponse,
+        recurringLines: [],
+      });
+    },
+  });
+
+  const family = await repository.deleteRecurringLine("internet");
+
+  assert.equal(requests.length, 1);
+  assert.equal(
+    requests[0]?.url,
+    "http://api.test/api/family/recurring-lines/internet",
+  );
+  assert.equal(requests[0]?.method, "DELETE");
+  assert.equal(family.recurringLines.length, 0);
+});
+
 test("raises a family API error when the HTTP repository receives an error response", async () => {
   const repository = createFamilyHttpRepository({
     apiBaseUrl: "http://api.test",

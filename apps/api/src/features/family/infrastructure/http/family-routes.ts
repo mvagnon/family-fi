@@ -52,7 +52,13 @@ export function createFamilyRouter(service: FamilyService) {
 
         return context.json(family);
       },
-    );
+    )
+    .delete("/recurring-lines/:id", async (context) => {
+      const lineId = context.req.param("id");
+      const family = await service.deleteRecurringLine(lineId);
+
+      return context.json(family);
+    });
 }
 
 function validateJson<T>(parse: (value: Record<string, unknown>) => T) {

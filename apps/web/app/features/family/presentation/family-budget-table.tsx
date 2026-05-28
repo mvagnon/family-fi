@@ -11,18 +11,21 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import { alpha } from "@mui/material/styles";
 
 import { getCategoryGroups, getMonthlyRange } from "../domain/family-budget";
 import type { FamilyCategory, RecurringLine } from "../domain/family";
 import { formatCurrency, formatRecurrence } from "./family-format";
-import { EditIcon, PlusIcon } from "./icons";
 
 interface FamilyBudgetTableProps {
   categories: FamilyCategory[];
   disabled?: boolean;
   lines: RecurringLine[];
   onAddLine: () => void;
+  onDeleteLine: (line: RecurringLine) => void;
   onEditLine: (line: RecurringLine) => void;
 }
 
@@ -31,6 +34,7 @@ export function FamilyBudgetTable({
   disabled = false,
   lines,
   onAddLine,
+  onDeleteLine,
   onEditLine,
 }: FamilyBudgetTableProps) {
   const categoryGroups = getCategoryGroups(categories, lines);
@@ -59,7 +63,7 @@ export function FamilyBudgetTable({
         <Button
           disabled={disabled}
           onClick={onAddLine}
-          startIcon={<PlusIcon />}
+          startIcon={<AddIcon />}
           variant="contained"
         >
           Ajouter une ligne
@@ -70,12 +74,12 @@ export function FamilyBudgetTable({
         <Table
           aria-label="Configuration des dépenses et revenus récurrents"
           stickyHeader
-          sx={{ minWidth: 980 }}
+          sx={{ minWidth: 740 }}
         >
           <TableHead>
             <TableRow
               sx={{
-                "&>*": {
+                "& > .MuiTableCell-root": {
                   borderTop: 0,
                   pt: 0,
                   pb: 1,
@@ -83,12 +87,10 @@ export function FamilyBudgetTable({
               }}
             >
               <TableCell sx={{ width: 300 }}>Intitulé</TableCell>
-              <TableCell sx={{ width: 150 }}>Mouvement</TableCell>
               <TableCell sx={{ width: 170 }}>Montant</TableCell>
-              <TableCell sx={{ width: 190 }}>Estimation</TableCell>
               <TableCell sx={{ width: 170 }}>Récurrence</TableCell>
-              <TableCell align="right" sx={{ width: 90 }}>
-                Action
+              <TableCell align="right" sx={{ width: 120 }}>
+                Actions
               </TableCell>
             </TableRow>
           </TableHead>
@@ -97,7 +99,7 @@ export function FamilyBudgetTable({
               <Fragment key={group.id}>
                 <TableRow>
                   <TableCell
-                    colSpan={6}
+                    colSpan={4}
                     component="th"
                     scope="rowgroup"
                     sx={(theme) => ({
@@ -160,33 +162,43 @@ export function FamilyBudgetTable({
                         {line.description}
                       </Typography>
                     </TableCell>
-                    <TableCell>
-                      {line.movement === "positive" ? "Entrée" : "Sortie"}
-                    </TableCell>
-                    <TableCell>
-                      {line.isEstimate
-                        ? `${formatCurrency(line.minAmount ?? line.amount)} à ${formatCurrency(
-                            line.maxAmount ?? line.amount,
-                          )}`
-                        : formatCurrency(line.amount)}
-                    </TableCell>
-                    <TableCell>{line.isEstimate ? "Oui" : "Non"}</TableCell>
+                    <TableCell>{formatLineAmount(line)}</TableCell>
                     <TableCell>
                       {formatRecurrence(line.recurrenceMonths)}
                     </TableCell>
                     <TableCell align="right">
-                      <Tooltip title="Modifier la ligne">
-                        <span>
-                          <IconButton
-                            aria-label={`Modifier ${line.title}`}
-                            disabled={disabled}
-                            onClick={() => onEditLine(line)}
-                            size="small"
-                          >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 0.5,
+                          justifyContent: "flex-end",
+                        }}
+                      >
+                        <Tooltip title="Modifier la ligne">
+                          <span>
+                            <IconButton
+                              aria-label={`Modifier ${line.title}`}
+                              disabled={disabled}
+                              onClick={() => onEditLine(line)}
+                              size="small"
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                        <Tooltip title="Supprimer la ligne">
+                          <span>
+                            <IconButton
+                              aria-label={`Supprimer ${line.title}`}
+                              disabled={disabled}
+                              onClick={() => onDeleteLine(line)}
+                              size="small"
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -197,6 +209,23 @@ export function FamilyBudgetTable({
       </TableContainer>
     </Paper>
   );
+}
+
+function formatLineAmount(line: RecurringLine): string {
+  if (!line.isEstimate) {
+    return formatCurrency(getSignedAmount(line, line.amount));
+  }
+
+  const minAmount = getSignedAmount(line, line.minAmount ?? line.amount);
+  const maxAmount = getSignedAmount(line, line.maxAmount ?? line.amount);
+
+  return `${formatCurrency(Math.min(minAmount, maxAmount))} à ${formatCurrency(
+    Math.max(minAmount, maxAmount),
+  )}`;
+}
+
+function getSignedAmount(line: RecurringLine, amount: number): number {
+  return line.movement === "positive" ? amount : -amount;
 }
 
 function formatCategoryTotal(lines: RecurringLine[]): string {
