@@ -2,7 +2,10 @@ import { Hono } from "hono";
 import { validator } from "hono/validator";
 
 import type { FamilyService } from "../../application/family-service.js";
-import { InvalidFamilyInputError } from "../../domain/family.js";
+import {
+  InvalidFamilyInputError,
+  recurringLineInputSchema,
+} from "../../domain/family.js";
 import type {
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
@@ -103,23 +106,15 @@ function parseCreateCategoryInput(
 function parseRecurringLineInput(
   value: Record<string, unknown>,
 ): CreateRecurringLineInput | UpdateRecurringLineInput {
-  const movement = getString(value, "movement");
+  const result = recurringLineInputSchema.safeParse(value);
 
-  if (movement !== "positive" && movement !== "negative") {
-    throw new InvalidFamilyInputError("Recurring line movement is invalid.");
+  if (!result.success) {
+    throw new InvalidFamilyInputError(
+      result.error.issues[0]?.message ?? "Recurring line input is invalid.",
+    );
   }
 
-  return {
-    amount: getNumber(value, "amount"),
-    categoryId: getString(value, "categoryId"),
-    description: getOptionalString(value, "description") ?? "",
-    isEstimate: getBoolean(value, "isEstimate"),
-    maxAmount: getOptionalNumber(value, "maxAmount"),
-    minAmount: getOptionalNumber(value, "minAmount"),
-    movement,
-    recurrenceMonths: getNumber(value, "recurrenceMonths"),
-    title: getString(value, "title"),
-  };
+  return result.data;
 }
 
 function getString(value: Record<string, unknown>, key: string): string {
@@ -144,43 +139,6 @@ function getOptionalString(
 
   if (typeof item !== "string") {
     throw new InvalidFamilyInputError(`${key} must be a string.`);
-  }
-
-  return item;
-}
-
-function getNumber(value: Record<string, unknown>, key: string): number {
-  const item = value[key];
-
-  if (typeof item !== "number") {
-    throw new InvalidFamilyInputError(`${key} must be a number.`);
-  }
-
-  return item;
-}
-
-function getOptionalNumber(
-  value: Record<string, unknown>,
-  key: string,
-): number | undefined {
-  const item = value[key];
-
-  if (item === undefined || item === null) {
-    return undefined;
-  }
-
-  if (typeof item !== "number") {
-    throw new InvalidFamilyInputError(`${key} must be a number.`);
-  }
-
-  return item;
-}
-
-function getBoolean(value: Record<string, unknown>, key: string): boolean {
-  const item = value[key];
-
-  if (typeof item !== "boolean") {
-    throw new InvalidFamilyInputError(`${key} must be a boolean.`);
   }
 
   return item;

@@ -4,6 +4,8 @@ export const DUPLICATE_FAMILY_CATEGORY_LABEL_MESSAGE =
 export const DUPLICATE_FAMILY_MEMBER_NAME_MESSAGE =
   "Un membre avec ce nom existe déjà.";
 
+export { recurringLineInputSchema } from "@repo/api-contracts/family";
+
 export type {
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,

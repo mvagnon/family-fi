@@ -38,7 +38,7 @@ test("creates a draft recurring line without UI-owned business defaults", () => 
     isEstimate: false,
     movement: "negative",
     recurrenceMonths: 1,
-    title: "Nouvelle ligne",
+    title: "",
   });
 });
 
