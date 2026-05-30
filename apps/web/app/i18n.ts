@@ -162,7 +162,7 @@ export const resources = {
           participations: "Participations",
           recurringBudget: "Recurring budget",
           settings: "Settings",
-          subtitle: "Household finances",
+          subtitle: "Family Finances",
         },
         sidebar: {
           categories: {
@@ -342,7 +342,7 @@ export const resources = {
           participations: "Participations",
           recurringBudget: "Budget récurrent",
           settings: "Réglages",
-          subtitle: "Finances du foyer",
+          subtitle: "Family Finances",
         },
         sidebar: {
           categories: {
@@ -518,7 +518,7 @@ export const resources = {
           participations: "持分",
           recurringBudget: "定期予算",
           settings: "設定",
-          subtitle: "世帯の家計",
+          subtitle: "ファミリー・ファイナンス",
         },
         sidebar: {
           categories: {
