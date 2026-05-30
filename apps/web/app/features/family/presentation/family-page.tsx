@@ -52,10 +52,7 @@ export function FamilyPage({ repository }: FamilyPageProps) {
 
   if (familyQuery.isError) {
     return (
-      <PageShell
-        subtitle="Dépenses, revenus et récurrences du foyer"
-        title="Foyer"
-      >
+      <PageShell>
         <FeedbackSnackbar
           action={
             <Button

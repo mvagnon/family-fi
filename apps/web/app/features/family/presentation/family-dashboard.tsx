@@ -23,10 +23,18 @@ import type {
   RecurringLine,
   UpdateRecurringLineInput,
 } from "../domain/family";
+import {
+  familyDashboardBudgetAreaSx,
+  familyDashboardContentGridSx,
+  familyDashboardNavigationAreaSx,
+  familyDashboardSidebarAreaSx,
+  familyDashboardSummaryAreaSx,
+} from "./family-dashboard-layout";
 import { FamilyBudgetTable } from "./family-budget-table";
 import { FamilyCategoryModal } from "./family-category-modal";
 import { FamilyMemberModal } from "./family-member-modal";
 import { FamilySidebar } from "./family-sidebar";
+import { FamilySidebarNavigation } from "./family-sidebar-navigation";
 import { FamilySummaryStrip } from "./family-summary-strip";
 import { LineEditDialog } from "./line-edit-dialog";
 import { LineSummaryDialog } from "./line-summary-dialog";
@@ -195,46 +203,41 @@ export function FamilyDashboard({
   }
 
   return (
-    <PageShell
-      subtitle="Dépenses, revenus et récurrences du foyer"
-      title="Foyer"
-    >
+    <PageShell>
       <FeedbackSnackbar
         key={localError ? `local-${localError.revision}` : mutationError}
         message={localError?.message ?? mutationError}
       />
 
-      <FamilySummaryStrip lines={family.recurringLines} />
-
-      <Box
-        sx={{
-          alignItems: "start",
-          display: "grid",
-          gap: 2.5,
-          gridTemplateColumns: {
-            lg: "minmax(0, 1fr) 320px",
-            xs: "minmax(0, 1fr)",
-          },
-        }}
-      >
-        <FamilyBudgetTable
-          categories={family.categories}
-          disabled={isSaving}
-          lines={family.recurringLines}
-          onAddLine={handleAddLine}
-          onDeleteLine={handleRequestDeleteLine}
-          onEditLine={handleEditLine}
-          onViewLine={handleViewLine}
-        />
-        <FamilySidebar
-          categories={family.categories}
-          disabled={isSaving}
-          members={family.members}
-          onAddCategory={() => setIsCategoryModalOpen(true)}
-          onAddMember={() => setIsMemberModalOpen(true)}
-          onDeleteCategory={handleRequestDeleteCategory}
-          onDeleteMember={handleRequestDeleteMember}
-        />
+      <Box sx={familyDashboardContentGridSx}>
+        <Box sx={familyDashboardSummaryAreaSx}>
+          <FamilySummaryStrip lines={family.recurringLines} />
+        </Box>
+        <Box sx={familyDashboardBudgetAreaSx}>
+          <FamilyBudgetTable
+            categories={family.categories}
+            disabled={isSaving}
+            lines={family.recurringLines}
+            onAddLine={handleAddLine}
+            onDeleteLine={handleRequestDeleteLine}
+            onEditLine={handleEditLine}
+            onViewLine={handleViewLine}
+          />
+        </Box>
+        <Box sx={familyDashboardNavigationAreaSx}>
+          <FamilySidebarNavigation />
+        </Box>
+        <Box sx={familyDashboardSidebarAreaSx}>
+          <FamilySidebar
+            categories={family.categories}
+            disabled={isSaving}
+            members={family.members}
+            onAddCategory={() => setIsCategoryModalOpen(true)}
+            onAddMember={() => setIsMemberModalOpen(true)}
+            onDeleteCategory={handleRequestDeleteCategory}
+            onDeleteMember={handleRequestDeleteMember}
+          />
+        </Box>
       </Box>
 
       <FamilyCategoryModal
@@ -268,21 +271,29 @@ export function FamilyDashboard({
         confirmColor="error"
         confirmFirst
         confirmLabel="Supprimer"
-        description={getDeleteSidebarItemDescription(
-          family,
-          sidebarItemPendingDeletion,
-        )}
+        description={deleteMemberDescription}
         isPending={isSaving}
         onCancel={() => setSidebarItemPendingDeletion(null)}
         onConfirm={handleConfirmDeleteSidebarItem}
-        open={sidebarItemPendingDeletion !== null}
-        title={getDeleteSidebarItemTitle(sidebarItemPendingDeletion)}
+        open={sidebarItemPendingDeletion?.type === "member"}
+        title="Supprimer ce membre ?"
       />
       <ConfirmationDialog
         confirmColor="error"
         confirmFirst
         confirmLabel="Supprimer"
-        description={getDeleteLineDescription(linePendingDeletion)}
+        description={deleteCategoryDescription}
+        isPending={isSaving}
+        onCancel={() => setSidebarItemPendingDeletion(null)}
+        onConfirm={handleConfirmDeleteSidebarItem}
+        open={sidebarItemPendingDeletion?.type === "category"}
+        title="Supprimer cette catégorie ?"
+      />
+      <ConfirmationDialog
+        confirmColor="error"
+        confirmFirst
+        confirmLabel="Supprimer"
+        description={deleteLineDescription}
         isPending={isSaving}
         onCancel={() => setLinePendingDeletion(null)}
         onConfirm={handleConfirmDeleteLine}
@@ -297,6 +308,12 @@ type SidebarDeletionTarget =
   | { item: FamilyMember; type: "member" }
   | { item: FamilyCategory; type: "category" };
 
+const deleteCategoryDescription =
+  "La catégorie ainsi que ses lignes associées seront supprimées définitivement.";
+const deleteLineDescription = "La ligne sera supprimée définitivement.";
+const deleteMemberDescription =
+  "Le membre, sa catégorie professionnelle ainsi que ses lignes associées seront supprimés définitivement.";
+
 function getCategoryLabel(family: Family, line: RecurringLine | null): string {
   if (!line) {
     return "";
@@ -306,76 +323,4 @@ function getCategoryLabel(family: Family, line: RecurringLine | null): string {
     family.categories.find((category) => category.id === line.categoryId)
       ?.label ?? line.categoryId
   );
-}
-
-function getDeleteLineDescription(line: RecurringLine | null): string {
-  if (!line) {
-    return "";
-  }
-
-  return `La ligne "${line.title}" sera supprimée définitivement.`;
-}
-
-function getDeleteSidebarItemTitle(
-  target: SidebarDeletionTarget | null,
-): string {
-  if (target?.type === "member") {
-    return "Supprimer ce membre ?";
-  }
-
-  return "Supprimer cette catégorie ?";
-}
-
-function getDeleteSidebarItemDescription(
-  family: Family,
-  target: SidebarDeletionTarget | null,
-): string {
-  if (!target) {
-    return "";
-  }
-
-  const linkedLineCount = getDeletedSidebarItemLineCount(family, target);
-
-  if (target.type === "member") {
-    if (linkedLineCount > 0) {
-      return `Le membre "${target.item.name}", sa catégorie professionnelle et ${formatLinkedLineCount(linkedLineCount)} seront supprimés définitivement.`;
-    }
-
-    return `Le membre "${target.item.name}" et sa catégorie professionnelle seront supprimés définitivement.`;
-  }
-
-  if (linkedLineCount > 0) {
-    return `La catégorie "${target.item.label}" et ${formatLinkedLineCount(linkedLineCount)} seront supprimées définitivement.`;
-  }
-
-  return `La catégorie "${target.item.label}" sera supprimée définitivement.`;
-}
-
-function getDeletedSidebarItemLineCount(
-  family: Family,
-  target: SidebarDeletionTarget,
-): number {
-  if (target.type === "category") {
-    return family.recurringLines.filter(
-      (line) => line.categoryId === target.item.id,
-    ).length;
-  }
-
-  const linkedCategoryIds = new Set(
-    family.categories
-      .filter((category) => category.ownerId === target.item.id)
-      .map((category) => category.id),
-  );
-
-  return family.recurringLines.filter((line) =>
-    linkedCategoryIds.has(line.categoryId),
-  ).length;
-}
-
-function formatLinkedLineCount(count: number): string {
-  if (count === 1) {
-    return "1 ligne récurrente liée";
-  }
-
-  return `${count} lignes récurrentes liées`;
 }

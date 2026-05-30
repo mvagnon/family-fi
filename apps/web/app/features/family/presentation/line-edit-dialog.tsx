@@ -6,6 +6,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { FormDialog } from "@repo/ui/form-dialog";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -127,6 +128,11 @@ interface LineEditDialogProps {
   open: boolean;
 }
 
+interface VisibleLineEditDialog {
+  line: RecurringLine;
+  mode: LineEditDialogProps["mode"];
+}
+
 export function LineEditDialog({
   categories,
   isSaving = false,
@@ -136,7 +142,24 @@ export function LineEditDialog({
   onSave,
   open,
 }: LineEditDialogProps) {
-  if (!line) {
+  const [lastDialog, setLastDialog] = useState<VisibleLineEditDialog | null>(
+    line ? { line, mode } : null,
+  );
+  const dialog = line ? { line, mode } : lastDialog;
+
+  useEffect(() => {
+    if (line) {
+      setLastDialog({ line, mode });
+    }
+  }, [line, mode]);
+
+  function handleExited() {
+    if (!line) {
+      setLastDialog(null);
+    }
+  }
+
+  if (!dialog) {
     return null;
   }
 
@@ -144,10 +167,11 @@ export function LineEditDialog({
     <LineEditDialogForm
       categories={categories}
       isSaving={isSaving}
-      key={`${mode}-${line.id}`}
-      line={line}
-      mode={mode}
+      key={`${dialog.mode}-${dialog.line.id}`}
+      line={dialog.line}
+      mode={dialog.mode}
       onClose={onClose}
+      onExited={handleExited}
       onSave={onSave}
       open={open}
     />
@@ -160,11 +184,13 @@ function LineEditDialogForm({
   line,
   mode,
   onClose,
+  onExited,
   onSave,
   open,
 }: Omit<LineEditDialogProps, "isSaving" | "line"> & {
   isSaving: boolean;
   line: RecurringLine;
+  onExited: () => void;
 }) {
   const {
     control,
@@ -194,6 +220,7 @@ function LineEditDialogForm({
       maxWidth="md"
       noValidate
       onClose={onClose}
+      onExited={onExited}
       onSubmit={handleSubmit(handleValidSubmit)}
       open={open}
       submitLabel={mode === "create" ? "Ajouter" : "Enregistrer"}

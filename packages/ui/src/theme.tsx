@@ -1,4 +1,5 @@
 import "@fontsource-variable/nunito-sans/wght.css";
+import Grow from "@mui/material/Grow";
 import { alpha, createTheme } from "@mui/material/styles";
 import type { ThemeOptions } from "@mui/material/styles";
 
@@ -221,6 +222,11 @@ const appThemeOptions = {
       },
     },
     MuiDialog: {
+      defaultProps: {
+        slots: {
+          transition: Grow,
+        },
+      },
       styleOverrides: {
         paper: {
           backgroundImage: "none",

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const componentFiles = [
+  "../family-budget-empty-state.tsx",
   "../family-budget-line-row.tsx",
   "../family-budget-table.tsx",
   "../family-sidebar-categories.tsx",

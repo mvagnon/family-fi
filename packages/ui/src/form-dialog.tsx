@@ -18,6 +18,7 @@ interface FormDialogProps {
   maxWidth?: DialogProps["maxWidth"];
   noValidate?: boolean;
   onClose: () => void;
+  onExited?: () => void;
   onSubmit: FormEventHandler<HTMLFormElement>;
   open: boolean;
   submitLabel: ReactNode;
@@ -32,6 +33,7 @@ export function FormDialog({
   maxWidth = "sm",
   noValidate = false,
   onClose,
+  onExited,
   onSubmit,
   open,
   submitLabel,
@@ -43,6 +45,7 @@ export function FormDialog({
       maxWidth={maxWidth}
       onClose={isSubmitting ? undefined : onClose}
       open={open}
+      slotProps={onExited ? { transition: { onExited } } : undefined}
     >
       <DialogTitle>{title}</DialogTitle>
       <Box component="form" noValidate={noValidate} onSubmit={onSubmit}>

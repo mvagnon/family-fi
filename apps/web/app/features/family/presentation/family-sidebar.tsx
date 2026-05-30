@@ -3,7 +3,6 @@ import Stack from "@mui/material/Stack";
 import type { FamilyCategory, FamilyMember } from "../domain/family";
 import { FamilySidebarCategories } from "./family-sidebar-categories";
 import { FamilySidebarMembers } from "./family-sidebar-members";
-import { FamilySidebarNavigation } from "./family-sidebar-navigation";
 
 interface FamilySidebarProps {
   categories: FamilyCategory[];
@@ -33,7 +32,6 @@ export function FamilySidebar({
 
   return (
     <Stack component="aside" spacing={2}>
-      <FamilySidebarNavigation />
       <FamilySidebarMembers
         disabled={disabled}
         members={members}

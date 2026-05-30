@@ -39,9 +39,22 @@ export function FamilySummaryStrip({ lines }: FamilySummaryStripProps) {
           ].map((metric) => ({
             label: metric.label,
             value: formatCurrency(metric.value),
+            valueTone: getSummaryValueTone(metric.value),
           }))}
         />
       ))}
     </Box>
   );
+}
+
+function getSummaryValueTone(value: number) {
+  if (value > 0) {
+    return "positive";
+  }
+
+  if (value < 0) {
+    return "negative";
+  }
+
+  return undefined;
 }

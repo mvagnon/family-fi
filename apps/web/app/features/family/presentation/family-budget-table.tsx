@@ -12,6 +12,7 @@ import { SectionPanel } from "@repo/ui/section-panel";
 
 import { getCategoryGroups } from "../domain/family-budget";
 import type { FamilyCategory, RecurringLine } from "../domain/family";
+import { FamilyBudgetEmptyState } from "./family-budget-empty-state";
 import { FamilyBudgetCategoryGroup } from "./family-budget-category-group";
 import {
   familyBudgetTableGridColumns,
@@ -38,6 +39,7 @@ export function FamilyBudgetTable({
   onViewLine,
 }: FamilyBudgetTableProps) {
   const categoryGroups = getCategoryGroups(categories, lines);
+  const hasLines = lines.length > 0;
 
   return (
     <SectionPanel
@@ -59,7 +61,14 @@ export function FamilyBudgetTable({
       title="Budget récurrent"
       titleId="family-budget-title"
     >
-      <TableContainer sx={{ maxWidth: "100%", overflowX: "auto" }}>
+      {!hasLines ? <FamilyBudgetEmptyState /> : null}
+      <TableContainer
+        sx={{
+          display: hasLines ? "block" : "none",
+          maxWidth: "100%",
+          overflowX: "auto",
+        }}
+      >
         <Table
           aria-label="Configuration des dépenses et revenus récurrents"
           stickyHeader

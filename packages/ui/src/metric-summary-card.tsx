@@ -7,6 +7,7 @@ import type { SxProps, Theme } from "@mui/material/styles";
 export interface MetricSummaryItem {
   label: ReactNode;
   value: ReactNode;
+  valueTone?: "negative" | "positive";
 }
 
 interface MetricSummaryCardProps {
@@ -54,6 +55,12 @@ export function MetricSummaryCard({
             </Typography>
             <Typography
               sx={{
+                color:
+                  metric.valueTone === "positive"
+                    ? "success.main"
+                    : metric.valueTone === "negative"
+                      ? "primary.main"
+                      : "text.primary",
                 fontSize: { md: "1.5rem", xs: "1.25rem" },
                 fontWeight: 600,
                 lineHeight: { md: 32 / 24, xs: 28 / 20 },

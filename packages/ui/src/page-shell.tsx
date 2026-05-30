@@ -10,7 +10,7 @@ interface PageShellProps {
   component?: ElementType;
   subtitle?: ReactNode;
   sx?: SxProps<Theme>;
-  title: ReactNode;
+  title?: ReactNode;
 }
 
 export function PageShell({
@@ -21,6 +21,8 @@ export function PageShell({
   sx,
   title,
 }: PageShellProps) {
+  const hasHeader = Boolean(actions || subtitle || title);
+
   return (
     <Box
       component={component}
@@ -36,29 +38,33 @@ export function PageShell({
       ]}
     >
       <Stack spacing={{ md: 2.5, xs: 2 }}>
-        <Stack
-          component="header"
-          direction={{ md: "row", xs: "column" }}
-          spacing={2}
-          sx={{
-            alignItems: { md: "flex-end", xs: "flex-start" },
-            justifyContent: "space-between",
-          }}
-        >
-          <Box>
-            <Typography variant="h1">{title}</Typography>
-            {subtitle ? (
-              <Typography
-                color="text.secondary"
-                sx={{ maxWidth: 680, mt: 1.25 }}
-                variant="body1"
-              >
-                {subtitle}
-              </Typography>
+        {hasHeader ? (
+          <Stack
+            component="header"
+            direction={{ md: "row", xs: "column" }}
+            spacing={2}
+            sx={{
+              alignItems: { md: "flex-end", xs: "flex-start" },
+              justifyContent: "space-between",
+            }}
+          >
+            {title || subtitle ? (
+              <Box>
+                {title ? <Typography variant="h1">{title}</Typography> : null}
+                {subtitle ? (
+                  <Typography
+                    color="text.secondary"
+                    sx={{ maxWidth: 680, mt: title ? 1.25 : 0 }}
+                    variant="body1"
+                  >
+                    {subtitle}
+                  </Typography>
+                ) : null}
+              </Box>
             ) : null}
-          </Box>
-          {actions}
-        </Stack>
+            {actions}
+          </Stack>
+        ) : null}
 
         {children}
       </Stack>
