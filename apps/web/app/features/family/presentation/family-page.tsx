@@ -1,7 +1,3 @@
-import Button from "@mui/material/Button";
-import { FeedbackSnackbar } from "@repo/ui/feedback-snackbar";
-import { PageShell } from "@repo/ui/page-shell";
-
 import {
   useAddFamilyCategory,
   useAddFamilyMember,
@@ -14,6 +10,7 @@ import {
 } from "../application/family-queries";
 import type { FamilyRepository } from "../domain/family-repository";
 import { FamilyDashboard } from "./family-dashboard";
+import { FamilyErrorState } from "./family-error-state";
 import { FamilyLoadingState } from "./family-loading-state";
 
 interface FamilyPageProps {
@@ -37,38 +34,27 @@ export function FamilyPage({ repository }: FamilyPageProps) {
     deleteLineMutation.isPending ||
     deleteMemberMutation.isPending ||
     updateLineMutation.isPending;
-  const mutationError =
-    getErrorMessage(addMemberMutation.error) ??
-    getErrorMessage(addCategoryMutation.error) ??
-    getErrorMessage(createLineMutation.error) ??
-    getErrorMessage(deleteCategoryMutation.error) ??
-    getErrorMessage(deleteLineMutation.error) ??
-    getErrorMessage(deleteMemberMutation.error) ??
-    getErrorMessage(updateLineMutation.error);
+  const mutationError = getMutationError([
+    addMemberMutation,
+    addCategoryMutation,
+    createLineMutation,
+    deleteCategoryMutation,
+    deleteLineMutation,
+    deleteMemberMutation,
+    updateLineMutation,
+  ]);
 
   if (familyQuery.isPending) {
     return <FamilyLoadingState />;
   }
 
-  if (familyQuery.isError) {
+  if (familyQuery.error) {
     return (
-      <PageShell>
-        <FeedbackSnackbar
-          action={
-            <Button
-              color="inherit"
-              onClick={() => void familyQuery.refetch()}
-              size="small"
-            >
-              Réessayer
-            </Button>
-          }
-          autoHideDuration={null}
-          message={
-            getErrorMessage(familyQuery.error) ?? "Le foyer est indisponible."
-          }
-        />
-      </PageShell>
+      <FamilyErrorState
+        isRetrying={familyQuery.isFetching}
+        message={getErrorMessage(familyQuery.error) ?? familyUnavailableMessage}
+        onRetry={() => void familyQuery.refetch()}
+      />
     );
   }
 
@@ -76,7 +62,8 @@ export function FamilyPage({ repository }: FamilyPageProps) {
     <FamilyDashboard
       family={familyQuery.data}
       isSaving={isSaving}
-      mutationError={mutationError}
+      mutationError={mutationError?.message}
+      mutationErrorKey={mutationError?.key}
       onAddCategory={async (input) => {
         await addCategoryMutation.mutateAsync(input);
       }}
@@ -104,4 +91,41 @@ export function FamilyPage({ repository }: FamilyPageProps) {
 
 function getErrorMessage(error: Error | null): string | undefined {
   return error?.message;
+}
+
+type FamilyMutation = {
+  error: Error | null;
+  submittedAt: number;
+};
+
+const familyUnavailableMessage = "Le foyer est indisponible.";
+
+function getMutationError(mutations: FamilyMutation[]) {
+  const mutation = mutations.reduce<FamilyMutation | undefined>(
+    (latestMutation, currentMutation) => {
+      if (!currentMutation.error) {
+        return latestMutation;
+      }
+
+      if (
+        !latestMutation ||
+        currentMutation.submittedAt >= latestMutation.submittedAt
+      ) {
+        return currentMutation;
+      }
+
+      return latestMutation;
+    },
+    undefined,
+  );
+  const message = getErrorMessage(mutation?.error ?? null);
+
+  if (!mutation || !message) {
+    return undefined;
+  }
+
+  return {
+    key: `${mutation.submittedAt}-${message}`,
+    message,
+  };
 }

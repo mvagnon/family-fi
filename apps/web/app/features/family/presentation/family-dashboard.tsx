@@ -35,6 +35,7 @@ interface FamilyDashboardProps {
   family: Family;
   isSaving?: boolean;
   mutationError?: string;
+  mutationErrorKey?: string;
   onAddCategory: (input: CreateFamilyCategoryInput) => Promise<void> | void;
   onAddMember: (input: CreateFamilyMemberInput) => Promise<void> | void;
   onCreateRecurringLine: (
@@ -53,6 +54,7 @@ export function FamilyDashboard({
   family,
   isSaving = false,
   mutationError,
+  mutationErrorKey,
   onAddCategory,
   onAddMember,
   onCreateRecurringLine,
@@ -220,7 +222,7 @@ export function FamilyDashboard({
         onViewLine={handleViewLine}
       />
       <FeedbackSnackbar
-        key={localError ? `local-${localError.revision}` : mutationError}
+        key={localError ? `local-${localError.revision}` : mutationErrorKey}
         message={localError?.message ?? mutationError}
       />
 
