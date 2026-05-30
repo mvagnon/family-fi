@@ -161,8 +161,5 @@ function getLanguageOptionSx(isActive: boolean): SxProps<Theme> {
       minWidth: 0,
       width: "100%",
     },
-    "& .MuiRadio-root": {
-      pt: 0.25,
-    },
   });
 }
