@@ -4,6 +4,7 @@ import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { ActionIconButton } from "@repo/ui/action-icon-button";
 import { SectionPanel } from "@repo/ui/section-panel";
@@ -115,20 +116,26 @@ export function FamilySidebar({
       >
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
           {sharedCategories.map((category) => (
-            <Box
+            <Chip
+              deleteIcon={<CloseIcon fontSize="small" />}
+              disabled={disabled}
               key={category.id}
-              sx={{ alignItems: "center", display: "inline-flex", gap: 0.25 }}
-            >
-              <Chip label={category.label} />
-              <ActionIconButton
-                disabled={disabled}
-                icon={<DeleteIcon fontSize="small" />}
-                label={`Supprimer ${category.label}`}
-                onClick={() => onDeleteCategory(category)}
-                size="small"
-                tooltip="Supprimer la catégorie"
-              />
-            </Box>
+              label={category.label}
+              onDelete={() => onDeleteCategory(category)}
+              sx={{
+                "& .MuiChip-deleteIcon": {
+                  color: "text.secondary",
+                  fontSize: 16,
+                  mr: 0.75,
+                  opacity: 0.72,
+                  transition: "color 120ms ease, opacity 120ms ease",
+                },
+                "& .MuiChip-deleteIcon:hover": {
+                  color: "error.main",
+                  opacity: 1,
+                },
+              }}
+            />
           ))}
         </Box>
 
