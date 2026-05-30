@@ -4,8 +4,8 @@ import { HTTPException } from "hono/http-exception";
 
 import { FamilyService } from "./features/family/application/family-service.js";
 import {
+  FamilyEntityNotFoundError,
   InvalidFamilyInputError,
-  RecurringLineNotFoundError,
 } from "./features/family/domain/family.js";
 import type { FamilyRepository } from "./features/family/domain/family-repository.js";
 import { createFamilyRouter } from "./features/family/infrastructure/http/family-routes.js";
@@ -44,7 +44,7 @@ export function createApiApp({ familyRepository }: CreateApiAppOptions) {
       return context.json({ message }, 400);
     }
 
-    if (error instanceof RecurringLineNotFoundError) {
+    if (error instanceof FamilyEntityNotFoundError) {
       return context.json({ message: error.message }, 404);
     }
 

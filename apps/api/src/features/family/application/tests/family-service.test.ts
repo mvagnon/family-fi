@@ -92,3 +92,67 @@ test("deletes a recurring line from the current family", async () => {
     false,
   );
 });
+
+test("deletes a category and its linked recurring lines", async () => {
+  const repository = createInMemoryFamilyRepository();
+  const service = new FamilyService(repository, {
+    createId: () => "unused-id",
+  });
+
+  await service.getFamilyForCurrentUser();
+  const family = await service.deleteCategory("budget");
+
+  assert.equal(
+    family.categories.some((category) => category.id === "budget"),
+    false,
+  );
+  assert.equal(
+    family.recurringLines.some((line) => line.categoryId === "budget"),
+    false,
+  );
+  assert.equal(
+    family.recurringLines.some((line) => line.categoryId === "pro-lea"),
+    true,
+  );
+});
+
+test("deletes a member with its professional categories and linked recurring lines", async () => {
+  const repository = createInMemoryFamilyRepository();
+  const service = new FamilyService(repository, {
+    createId: () => "unused-id",
+  });
+
+  await service.getFamilyForCurrentUser();
+  const family = await service.deleteMember("lea");
+
+  assert.equal(
+    family.members.some((member) => member.id === "lea"),
+    false,
+  );
+  assert.equal(
+    family.categories.some((category) => category.ownerId === "lea"),
+    false,
+  );
+  assert.equal(
+    family.recurringLines.some((line) => line.categoryId === "pro-lea"),
+    false,
+  );
+  assert.equal(
+    family.recurringLines.some((line) => line.categoryId === "budget"),
+    true,
+  );
+});
+
+test("rejects direct deletion of a member-linked professional category", async () => {
+  const repository = createInMemoryFamilyRepository();
+  const service = new FamilyService(repository, {
+    createId: () => "unused-id",
+  });
+
+  await service.getFamilyForCurrentUser();
+
+  await assert.rejects(
+    () => service.deleteCategory("pro-lea"),
+    /La catégorie liée à un membre doit être supprimée avec ce membre\./,
+  );
+});

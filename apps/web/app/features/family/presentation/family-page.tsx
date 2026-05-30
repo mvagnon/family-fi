@@ -6,6 +6,8 @@ import {
   useAddFamilyCategory,
   useAddFamilyMember,
   useCreateFamilyRecurringLine,
+  useDeleteFamilyCategory,
+  useDeleteFamilyMember,
   useDeleteFamilyRecurringLine,
   useFamily,
   useUpdateFamilyRecurringLine,
@@ -23,19 +25,25 @@ export function FamilyPage({ repository }: FamilyPageProps) {
   const addMemberMutation = useAddFamilyMember(repository);
   const addCategoryMutation = useAddFamilyCategory(repository);
   const createLineMutation = useCreateFamilyRecurringLine(repository);
+  const deleteCategoryMutation = useDeleteFamilyCategory(repository);
   const deleteLineMutation = useDeleteFamilyRecurringLine(repository);
+  const deleteMemberMutation = useDeleteFamilyMember(repository);
   const updateLineMutation = useUpdateFamilyRecurringLine(repository);
   const isSaving =
     addMemberMutation.isPending ||
     addCategoryMutation.isPending ||
     createLineMutation.isPending ||
+    deleteCategoryMutation.isPending ||
     deleteLineMutation.isPending ||
+    deleteMemberMutation.isPending ||
     updateLineMutation.isPending;
   const mutationError =
     getErrorMessage(addMemberMutation.error) ??
     getErrorMessage(addCategoryMutation.error) ??
     getErrorMessage(createLineMutation.error) ??
+    getErrorMessage(deleteCategoryMutation.error) ??
     getErrorMessage(deleteLineMutation.error) ??
+    getErrorMessage(deleteMemberMutation.error) ??
     getErrorMessage(updateLineMutation.error);
 
   if (familyQuery.isPending) {
@@ -80,6 +88,12 @@ export function FamilyPage({ repository }: FamilyPageProps) {
       }}
       onCreateRecurringLine={async (input) => {
         await createLineMutation.mutateAsync(input);
+      }}
+      onDeleteCategory={async (categoryId) => {
+        await deleteCategoryMutation.mutateAsync(categoryId);
+      }}
+      onDeleteMember={async (memberId) => {
+        await deleteMemberMutation.mutateAsync(memberId);
       }}
       onDeleteRecurringLine={async (lineId) => {
         await deleteLineMutation.mutateAsync(lineId);

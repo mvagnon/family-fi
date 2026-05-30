@@ -73,6 +73,24 @@ export function useDeleteFamilyRecurringLine(repository: FamilyRepository) {
   });
 }
 
+export function useDeleteFamilyMember(repository: FamilyRepository) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (memberId: string) => repository.deleteMember(memberId),
+    onSuccess: (family) => setFamilyCache(queryClient, family),
+  });
+}
+
+export function useDeleteFamilyCategory(repository: FamilyRepository) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (categoryId: string) => repository.deleteCategory(categoryId),
+    onSuccess: (family) => setFamilyCache(queryClient, family),
+  });
+}
+
 function setFamilyCache(
   queryClient: ReturnType<typeof useQueryClient>,
   family: Family,

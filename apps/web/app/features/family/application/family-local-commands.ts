@@ -74,10 +74,50 @@ export function updateLocalRecurringLine(
   };
 }
 
-export function deleteLocalRecurringLine(family: Family, lineId: string): Family {
+export function deleteLocalRecurringLine(
+  family: Family,
+  lineId: string,
+): Family {
   return {
     ...family,
     recurringLines: family.recurringLines.filter((line) => line.id !== lineId),
+  };
+}
+
+export function deleteLocalFamilyMember(
+  family: Family,
+  memberId: string,
+): Family {
+  const linkedCategoryIds = new Set(
+    family.categories
+      .filter((category) => category.ownerId === memberId)
+      .map((category) => category.id),
+  );
+
+  return {
+    ...family,
+    categories: family.categories.filter(
+      (category) => category.ownerId !== memberId,
+    ),
+    members: family.members.filter((member) => member.id !== memberId),
+    recurringLines: family.recurringLines.filter(
+      (line) => !linkedCategoryIds.has(line.categoryId),
+    ),
+  };
+}
+
+export function deleteLocalFamilyCategory(
+  family: Family,
+  categoryId: string,
+): Family {
+  return {
+    ...family,
+    categories: family.categories.filter(
+      (category) => category.id !== categoryId,
+    ),
+    recurringLines: family.recurringLines.filter(
+      (line) => line.categoryId !== categoryId,
+    ),
   };
 }
 

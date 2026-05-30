@@ -13,6 +13,8 @@ test("omits the category helper copy", () => {
       members: [{ id: "lea", name: "Léa", role: "Parent" }],
       onAddCategory: () => {},
       onAddMember: () => {},
+      onDeleteCategory: () => {},
+      onDeleteMember: () => {},
     }),
   );
 

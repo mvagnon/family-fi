@@ -4,7 +4,10 @@ import {
   DEV_USER_ID,
   DUPLICATE_FAMILY_CATEGORY_LABEL_MESSAGE,
   DUPLICATE_FAMILY_MEMBER_NAME_MESSAGE,
+  FamilyCategoryNotFoundError,
+  FamilyMemberNotFoundError,
   InvalidFamilyInputError,
+  LINKED_FAMILY_CATEGORY_DELETE_MESSAGE,
   RecurringLineNotFoundError,
 } from "../domain/family.js";
 import type {
@@ -101,6 +104,50 @@ export class FamilyService {
         },
       ],
     });
+  }
+
+  async deleteMember(memberId: string): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily();
+    const hasMember = family.members.some((item) => item.id === memberId);
+
+    if (!hasMember) {
+      throw new FamilyMemberNotFoundError(memberId);
+    }
+
+    const updatedFamily = await this.repository.deleteMember(
+      family.id,
+      memberId,
+    );
+
+    if (!updatedFamily) {
+      throw new FamilyMemberNotFoundError(memberId);
+    }
+
+    return updatedFamily;
+  }
+
+  async deleteCategory(categoryId: string): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily();
+    const category = family.categories.find((item) => item.id === categoryId);
+
+    if (!category) {
+      throw new FamilyCategoryNotFoundError(categoryId);
+    }
+
+    if (category.ownerId) {
+      throw new InvalidFamilyInputError(LINKED_FAMILY_CATEGORY_DELETE_MESSAGE);
+    }
+
+    const updatedFamily = await this.repository.deleteCategory(
+      family.id,
+      categoryId,
+    );
+
+    if (!updatedFamily) {
+      throw new FamilyCategoryNotFoundError(categoryId);
+    }
+
+    return updatedFamily;
   }
 
   async createRecurringLine(

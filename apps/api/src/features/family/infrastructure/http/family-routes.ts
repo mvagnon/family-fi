@@ -23,6 +23,12 @@ export function createFamilyRouter(service: FamilyService) {
 
       return context.json(family, 201);
     })
+    .delete("/members/:id", async (context) => {
+      const memberId = context.req.param("id");
+      const family = await service.deleteMember(memberId);
+
+      return context.json(family);
+    })
     .post(
       "/categories",
       validateJson(parseCreateCategoryInput),
@@ -32,6 +38,12 @@ export function createFamilyRouter(service: FamilyService) {
         return context.json(family, 201);
       },
     )
+    .delete("/categories/:id", async (context) => {
+      const categoryId = context.req.param("id");
+      const family = await service.deleteCategory(categoryId);
+
+      return context.json(family);
+    })
     .post(
       "/recurring-lines",
       validateJson(parseRecurringLineInput),

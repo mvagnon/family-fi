@@ -4,6 +4,8 @@ import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { ActionIconButton } from "@repo/ui/action-icon-button";
 import { SectionPanel } from "@repo/ui/section-panel";
 
@@ -15,6 +17,8 @@ interface FamilySidebarProps {
   members: FamilyMember[];
   onAddCategory: () => void;
   onAddMember: () => void;
+  onDeleteCategory: (category: FamilyCategory) => void;
+  onDeleteMember: (member: FamilyMember) => void;
 }
 
 export function FamilySidebar({
@@ -23,6 +27,8 @@ export function FamilySidebar({
   members,
   onAddCategory,
   onAddMember,
+  onDeleteCategory,
+  onDeleteMember,
 }: FamilySidebarProps) {
   const sharedCategories = categories.filter(
     (category) => category.kind === "shared",
@@ -57,7 +63,7 @@ export function FamilySidebar({
                 alignItems: "center",
                 display: "grid",
                 gap: 1.25,
-                gridTemplateColumns: "40px minmax(0, 1fr)",
+                gridTemplateColumns: "40px minmax(0, 1fr) auto",
                 py: 1.25,
               }}
             >
@@ -80,6 +86,14 @@ export function FamilySidebar({
                   </Typography>
                 ) : null}
               </Box>
+              <ActionIconButton
+                disabled={disabled}
+                icon={<DeleteIcon fontSize="small" />}
+                label={`Supprimer ${member.name}`}
+                onClick={() => onDeleteMember(member)}
+                size="small"
+                tooltip="Supprimer le membre"
+              />
             </Box>
           ))}
         </Stack>
@@ -102,7 +116,26 @@ export function FamilySidebar({
       >
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
           {sharedCategories.map((category) => (
-            <Chip key={category.id} label={category.label} />
+            <Chip
+              deleteIcon={<CloseIcon fontSize="small" />}
+              disabled={disabled}
+              key={category.id}
+              label={category.label}
+              onDelete={() => onDeleteCategory(category)}
+              sx={{
+                "& .MuiChip-deleteIcon": {
+                  color: "text.secondary",
+                  fontSize: 16,
+                  mr: 0.75,
+                  opacity: 0.72,
+                  transition: "color 120ms ease, opacity 120ms ease",
+                },
+                "& .MuiChip-deleteIcon:hover": {
+                  color: "error.main",
+                  opacity: 1,
+                },
+              }}
+            />
           ))}
         </Box>
 

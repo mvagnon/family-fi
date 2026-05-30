@@ -76,6 +76,107 @@ export class PrismaFamilyRepository implements FamilyRepository {
     return this.getFamilyById(familyId);
   }
 
+  async deleteMember(
+    familyId: string,
+    memberId: string,
+  ): Promise<FamilySnapshot | null> {
+    return this.prisma.$transaction(async (prisma) => {
+      const family = await prisma.family.findUniqueOrThrow({
+        include: familyInclude,
+        where: {
+          id: familyId,
+        },
+      });
+      const snapshot = toFamilySnapshot(family);
+      const hasMember = snapshot.members.some(
+        (member) => member.id === memberId,
+      );
+
+      if (!hasMember) {
+        return null;
+      }
+
+      const linkedCategoryIds = snapshot.categories
+        .filter((category) => category.ownerId === memberId)
+        .map((category) => category.id);
+
+      if (linkedCategoryIds.length > 0) {
+        await prisma.recurringLine.deleteMany({
+          where: {
+            categoryId: {
+              in: linkedCategoryIds,
+            },
+            familyId,
+          },
+        });
+      }
+
+      const updatedFamily = await prisma.family.update({
+        data: {
+          categories: toJsonValue(
+            snapshot.categories.filter(
+              (category) => category.ownerId !== memberId,
+            ),
+          ),
+          members: toJsonValue(
+            snapshot.members.filter((member) => member.id !== memberId),
+          ),
+        },
+        include: familyInclude,
+        where: {
+          id: familyId,
+        },
+      });
+
+      return toFamilySnapshot(updatedFamily);
+    });
+  }
+
+  async deleteCategory(
+    familyId: string,
+    categoryId: string,
+  ): Promise<FamilySnapshot | null> {
+    return this.prisma.$transaction(async (prisma) => {
+      const family = await prisma.family.findUniqueOrThrow({
+        include: familyInclude,
+        where: {
+          id: familyId,
+        },
+      });
+      const snapshot = toFamilySnapshot(family);
+      const hasCategory = snapshot.categories.some(
+        (category) => category.id === categoryId,
+      );
+
+      if (!hasCategory) {
+        return null;
+      }
+
+      await prisma.recurringLine.deleteMany({
+        where: {
+          categoryId,
+          familyId,
+        },
+      });
+
+      const updatedFamily = await prisma.family.update({
+        data: {
+          categories: toJsonValue(
+            snapshot.categories.filter(
+              (category) => category.id !== categoryId,
+            ),
+          ),
+        },
+        include: familyInclude,
+        where: {
+          id: familyId,
+        },
+      });
+
+      return toFamilySnapshot(updatedFamily);
+    });
+  }
+
   async findByUserId(userId: string): Promise<FamilySnapshot | null> {
     const family = await this.prisma.family.findFirst({
       include: familyInclude,
