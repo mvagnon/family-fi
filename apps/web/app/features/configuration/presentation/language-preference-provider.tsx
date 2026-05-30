@@ -9,9 +9,15 @@ import {
 } from "react";
 
 import { readLanguagePreference } from "../application/language-preference-state";
-import type { LanguagePreference } from "../domain/language-preference";
+import {
+  createLanguagePreference,
+  type LanguagePreference,
+} from "../domain/language-preference";
 import type { LanguagePreferenceRepository } from "../domain/language-preference-repository";
-import type { SupportedLanguage } from "../domain/supported-language";
+import {
+  defaultLanguage,
+  type SupportedLanguage,
+} from "../domain/supported-language";
 
 interface LanguagePreferenceContextValue extends LanguagePreference {
   hasExplicitLanguage: boolean;
@@ -34,7 +40,10 @@ export function LanguagePreferenceProvider({
   repository,
 }: LanguagePreferenceProviderProps) {
   const [preference, setPreference] = useState(() =>
-    readLanguagePreference(repository),
+    createLanguagePreference({
+      browserLanguage: defaultLanguage,
+      explicitLanguage: null,
+    }),
   );
 
   useEffect(() => {
