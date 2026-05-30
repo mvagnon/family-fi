@@ -39,6 +39,58 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
       return cloneFamily(updatedFamily);
     },
 
+    async deleteMember(familyId, memberId) {
+      const family = getFamily(families, familyId);
+      const hasMember = family.members.some((member) => member.id === memberId);
+
+      if (!hasMember) {
+        return null;
+      }
+
+      const linkedCategoryIds = new Set(
+        family.categories
+          .filter((category) => category.ownerId === memberId)
+          .map((category) => category.id),
+      );
+      const updatedFamily = {
+        ...family,
+        categories: family.categories.filter(
+          (category) => category.ownerId !== memberId,
+        ),
+        members: family.members.filter((member) => member.id !== memberId),
+        recurringLines: family.recurringLines.filter(
+          (line) => !linkedCategoryIds.has(line.categoryId),
+        ),
+      };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
+
+    async deleteCategory(familyId, categoryId) {
+      const family = getFamily(families, familyId);
+      const hasCategory = family.categories.some(
+        (category) => category.id === categoryId,
+      );
+
+      if (!hasCategory) {
+        return null;
+      }
+
+      const updatedFamily = {
+        ...family,
+        categories: family.categories.filter(
+          (category) => category.id !== categoryId,
+        ),
+        recurringLines: family.recurringLines.filter(
+          (line) => line.categoryId !== categoryId,
+        ),
+      };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
+
     async findByUserId(userId) {
       const family = Array.from(families.values()).find((item) =>
         item.userIds.includes(userId),

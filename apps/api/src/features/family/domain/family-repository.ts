@@ -6,6 +6,14 @@ export interface FamilyRepository {
     familyId: string,
     line: RecurringLine,
   ): Promise<FamilySnapshot>;
+  deleteCategory(
+    familyId: string,
+    categoryId: string,
+  ): Promise<FamilySnapshot | null>;
+  deleteMember(
+    familyId: string,
+    memberId: string,
+  ): Promise<FamilySnapshot | null>;
   deleteRecurringLine(
     familyId: string,
     lineId: string,

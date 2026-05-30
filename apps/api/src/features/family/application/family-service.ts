@@ -114,22 +114,16 @@ export class FamilyService {
       throw new FamilyMemberNotFoundError(memberId);
     }
 
-    const linkedCategoryIds = new Set(
-      family.categories
-        .filter((category) => category.ownerId === memberId)
-        .map((category) => category.id),
+    const updatedFamily = await this.repository.deleteMember(
+      family.id,
+      memberId,
     );
 
-    return this.repository.saveFamily({
-      ...family,
-      categories: family.categories.filter(
-        (category) => category.ownerId !== memberId,
-      ),
-      members: family.members.filter((item) => item.id !== memberId),
-      recurringLines: family.recurringLines.filter(
-        (line) => !linkedCategoryIds.has(line.categoryId),
-      ),
-    });
+    if (!updatedFamily) {
+      throw new FamilyMemberNotFoundError(memberId);
+    }
+
+    return updatedFamily;
   }
 
   async deleteCategory(categoryId: string): Promise<FamilySnapshot> {
@@ -144,13 +138,16 @@ export class FamilyService {
       throw new InvalidFamilyInputError(LINKED_FAMILY_CATEGORY_DELETE_MESSAGE);
     }
 
-    return this.repository.saveFamily({
-      ...family,
-      categories: family.categories.filter((item) => item.id !== categoryId),
-      recurringLines: family.recurringLines.filter(
-        (line) => line.categoryId !== categoryId,
-      ),
-    });
+    const updatedFamily = await this.repository.deleteCategory(
+      family.id,
+      categoryId,
+    );
+
+    if (!updatedFamily) {
+      throw new FamilyCategoryNotFoundError(categoryId);
+    }
+
+    return updatedFamily;
   }
 
   async createRecurringLine(
