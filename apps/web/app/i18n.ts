@@ -24,11 +24,9 @@ export const resources = {
       configuration: {
         language: {
           ariaLabel: "App language",
-          browserActive: "Using {{language}} from this browser.",
           browserDetected: "Browser language: {{language}}",
           description:
             "Choose the language used across Family-Fi. An explicit choice is saved on this device.",
-          reset: "Use browser language",
           source: {
             browser: "Browser language",
             explicit: "Saved preference",
@@ -209,11 +207,9 @@ export const resources = {
       configuration: {
         language: {
           ariaLabel: "Langue de l'application",
-          browserActive: "{{language}} est utilisée depuis ce navigateur.",
           browserDetected: "Langue du navigateur : {{language}}",
           description:
             "Choisissez la langue utilisée dans Family-Fi. Un choix explicite est enregistré sur cet appareil.",
-          reset: "Utiliser la langue du navigateur",
           source: {
             browser: "Langue du navigateur",
             explicit: "Préférence enregistrée",
@@ -395,11 +391,9 @@ export const resources = {
       configuration: {
         language: {
           ariaLabel: "アプリの言語",
-          browserActive: "このブラウザの{{language}}を使用しています。",
           browserDetected: "ブラウザの言語: {{language}}",
           description:
             "Family-Fi全体で使う言語を選びます。明示的な選択はこの端末に保存されます。",
-          reset: "ブラウザの言語を使う",
           source: {
             browser: "ブラウザの言語",
             explicit: "保存済みの設定",

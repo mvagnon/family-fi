@@ -1,6 +1,4 @@
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -25,6 +23,10 @@ import {
   type SupportedLanguage,
 } from "../domain/supported-language";
 
+const browserLanguageChoice = "browser";
+
+type LanguageChoice = SupportedLanguage | typeof browserLanguageChoice;
+
 export function ConfigurationPage() {
   const { t } = useTranslation();
   const {
@@ -38,8 +40,16 @@ export function ConfigurationPage() {
   const browserLanguageLabel = t(
     `configuration.languages.${browserLanguage}.label`,
   );
+  const selectedLanguageChoice: LanguageChoice = hasExplicitLanguage
+    ? activeLanguage
+    : browserLanguageChoice;
 
   function handleLanguageChange(event: ChangeEvent<HTMLInputElement>) {
+    if (event.target.value === browserLanguageChoice) {
+      resetLanguage();
+      return;
+    }
+
     const language = parseSupportedLanguage(event.target.value);
 
     if (language) {
@@ -79,49 +89,58 @@ export function ConfigurationPage() {
                 name="configuration-language"
                 onChange={handleLanguageChange}
                 sx={{ gap: 1 }}
-                value={activeLanguage}
+                value={selectedLanguageChoice}
               >
+                <FormControlLabel
+                  control={<Radio />}
+                  label={
+                    <BrowserLanguageOptionLabel
+                      browserLanguageLabel={browserLanguageLabel}
+                    />
+                  }
+                  sx={getLanguageOptionSx(
+                    selectedLanguageChoice === browserLanguageChoice,
+                  )}
+                  value={browserLanguageChoice}
+                />
                 {supportedLanguages.map((language) => (
                   <FormControlLabel
                     control={<Radio />}
                     key={language}
                     label={<LanguageOptionLabel language={language} />}
-                    sx={getLanguageOptionSx(activeLanguage === language)}
+                    sx={getLanguageOptionSx(
+                      selectedLanguageChoice === language,
+                    )}
                     value={language}
                   />
                 ))}
               </RadioGroup>
             </FormControl>
-
-            <Stack
-              direction={{ sm: "row", xs: "column" }}
-              spacing={1.5}
-              sx={{
-                alignItems: { sm: "center", xs: "stretch" },
-                justifyContent: "space-between",
-              }}
-            >
-              <Typography color="text.secondary" variant="body2">
-                {t(
-                  hasExplicitLanguage
-                    ? "configuration.language.browserDetected"
-                    : "configuration.language.browserActive",
-                  { language: browserLanguageLabel },
-                )}
-              </Typography>
-              <Button
-                disabled={!hasExplicitLanguage}
-                onClick={resetLanguage}
-                startIcon={<RestartAltIcon />}
-                variant="outlined"
-              >
-                {t("configuration.language.reset")}
-              </Button>
-            </Stack>
           </Stack>
         </SectionPanel>
       </AppShellContent>
     </>
+  );
+}
+
+function BrowserLanguageOptionLabel({
+  browserLanguageLabel,
+}: {
+  browserLanguageLabel: string;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <Box sx={{ minWidth: 0 }}>
+      <Typography variant="body1">
+        {t("configuration.language.source.browser")}
+      </Typography>
+      <Typography color="text.secondary" variant="body2">
+        {t("configuration.language.browserDetected", {
+          language: browserLanguageLabel,
+        })}
+      </Typography>
+    </Box>
   );
 }
 
