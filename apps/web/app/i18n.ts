@@ -15,6 +15,7 @@ export const resources = {
       appShell: {
         navigation: {
           ariaLabel: "Finance navigation",
+          assets: "Assets",
           dashboard: "Dashboard",
           distribution: "Distribution",
           investments: "Investments",
@@ -196,6 +197,7 @@ export const resources = {
       appShell: {
         navigation: {
           ariaLabel: "Navigation finances",
+          assets: "Patrimoine",
           dashboard: "Tableau de bord",
           distribution: "Distribution",
           investments: "Investissements",
@@ -378,6 +380,7 @@ export const resources = {
       appShell: {
         navigation: {
           ariaLabel: "家計ナビゲーション",
+          assets: "資産",
           dashboard: "ダッシュボード",
           distribution: "分配",
           investments: "投資",

@@ -1,4 +1,5 @@
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import CallSplitIcon from "@mui/icons-material/CallSplit";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -27,12 +28,14 @@ const sidebarNavigationItems: SidebarNavigationItem[] = [
   { icon: GroupsIcon, labelKey: "participations" },
   { icon: CallSplitIcon, labelKey: "distribution" },
   { icon: ShowChartIcon, labelKey: "investments" },
+  { icon: AccountBalanceWalletIcon, labelKey: "assets" },
   { icon: SettingsIcon, labelKey: "settings", to: "/configuration" },
 ];
 
 interface SidebarNavigationItem {
   icon: SvgIconComponent;
   labelKey:
+    | "assets"
     | "dashboard"
     | "distribution"
     | "investments"
