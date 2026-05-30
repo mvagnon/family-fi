@@ -90,17 +90,28 @@ export class PrismaFamilyRepository implements FamilyRepository {
   }
 
   async saveFamily(family: FamilySnapshot): Promise<FamilySnapshot> {
-    const updatedFamily = await this.prisma.family.update({
-      data: {
-        categories: toJsonValue(family.categories),
-        members: toJsonValue(family.members),
-        userIds: family.userIds,
-      },
-      include: familyInclude,
-      where: {
-        id: family.id,
-      },
-    });
+    const remainingLineIds = family.recurringLines.map((line) => line.id);
+    const [, updatedFamily] = await this.prisma.$transaction([
+      this.prisma.recurringLine.deleteMany({
+        where: {
+          familyId: family.id,
+          id: {
+            notIn: remainingLineIds,
+          },
+        },
+      }),
+      this.prisma.family.update({
+        data: {
+          categories: toJsonValue(family.categories),
+          members: toJsonValue(family.members),
+          userIds: family.userIds,
+        },
+        include: familyInclude,
+        where: {
+          id: family.id,
+        },
+      }),
+    ]);
 
     return toFamilySnapshot(updatedFamily);
   }

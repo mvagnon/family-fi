@@ -4,8 +4,6 @@ import {
   DEV_USER_ID,
   DUPLICATE_FAMILY_CATEGORY_LABEL_MESSAGE,
   DUPLICATE_FAMILY_MEMBER_NAME_MESSAGE,
-  FAMILY_CATEGORY_IN_USE_MESSAGE,
-  FAMILY_MEMBER_CATEGORY_IN_USE_MESSAGE,
   FamilyCategoryNotFoundError,
   FamilyMemberNotFoundError,
   InvalidFamilyInputError,
@@ -122,18 +120,15 @@ export class FamilyService {
         .map((category) => category.id),
     );
 
-    assertCategoriesAreUnused(
-      family.recurringLines,
-      linkedCategoryIds,
-      FAMILY_MEMBER_CATEGORY_IN_USE_MESSAGE,
-    );
-
     return this.repository.saveFamily({
       ...family,
       categories: family.categories.filter(
         (category) => category.ownerId !== memberId,
       ),
       members: family.members.filter((item) => item.id !== memberId),
+      recurringLines: family.recurringLines.filter(
+        (line) => !linkedCategoryIds.has(line.categoryId),
+      ),
     });
   }
 
@@ -149,15 +144,12 @@ export class FamilyService {
       throw new InvalidFamilyInputError(LINKED_FAMILY_CATEGORY_DELETE_MESSAGE);
     }
 
-    assertCategoriesAreUnused(
-      family.recurringLines,
-      new Set([categoryId]),
-      FAMILY_CATEGORY_IN_USE_MESSAGE,
-    );
-
     return this.repository.saveFamily({
       ...family,
       categories: family.categories.filter((item) => item.id !== categoryId),
+      recurringLines: family.recurringLines.filter(
+        (line) => line.categoryId !== categoryId,
+      ),
     });
   }
 
@@ -265,20 +257,6 @@ function assertUniqueMemberName(members: FamilyMember[], name: string) {
 
   if (hasDuplicate) {
     throw new InvalidFamilyInputError(DUPLICATE_FAMILY_MEMBER_NAME_MESSAGE);
-  }
-}
-
-function assertCategoriesAreUnused(
-  recurringLines: RecurringLine[],
-  categoryIds: Set<string>,
-  message: string,
-) {
-  const isUsed = recurringLines.some((line) =>
-    categoryIds.has(line.categoryId),
-  );
-
-  if (isUsed) {
-    throw new InvalidFamilyInputError(message);
   }
 }
 

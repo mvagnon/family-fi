@@ -269,6 +269,7 @@ export function FamilyDashboard({
         confirmFirst
         confirmLabel="Supprimer"
         description={getDeleteSidebarItemDescription(
+          family,
           sidebarItemPendingDeletion,
         )}
         isPending={isSaving}
@@ -326,15 +327,55 @@ function getDeleteSidebarItemTitle(
 }
 
 function getDeleteSidebarItemDescription(
+  family: Family,
   target: SidebarDeletionTarget | null,
 ): string {
   if (!target) {
     return "";
   }
 
+  const linkedLineCount = getDeletedSidebarItemLineCount(family, target);
+
   if (target.type === "member") {
+    if (linkedLineCount > 0) {
+      return `Le membre "${target.item.name}", sa catégorie professionnelle et ${formatLinkedLineCount(linkedLineCount)} seront supprimés définitivement.`;
+    }
+
     return `Le membre "${target.item.name}" et sa catégorie professionnelle seront supprimés définitivement.`;
   }
 
+  if (linkedLineCount > 0) {
+    return `La catégorie "${target.item.label}" et ${formatLinkedLineCount(linkedLineCount)} seront supprimées définitivement.`;
+  }
+
   return `La catégorie "${target.item.label}" sera supprimée définitivement.`;
+}
+
+function getDeletedSidebarItemLineCount(
+  family: Family,
+  target: SidebarDeletionTarget,
+): number {
+  if (target.type === "category") {
+    return family.recurringLines.filter(
+      (line) => line.categoryId === target.item.id,
+    ).length;
+  }
+
+  const linkedCategoryIds = new Set(
+    family.categories
+      .filter((category) => category.ownerId === target.item.id)
+      .map((category) => category.id),
+  );
+
+  return family.recurringLines.filter((line) =>
+    linkedCategoryIds.has(line.categoryId),
+  ).length;
+}
+
+function formatLinkedLineCount(count: number): string {
+  if (count === 1) {
+    return "1 ligne récurrente liée";
+  }
+
+  return `${count} lignes récurrentes liées`;
 }

@@ -88,12 +88,21 @@ export function deleteLocalFamilyMember(
   family: Family,
   memberId: string,
 ): Family {
+  const linkedCategoryIds = new Set(
+    family.categories
+      .filter((category) => category.ownerId === memberId)
+      .map((category) => category.id),
+  );
+
   return {
     ...family,
     categories: family.categories.filter(
       (category) => category.ownerId !== memberId,
     ),
     members: family.members.filter((member) => member.id !== memberId),
+    recurringLines: family.recurringLines.filter(
+      (line) => !linkedCategoryIds.has(line.categoryId),
+    ),
   };
 }
 
@@ -105,6 +114,9 @@ export function deleteLocalFamilyCategory(
     ...family,
     categories: family.categories.filter(
       (category) => category.id !== categoryId,
+    ),
+    recurringLines: family.recurringLines.filter(
+      (line) => line.categoryId !== categoryId,
     ),
   };
 }
