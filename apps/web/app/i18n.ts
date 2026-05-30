@@ -115,9 +115,6 @@ export const resources = {
         },
         meta: {
           description: "Household recurring finances setup.",
-          previewDescription:
-            "Preview page for household recurring finances setup.",
-          previewTitle: "Family-Fi | Household preview",
           title: "Family-Fi | Household",
         },
         navigation: {
@@ -265,9 +262,6 @@ export const resources = {
         },
         meta: {
           description: "Configuration des finances récurrentes du foyer.",
-          previewDescription:
-            "Page d'aperçu pour la configuration des finances récurrentes du foyer.",
-          previewTitle: "Family-Fi | Aperçu du foyer",
           title: "Family-Fi | Foyer",
         },
         navigation: {
@@ -412,8 +406,6 @@ export const resources = {
         },
         meta: {
           description: "世帯の定期的な収支設定。",
-          previewDescription: "世帯の定期的な収支設定のプレビュー。",
-          previewTitle: "Family-Fi | 世帯プレビュー",
           title: "Family-Fi | 世帯",
         },
         navigation: {
