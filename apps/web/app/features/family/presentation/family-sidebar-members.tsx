@@ -6,6 +6,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { ActionIconButton } from "@repo/ui/action-icon-button";
 import { SectionPanel } from "@repo/ui/section-panel";
+import { useTranslation } from "react-i18next";
 
 import type { FamilyMember } from "../domain/family";
 
@@ -22,20 +23,24 @@ export function FamilySidebarMembers({
   onAddMember,
   onDeleteMember,
 }: FamilySidebarMembersProps) {
+  const { t } = useTranslation();
+
   return (
     <SectionPanel
       action={
         <ActionIconButton
           disabled={disabled}
           icon={<AddIcon />}
-          label="Ajouter un membre"
+          label={t("family.sidebar.members.addLabel")}
           onClick={onAddMember}
         />
       }
       contentSx={{ pb: { md: 2, xs: 1.5 }, px: { md: 2, xs: 1.5 } }}
       headerSx={{ p: { md: 2, xs: 1.5 } }}
-      subtitle={`${members.length} personnes`}
-      title="Membres"
+      subtitle={t("family.sidebar.members.subtitle", {
+        count: members.length,
+      })}
+      title={t("family.sidebar.members.title")}
       titleId="family-members-title"
       titleVariant="h3"
     >
@@ -62,6 +67,8 @@ function FamilySidebarMemberRow({
   member: FamilyMember;
   onDeleteMember: (member: FamilyMember) => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <Box
       sx={{
@@ -94,10 +101,12 @@ function FamilySidebarMemberRow({
       <ActionIconButton
         disabled={disabled}
         icon={<DeleteIcon fontSize="small" />}
-        label={`Supprimer ${member.name}`}
+        label={t("family.sidebar.members.deleteLabel", {
+          name: member.name,
+        })}
         onClick={() => onDeleteMember(member)}
         size="small"
-        tooltip="Supprimer le membre"
+        tooltip={t("family.sidebar.members.deleteTooltip")}
       />
     </Box>
   );

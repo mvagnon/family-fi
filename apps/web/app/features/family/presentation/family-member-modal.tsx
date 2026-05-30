@@ -2,6 +2,7 @@ import type { FormEvent } from "react";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { FormDialog } from "@repo/ui/form-dialog";
+import { useTranslation } from "react-i18next";
 
 import type { CreateFamilyMemberInput } from "../domain/family";
 
@@ -18,33 +19,40 @@ export function FamilyMemberModal({
   onSave,
   open,
 }: FamilyMemberModalProps) {
+  const { t } = useTranslation();
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
 
     onSave({
-      name: getStringValue(formData, "name", "Camille"),
+      name: getStringValue(
+        formData,
+        "name",
+        t("family.memberModal.defaultName"),
+      ),
     });
   }
 
   return (
     <FormDialog
       isSubmitting={isSaving}
+      cancelLabel={t("common.cancel")}
       onClose={onClose}
       onSubmit={handleSubmit}
       open={open}
-      submitLabel="Ajouter"
-      title="Ajouter un membre"
+      submitLabel={t("common.add")}
+      title={t("family.memberModal.title")}
     >
       <Stack spacing={2} sx={{ pt: 1 }}>
         <TextField
           autoFocus
-          defaultValue="Camille"
+          defaultValue={t("family.memberModal.defaultName")}
           disabled={isSaving}
           fullWidth
           id="new-member-name"
-          label="Nom"
+          label={t("family.memberModal.label")}
           name="name"
         />
       </Stack>

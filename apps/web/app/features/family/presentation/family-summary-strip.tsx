@@ -1,24 +1,27 @@
 import Box from "@mui/material/Box";
 import { MetricSummaryCard } from "@repo/ui/metric-summary-card";
+import { useTranslation } from "react-i18next";
 
 import { getFamilyBudgetSummary } from "../domain/family-budget";
 import type { RecurringLine } from "../domain/family";
-import { formatCurrency } from "./family-format";
+import { useFamilyFormat } from "./use-family-format";
 
 interface FamilySummaryStripProps {
   lines: RecurringLine[];
 }
 
 export function FamilySummaryStrip({ lines }: FamilySummaryStripProps) {
+  const { t } = useTranslation();
+  const familyFormat = useFamilyFormat();
   const summary = getFamilyBudgetSummary(lines);
   const summaryCards = [
-    { label: "Mensuel", totals: summary.monthly },
-    { label: "Annuel", totals: summary.annual },
+    { label: t("family.summary.monthly"), totals: summary.monthly },
+    { label: t("family.summary.annual"), totals: summary.annual },
   ];
 
   return (
     <Box
-      aria-label="Résumé du foyer"
+      aria-label={t("family.summary.ariaLabel")}
       sx={{
         display: "grid",
         gap: 1.5,
@@ -33,12 +36,12 @@ export function FamilySummaryStrip({ lines }: FamilySummaryStripProps) {
           key={item.label}
           label={item.label}
           metrics={[
-            { label: "Min.", value: item.totals.min },
-            { label: "Max.", value: item.totals.max },
-            { label: "Moy.", value: item.totals.avg },
+            { label: t("family.summary.min"), value: item.totals.min },
+            { label: t("family.summary.max"), value: item.totals.max },
+            { label: t("family.summary.avg"), value: item.totals.avg },
           ].map((metric) => ({
             label: metric.label,
-            value: formatCurrency(metric.value),
+            value: familyFormat.formatCurrency(metric.value),
             valueTone: getSummaryValueTone(metric.value),
           }))}
         />

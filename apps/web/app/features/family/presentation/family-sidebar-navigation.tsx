@@ -13,36 +13,45 @@ import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import type { SvgIconComponent } from "@mui/icons-material";
 import { SectionPanel } from "@repo/ui/section-panel";
+import { useTranslation } from "react-i18next";
 
 const sidebarNavigationItems: SidebarNavigationItem[] = [
-  { icon: DashboardIcon, isActive: true, label: "Tableau de bord" },
-  { icon: ReceiptLongIcon, label: "Budget récurrent" },
-  { icon: GroupsIcon, label: "Membres" },
-  { icon: CategoryIcon, label: "Catégories" },
-  { icon: AccountCircleIcon, label: "Gestion du compte" },
-  { icon: SettingsIcon, label: "Réglages" },
+  { icon: DashboardIcon, isActive: true, labelKey: "dashboard" },
+  { icon: ReceiptLongIcon, labelKey: "recurringBudget" },
+  { icon: GroupsIcon, labelKey: "members" },
+  { icon: CategoryIcon, labelKey: "categories" },
+  { icon: AccountCircleIcon, labelKey: "account" },
+  { icon: SettingsIcon, labelKey: "settings" },
 ];
 
 interface SidebarNavigationItem {
   icon: SvgIconComponent;
   isActive?: boolean;
-  label: string;
+  labelKey:
+    | "account"
+    | "categories"
+    | "dashboard"
+    | "members"
+    | "recurringBudget"
+    | "settings";
 }
 
 export function FamilySidebarNavigation() {
+  const { t } = useTranslation();
+
   return (
     <SectionPanel
       component="nav"
       contentSx={{ pb: { md: 1.5, xs: 1 }, px: { md: 1.5, xs: 1 } }}
       headerSx={{ pb: 1.25 }}
-      subtitle="Finances du foyer"
+      subtitle={t("family.navigation.subtitle")}
       title="Family-Fi"
       titleId="family-navigation-title"
       titleVariant="h3"
     >
-      <List aria-label="Navigation finances" disablePadding>
+      <List aria-label={t("family.navigation.ariaLabel")} disablePadding>
         {sidebarNavigationItems.map((item) => (
-          <SidebarNavigationRow item={item} key={item.label} />
+          <SidebarNavigationRow item={item} key={item.labelKey} />
         ))}
       </List>
     </SectionPanel>
@@ -50,7 +59,9 @@ export function FamilySidebarNavigation() {
 }
 
 function SidebarNavigationRow({ item }: { item: SidebarNavigationItem }) {
+  const { t } = useTranslation();
   const Icon = item.icon;
+  const label = t(`family.navigation.${item.labelKey}`);
 
   return (
     <ListItem
@@ -87,7 +98,7 @@ function SidebarNavigationRow({ item }: { item: SidebarNavigationItem }) {
               }}
               variant="body2"
             >
-              {item.label}
+              {label}
             </Typography>
           </Box>
         }

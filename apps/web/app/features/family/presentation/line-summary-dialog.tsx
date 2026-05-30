@@ -4,6 +4,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { RecurringLine } from "../domain/family";
 import { LineSummaryContent } from "./line-summary-content";
@@ -28,10 +29,10 @@ export function LineSummaryDialog({
   onClose,
   open,
 }: LineSummaryDialogProps) {
-  const [lastDialog, setLastDialog] =
-    useState<VisibleLineSummaryDialog | null>(
-      line ? { categoryLabel, line } : null,
-    );
+  const { t } = useTranslation();
+  const [lastDialog, setLastDialog] = useState<VisibleLineSummaryDialog | null>(
+    line ? { categoryLabel, line } : null,
+  );
   const dialog = line ? { categoryLabel, line } : lastDialog;
 
   useEffect(() => {
@@ -58,7 +59,7 @@ export function LineSummaryDialog({
       open={open}
       slotProps={{ transition: { onExited: handleExited } }}
     >
-      <DialogTitle>Résumé de ligne</DialogTitle>
+      <DialogTitle>{t("family.line.summaryTitle")}</DialogTitle>
       <DialogContent>
         <LineSummaryContent
           categoryLabel={dialog.categoryLabel}
@@ -66,7 +67,7 @@ export function LineSummaryDialog({
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Fermer</Button>
+        <Button onClick={onClose}>{t("common.close")}</Button>
       </DialogActions>
     </Dialog>
   );

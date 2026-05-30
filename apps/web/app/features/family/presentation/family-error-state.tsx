@@ -3,6 +3,7 @@ import Alert from "@mui/material/Alert";
 import { LoadingButton } from "@repo/ui/loading-button";
 import { PageShell } from "@repo/ui/page-shell";
 import { SectionPanel } from "@repo/ui/section-panel";
+import { useTranslation } from "react-i18next";
 
 import { FamilySidebarNavigation } from "./family-sidebar-navigation";
 
@@ -17,6 +18,8 @@ export function FamilyErrorState({
   message,
   onRetry,
 }: FamilyErrorStateProps) {
+  const { t } = useTranslation();
+
   return (
     <PageShell navigation={<FamilySidebarNavigation />}>
       <SectionPanel
@@ -27,12 +30,12 @@ export function FamilyErrorState({
             startIcon={<RefreshIcon />}
             variant="contained"
           >
-            Réessayer
+            {t("common.retry")}
           </LoadingButton>
         }
         contentSx={{ p: { md: 2.5, xs: 2 } }}
-        subtitle="La configuration du foyer n'a pas pu être récupérée."
-        title="Foyer indisponible"
+        subtitle={t("family.error.unavailableSubtitle")}
+        title={t("family.error.unavailableTitle")}
         titleId="family-error-title"
       >
         <Alert severity="error" variant="outlined">

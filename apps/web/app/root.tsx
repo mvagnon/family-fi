@@ -12,15 +12,17 @@ import { ThemeProvider } from "@mui/material/styles";
 import { fontPreloadLinks } from "@repo/ui/font-preloads";
 import { appTheme } from "@repo/ui/theme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { I18nextProvider } from "react-i18next";
 
 import type { Route } from "./+types/root";
+import i18n, { defaultLanguage } from "./i18n";
 import "./app.css";
 
 export const links: Route.LinksFunction = () => [...fontPreloadLinks];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang={i18n.resolvedLanguage ?? i18n.language ?? defaultLanguage}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -51,10 +53,12 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={appTheme}>
-        <CssBaseline />
-        <Outlet />
-      </ThemeProvider>
+      <I18nextProvider i18n={i18n}>
+        <ThemeProvider theme={appTheme}>
+          <CssBaseline />
+          <Outlet />
+        </ThemeProvider>
+      </I18nextProvider>
     </QueryClientProvider>
   );
 }

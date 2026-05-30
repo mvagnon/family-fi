@@ -7,10 +7,11 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { alpha } from "@mui/material/styles";
 import { ActionIconButton } from "@repo/ui/action-icon-button";
+import { useTranslation } from "react-i18next";
 
 import type { RecurringLine } from "../domain/family";
-import { formatLineAmount, formatRecurrence } from "./family-format";
 import { familyBudgetTableGridColumns } from "./family-budget-table-layout";
+import { useFamilyFormat } from "./use-family-format";
 
 interface FamilyBudgetLineRowProps {
   disabled: boolean;
@@ -27,6 +28,9 @@ export function FamilyBudgetLineRow({
   onEditLine,
   onViewLine,
 }: FamilyBudgetLineRowProps) {
+  const { t } = useTranslation();
+  const familyFormat = useFamilyFormat();
+
   function handleLineClick() {
     if (!disabled) {
       onViewLine?.(line);
@@ -37,7 +41,7 @@ export function FamilyBudgetLineRow({
     <TableRow aria-disabled={disabled || undefined}>
       <TableCell colSpan={4} sx={{ p: 0 }}>
         <ButtonBase
-          aria-label={`Voir ${line.title}`}
+          aria-label={t("family.line.viewLabel", { title: line.title })}
           disabled={disabled}
           onClick={handleLineClick}
           sx={(theme) => ({
@@ -72,10 +76,10 @@ export function FamilyBudgetLineRow({
             </Typography>
           </Box>
           <Box sx={{ alignSelf: "center", px: 2, py: 1.5 }}>
-            {formatLineAmount(line)}
+            {familyFormat.formatLineAmount(line)}
           </Box>
           <Box sx={{ alignSelf: "center", px: 2, py: 1.5 }}>
-            {formatRecurrence(line.recurrenceMonths)}
+            {familyFormat.formatRecurrence(line.recurrenceMonths)}
           </Box>
           <Box
             sx={{
@@ -91,25 +95,25 @@ export function FamilyBudgetLineRow({
               component="span"
               disabled={disabled}
               icon={<EditIcon fontSize="small" />}
-              label={`Modifier ${line.title}`}
+              label={t("family.line.editLabel", { title: line.title })}
               onClick={(event) => {
                 event.stopPropagation();
                 onEditLine(line);
               }}
               size="small"
-              tooltip="Modifier la ligne"
+              tooltip={t("family.line.editTooltip")}
             />
             <ActionIconButton
               component="span"
               disabled={disabled}
               icon={<DeleteIcon fontSize="small" />}
-              label={`Supprimer ${line.title}`}
+              label={t("family.line.deleteLabel", { title: line.title })}
               onClick={(event) => {
                 event.stopPropagation();
                 onDeleteLine(line);
               }}
               size="small"
-              tooltip="Supprimer la ligne"
+              tooltip={t("family.line.deleteTooltip")}
             />
           </Box>
         </ButtonBase>
