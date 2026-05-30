@@ -2,16 +2,19 @@ import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Skeleton from "@mui/material/Skeleton";
 import { PageShell } from "@repo/ui/page-shell";
+import { useTranslation } from "react-i18next";
 
 import { FamilySidebarNavigation } from "./family-sidebar-navigation";
 
 export function FamilyLoadingState() {
+  const { t } = useTranslation();
+
   return (
     <PageShell
       navigation={<FamilySidebarNavigation />}
       top={
         <Box
-          aria-label="Chargement du foyer"
+          aria-label={t("family.loading.label")}
           sx={{
             display: "grid",
             gap: 1.5,

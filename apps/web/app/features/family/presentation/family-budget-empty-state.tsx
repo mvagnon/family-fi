@@ -2,8 +2,11 @@ import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
+import { useTranslation } from "react-i18next";
 
 export function FamilyBudgetEmptyState() {
+  const { t } = useTranslation();
+
   return (
     <Box
       sx={{
@@ -31,14 +34,14 @@ export function FamilyBudgetEmptyState() {
         <ReceiptLongIcon />
       </Box>
       <Typography sx={{ mt: 1.5 }} variant="h4">
-        Aucune ligne récurrente
+        {t("family.budget.empty.title")}
       </Typography>
       <Typography
         color="text.secondary"
         sx={{ maxWidth: 240, mt: 0.5 }}
         variant="body2"
       >
-        Les dépenses et revenus ajoutés apparaîtront ici.
+        {t("family.budget.empty.description")}
       </Typography>
     </Box>
   );

@@ -4,12 +4,13 @@ import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
+import { useTranslation } from "react-i18next";
 
 import { getMonthlyRange } from "../domain/family-budget";
 import type { RecurringLine } from "../domain/family";
-import { formatCurrency } from "./family-format";
 import { FamilyBudgetLineRow } from "./family-budget-line-row";
 import { familyBudgetTableGridColumns } from "./family-budget-table-layout";
+import { useFamilyFormat } from "./use-family-format";
 
 interface FamilyBudgetCategoryGroupProps {
   disabled: boolean;
@@ -30,6 +31,9 @@ export function FamilyBudgetCategoryGroup({
   onEditLine,
   onViewLine,
 }: FamilyBudgetCategoryGroupProps) {
+  const { t } = useTranslation();
+  const familyFormat = useFamilyFormat();
+
   return (
     <Fragment>
       <TableRow>
@@ -54,7 +58,9 @@ export function FamilyBudgetCategoryGroup({
                 whiteSpace: "nowrap",
               }}
             >
-              {formatCategoryTotal(group.lines)} par mois
+              {t("family.budget.category.monthlyTotal", {
+                value: formatCategoryTotal(group.lines, familyFormat),
+              })}
             </Typography>
           </Box>
         </TableCell>
@@ -74,7 +80,10 @@ export function FamilyBudgetCategoryGroup({
   );
 }
 
-function formatCategoryTotal(lines: RecurringLine[]): string {
+function formatCategoryTotal(
+  lines: RecurringLine[],
+  familyFormat: ReturnType<typeof useFamilyFormat>,
+): string {
   const total = lines.reduce(
     (summary, line) => {
       const range = getMonthlyRange(line);
@@ -88,8 +97,8 @@ function formatCategoryTotal(lines: RecurringLine[]): string {
   );
 
   if (total.low === total.high) {
-    return formatCurrency(total.low);
+    return familyFormat.formatCurrency(total.low);
   }
 
-  return `${formatCurrency(total.low)} à ${formatCurrency(total.high)}`;
+  return familyFormat.formatAmountRange(total.low, total.high);
 }

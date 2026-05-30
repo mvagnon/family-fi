@@ -12,12 +12,14 @@ import type { FamilyRepository } from "../domain/family-repository";
 import { FamilyDashboard } from "./family-dashboard";
 import { FamilyErrorState } from "./family-error-state";
 import { FamilyLoadingState } from "./family-loading-state";
+import { useTranslation } from "react-i18next";
 
 interface FamilyPageProps {
   repository: FamilyRepository;
 }
 
 export function FamilyPage({ repository }: FamilyPageProps) {
+  const { t } = useTranslation();
   const familyQuery = useFamily(repository);
   const addMemberMutation = useAddFamilyMember(repository);
   const addCategoryMutation = useAddFamilyCategory(repository);
@@ -52,7 +54,10 @@ export function FamilyPage({ repository }: FamilyPageProps) {
     return (
       <FamilyErrorState
         isRetrying={familyQuery.isFetching}
-        message={getErrorMessage(familyQuery.error) ?? familyUnavailableMessage}
+        message={
+          getErrorMessage(familyQuery.error) ??
+          t("family.error.unavailableMessage")
+        }
         onRetry={() => void familyQuery.refetch()}
       />
     );
@@ -97,8 +102,6 @@ type FamilyMutation = {
   error: Error | null;
   submittedAt: number;
 };
-
-const familyUnavailableMessage = "Le foyer est indisponible.";
 
 function getMutationError(mutations: FamilyMutation[]) {
   const mutation = mutations.reduce<FamilyMutation | undefined>(

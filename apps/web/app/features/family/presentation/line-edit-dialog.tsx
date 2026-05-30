@@ -2,12 +2,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import InputAdornment from "@mui/material/InputAdornment";
+import type { TFunction } from "i18next";
 import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { FormDialog } from "@repo/ui/form-dialog";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 import type {
@@ -16,107 +18,125 @@ import type {
   RecurringLine,
 } from "../domain/family";
 import { recurringLineInputSchema } from "../domain/family";
-import { formatRecurrence } from "./family-format";
+import { useFamilyFormat } from "./use-family-format";
 
 const recurrenceOptions = [1, 2, 3, 6, 12];
 
-const lineFormBaseSchema = z.object({
-  categoryId: requiredTextSchema("La catégorie est obligatoire."),
-  description: z
-    .string()
-    .optional()
-    .transform((value) => value?.trim() ?? ""),
-  recurrenceMonths: requiredNumberTextSchema(
-    "La récurrence est obligatoire.",
-  ).refine((value) => value > 0, {
-    message: "La récurrence est obligatoire.",
-  }),
-  title: requiredTextSchema("L'intitulé est obligatoire."),
-});
+interface LineFormValidationMessages {
+  amountNonZero: string;
+  amountRequired: string;
+  categoryRequired: string;
+  estimateSameSign: string;
+  maxNonZero: string;
+  maxRequired: string;
+  minNonZero: string;
+  minRequired: string;
+  recurrenceRequired: string;
+  titleRequired: string;
+}
 
-const lineFormRawSchema = z
-  .discriminatedUnion("isEstimate", [
-    lineFormBaseSchema.extend({
-      amount: requiredNumberTextSchema("Le montant est obligatoire."),
-      isEstimate: z.literal(false),
-      maxAmount: z.string().optional(),
-      minAmount: z.string().optional(),
+function createLineFormBaseSchema(messages: LineFormValidationMessages) {
+  return z.object({
+    categoryId: requiredTextSchema(messages.categoryRequired),
+    description: z
+      .string()
+      .optional()
+      .transform((value) => value?.trim() ?? ""),
+    recurrenceMonths: requiredNumberTextSchema(
+      messages.recurrenceRequired,
+    ).refine((value) => value > 0, {
+      message: messages.recurrenceRequired,
     }),
-    lineFormBaseSchema.extend({
-      amount: z.string().optional(),
-      isEstimate: z.literal(true),
-      maxAmount: requiredNumberTextSchema(
-        "La valeur maximale est obligatoire.",
-      ),
-      minAmount: requiredNumberTextSchema(
-        "La valeur minimale est obligatoire.",
-      ),
-    }),
-  ])
-  .superRefine((values, context) => {
-    if (!values.isEstimate) {
-      if (values.amount === 0) {
+    title: requiredTextSchema(messages.titleRequired),
+  });
+}
+
+function createLineFormRawSchema(messages: LineFormValidationMessages) {
+  const lineFormBaseSchema = createLineFormBaseSchema(messages);
+
+  return z
+    .discriminatedUnion("isEstimate", [
+      lineFormBaseSchema.extend({
+        amount: requiredNumberTextSchema(messages.amountRequired),
+        isEstimate: z.literal(false),
+        maxAmount: z.string().optional(),
+        minAmount: z.string().optional(),
+      }),
+      lineFormBaseSchema.extend({
+        amount: z.string().optional(),
+        isEstimate: z.literal(true),
+        maxAmount: requiredNumberTextSchema(messages.maxRequired),
+        minAmount: requiredNumberTextSchema(messages.minRequired),
+      }),
+    ])
+    .superRefine((values, context) => {
+      if (!values.isEstimate) {
+        if (values.amount === 0) {
+          context.addIssue({
+            code: "custom",
+            message: messages.amountNonZero,
+            path: ["amount"],
+          });
+        }
+
+        return;
+      }
+
+      if (values.minAmount === 0) {
         context.addIssue({
           code: "custom",
-          message: "Le montant doit être différent de 0.",
-          path: ["amount"],
+          message: messages.minNonZero,
+          path: ["minAmount"],
         });
       }
 
-      return;
+      if (values.maxAmount === 0) {
+        context.addIssue({
+          code: "custom",
+          message: messages.maxNonZero,
+          path: ["maxAmount"],
+        });
+      }
+
+      if (
+        values.minAmount !== 0 &&
+        values.maxAmount !== 0 &&
+        Math.sign(values.minAmount) !== Math.sign(values.maxAmount)
+      ) {
+        context.addIssue({
+          code: "custom",
+          message: messages.estimateSameSign,
+          path: ["maxAmount"],
+        });
+      }
+    });
+}
+
+function createLineFormSchema(messages: LineFormValidationMessages) {
+  return createLineFormRawSchema(messages).transform((values, context) => {
+    const result = recurringLineInputSchema.safeParse(
+      toRecurringLineInput(values),
+    );
+
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        context.addIssue({
+          code: "custom",
+          message: issue.message,
+          path: issue.path,
+        });
+      }
+
+      return z.NEVER;
     }
 
-    if (values.minAmount === 0) {
-      context.addIssue({
-        code: "custom",
-        message: "La valeur minimale doit être différente de 0.",
-        path: ["minAmount"],
-      });
-    }
-
-    if (values.maxAmount === 0) {
-      context.addIssue({
-        code: "custom",
-        message: "La valeur maximale doit être différente de 0.",
-        path: ["maxAmount"],
-      });
-    }
-
-    if (
-      values.minAmount !== 0 &&
-      values.maxAmount !== 0 &&
-      Math.sign(values.minAmount) !== Math.sign(values.maxAmount)
-    ) {
-      context.addIssue({
-        code: "custom",
-        message: "Les valeurs minimale et maximale doivent avoir le même signe.",
-        path: ["maxAmount"],
-      });
-    }
+    return result.data;
   });
+}
 
-const lineFormSchema = lineFormRawSchema.transform((values, context) => {
-  const result = recurringLineInputSchema.safeParse(
-    toRecurringLineInput(values),
-  );
-
-  if (!result.success) {
-    for (const issue of result.error.issues) {
-      context.addIssue({
-        code: "custom",
-        message: issue.message,
-        path: issue.path,
-      });
-    }
-
-    return z.NEVER;
-  }
-
-  return result.data;
-});
-
-type LineFormInput = z.input<typeof lineFormSchema>;
-type LineFormValues = z.output<typeof lineFormSchema>;
+type LineFormInput = z.input<ReturnType<typeof createLineFormSchema>>;
+type LineFormValues = z.output<ReturnType<typeof createLineFormSchema>>;
+type LineFormRawValues = z.output<ReturnType<typeof createLineFormRawSchema>>;
 
 interface LineEditDialogProps {
   categories: FamilyCategory[];
@@ -192,6 +212,12 @@ function LineEditDialogForm({
   line: RecurringLine;
   onExited: () => void;
 }) {
+  const { t } = useTranslation();
+  const familyFormat = useFamilyFormat();
+  const lineFormSchema = useMemo(
+    () => createLineFormSchema(getLineFormValidationMessages(t)),
+    [t],
+  );
   const {
     control,
     formState: { errors },
@@ -223,8 +249,13 @@ function LineEditDialogForm({
       onExited={onExited}
       onSubmit={handleSubmit(handleValidSubmit)}
       open={open}
-      submitLabel={mode === "create" ? "Ajouter" : "Enregistrer"}
-      title={mode === "create" ? "Ajouter une ligne" : "Modifier une ligne"}
+      cancelLabel={t("common.cancel")}
+      submitLabel={mode === "create" ? t("common.add") : t("common.save")}
+      title={
+        mode === "create"
+          ? t("family.line.createTitle")
+          : t("family.line.editTitle")
+      }
     >
       <Stack spacing={2.25} sx={{ pt: 1 }}>
         <Stack direction={{ sm: "row", xs: "column" }} spacing={2}>
@@ -237,7 +268,7 @@ function LineEditDialogForm({
             helperText={getFieldErrorMessage(errors.title)}
             id={`${line.id}-edit-title`}
             inputRef={titleRef}
-            label="Intitulé"
+            label={t("family.line.fields.title")}
             required
           />
           <Controller
@@ -251,7 +282,7 @@ function LineEditDialogForm({
                 helperText={getFieldErrorMessage(errors.categoryId)}
                 id={`${line.id}-edit-category`}
                 inputRef={field.ref}
-                label="Catégorie"
+                label={t("family.line.fields.category")}
                 name={field.name}
                 onBlur={field.onBlur}
                 onChange={field.onChange}
@@ -260,7 +291,7 @@ function LineEditDialogForm({
                 value={field.value ?? ""}
               >
                 <MenuItem disabled value="">
-                  Sélectionner une catégorie
+                  {t("family.line.selectCategory")}
                 </MenuItem>
                 {categories.map((category) => (
                   <MenuItem key={category.id} value={category.id}>
@@ -281,7 +312,7 @@ function LineEditDialogForm({
               fullWidth
               id={`${line.id}-edit-description`}
               inputRef={field.ref}
-              label="Description"
+              label={t("family.line.fields.description")}
               minRows={3}
               multiline
               name={field.name}
@@ -303,7 +334,7 @@ function LineEditDialogForm({
               helperText={getFieldErrorMessage(errors.recurrenceMonths)}
               id={`${line.id}-edit-recurrence`}
               inputRef={field.ref}
-              label="Récurrence"
+              label={t("family.line.fields.recurrence")}
               name={field.name}
               onBlur={field.onBlur}
               onChange={field.onChange}
@@ -312,11 +343,11 @@ function LineEditDialogForm({
               value={field.value ?? ""}
             >
               <MenuItem disabled value="">
-                Sélectionner une récurrence
+                {t("family.line.selectRecurrence")}
               </MenuItem>
               {recurrenceOptions.map((months) => (
                 <MenuItem key={months} value={String(months)}>
-                  {formatRecurrence(months)}
+                  {familyFormat.formatRecurrence(months)}
                 </MenuItem>
               ))}
             </TextField>
@@ -340,7 +371,7 @@ function LineEditDialogForm({
               )}
             />
           }
-          label="Utiliser une estimation"
+          label={t("family.line.useEstimate")}
         />
 
         {isEstimate ? (
@@ -353,7 +384,7 @@ function LineEditDialogForm({
               helperText={getFieldErrorMessage(errors.minAmount)}
               id={`${line.id}-edit-min-value`}
               inputRef={minAmountRef}
-              label="Valeur minimale"
+              label={t("family.line.fields.minAmount")}
               required
               slotProps={amountSlotProps}
             />
@@ -365,7 +396,7 @@ function LineEditDialogForm({
               helperText={getFieldErrorMessage(errors.maxAmount)}
               id={`${line.id}-edit-max-value`}
               inputRef={maxAmountRef}
-              label="Valeur maximale"
+              label={t("family.line.fields.maxAmount")}
               required
               slotProps={amountSlotProps}
             />
@@ -379,7 +410,7 @@ function LineEditDialogForm({
             helperText={getFieldErrorMessage(errors.amount)}
             id={`${line.id}-edit-amount`}
             inputRef={amountRef}
-            label="Montant"
+            label={t("family.line.fields.amount")}
             required
             slotProps={amountSlotProps}
           />
@@ -417,7 +448,7 @@ function getLineFormDefaultValues(line: RecurringLine): LineFormInput {
 }
 
 function toRecurringLineInput(
-  values: z.output<typeof lineFormRawSchema>,
+  values: LineFormRawValues,
 ): CreateRecurringLineInput {
   if (!values.isEstimate) {
     return {
@@ -450,6 +481,23 @@ function toRecurringLineInput(
     movement: getMovementFromSignedAmount(values.minAmount),
     recurrenceMonths: values.recurrenceMonths,
     title: values.title,
+  };
+}
+
+function getLineFormValidationMessages(
+  t: TFunction,
+): LineFormValidationMessages {
+  return {
+    amountNonZero: t("family.line.validation.amountNonZero"),
+    amountRequired: t("family.line.validation.amountRequired"),
+    categoryRequired: t("family.line.validation.categoryRequired"),
+    estimateSameSign: t("family.line.validation.estimateSameSign"),
+    maxNonZero: t("family.line.validation.maxNonZero"),
+    maxRequired: t("family.line.validation.maxRequired"),
+    minNonZero: t("family.line.validation.minNonZero"),
+    minRequired: t("family.line.validation.minRequired"),
+    recurrenceRequired: t("family.line.validation.recurrenceRequired"),
+    titleRequired: t("family.line.validation.titleRequired"),
   };
 }
 

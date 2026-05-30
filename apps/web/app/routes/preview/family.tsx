@@ -1,11 +1,12 @@
 import { FamilyPreviewPage } from "~/features/family/presentation/family-preview-page";
+import i18n from "~/i18n";
 
 export function meta() {
   return [
-    { title: "Family-Fi | Foyer preview" },
+    { title: i18n.t("family.meta.previewTitle") },
     {
       name: "description",
-      content: "Preview page for household recurring finances setup.",
+      content: i18n.t("family.meta.previewDescription"),
     },
   ];
 }

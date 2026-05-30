@@ -2,6 +2,7 @@ import type { FormEvent } from "react";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { FormDialog } from "@repo/ui/form-dialog";
+import { useTranslation } from "react-i18next";
 
 import type { CreateFamilyCategoryInput } from "../domain/family";
 
@@ -18,33 +19,40 @@ export function FamilyCategoryModal({
   onSave,
   open,
 }: FamilyCategoryModalProps) {
+  const { t } = useTranslation();
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
 
     onSave({
-      label: getStringValue(formData, "label", "Nouvelle catégorie"),
+      label: getStringValue(
+        formData,
+        "label",
+        t("family.categoryModal.defaultLabel"),
+      ),
     });
   }
 
   return (
     <FormDialog
       isSubmitting={isSaving}
+      cancelLabel={t("common.cancel")}
       onClose={onClose}
       onSubmit={handleSubmit}
       open={open}
-      submitLabel="Ajouter"
-      title="Ajouter une catégorie"
+      submitLabel={t("common.add")}
+      title={t("family.categoryModal.title")}
     >
       <Stack spacing={2} sx={{ pt: 1 }}>
         <TextField
           autoFocus
-          defaultValue="Nouvelle catégorie"
+          defaultValue={t("family.categoryModal.defaultLabel")}
           disabled={isSaving}
           fullWidth
           id="new-category-label"
-          label="Nom"
+          label={t("family.categoryModal.label")}
           name="label"
         />
       </Stack>

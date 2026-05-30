@@ -2,10 +2,13 @@ import { useState } from "react";
 import { ConfirmationDialog } from "@repo/ui/confirmation-dialog";
 import { FeedbackSnackbar } from "@repo/ui/feedback-snackbar";
 import { PageShell } from "@repo/ui/page-shell";
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 
 import {
-  getDuplicateFamilyCategoryLabelMessage,
-  getDuplicateFamilyMemberNameMessage,
+  getDuplicateFamilyCategoryLabelError,
+  getDuplicateFamilyMemberNameError,
+  type FamilyLocalValidationError,
 } from "../application/family-local-commands";
 import {
   createDraftRecurringLine,
@@ -63,6 +66,7 @@ export function FamilyDashboard({
   onDeleteRecurringLine,
   onUpdateRecurringLine,
 }: FamilyDashboardProps) {
+  const { t } = useTranslation();
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [localError, setLocalError] = useState<{
@@ -94,13 +98,13 @@ export function FamilyDashboard({
   }
 
   async function handleSaveCategory(input: CreateFamilyCategoryInput) {
-    const duplicateMessage = getDuplicateFamilyCategoryLabelMessage(
+    const duplicateError = getDuplicateFamilyCategoryLabelError(
       family.categories,
       input.label,
     );
 
-    if (duplicateMessage) {
-      showLocalError(duplicateMessage);
+    if (duplicateError) {
+      showLocalError(getFamilyLocalValidationErrorMessage(duplicateError, t));
       return;
     }
 
@@ -114,12 +118,12 @@ export function FamilyDashboard({
   }
 
   async function handleSaveMember(input: CreateFamilyMemberInput) {
-    const duplicateMessage =
-      getDuplicateFamilyMemberNameMessage(family.members, input.name) ??
-      getDuplicateFamilyCategoryLabelMessage(family.categories, input.name);
+    const duplicateError =
+      getDuplicateFamilyMemberNameError(family.members, input.name) ??
+      getDuplicateFamilyCategoryLabelError(family.categories, input.name);
 
-    if (duplicateMessage) {
-      showLocalError(duplicateMessage);
+    if (duplicateError) {
+      showLocalError(getFamilyLocalValidationErrorMessage(duplicateError, t));
       return;
     }
 
@@ -256,35 +260,38 @@ export function FamilyDashboard({
       <ConfirmationDialog
         confirmColor="error"
         confirmFirst
-        confirmLabel="Supprimer"
-        description={deleteMemberDescription}
+        cancelLabel={t("common.cancel")}
+        confirmLabel={t("family.deletion.confirm")}
+        description={t("family.deletion.memberDescription")}
         isPending={isSaving}
         onCancel={() => setSidebarItemPendingDeletion(null)}
         onConfirm={handleConfirmDeleteSidebarItem}
         open={sidebarItemPendingDeletion?.type === "member"}
-        title="Supprimer ce membre ?"
+        title={t("family.deletion.memberTitle")}
       />
       <ConfirmationDialog
         confirmColor="error"
         confirmFirst
-        confirmLabel="Supprimer"
-        description={deleteCategoryDescription}
+        cancelLabel={t("common.cancel")}
+        confirmLabel={t("family.deletion.confirm")}
+        description={t("family.deletion.categoryDescription")}
         isPending={isSaving}
         onCancel={() => setSidebarItemPendingDeletion(null)}
         onConfirm={handleConfirmDeleteSidebarItem}
         open={sidebarItemPendingDeletion?.type === "category"}
-        title="Supprimer cette catégorie ?"
+        title={t("family.deletion.categoryTitle")}
       />
       <ConfirmationDialog
         confirmColor="error"
         confirmFirst
-        confirmLabel="Supprimer"
-        description={deleteLineDescription}
+        cancelLabel={t("common.cancel")}
+        confirmLabel={t("family.deletion.confirm")}
+        description={t("family.deletion.lineDescription")}
         isPending={isSaving}
         onCancel={() => setLinePendingDeletion(null)}
         onConfirm={handleConfirmDeleteLine}
         open={linePendingDeletion !== null}
-        title="Supprimer cette ligne ?"
+        title={t("family.deletion.lineTitle")}
       />
     </PageShell>
   );
@@ -293,12 +300,6 @@ export function FamilyDashboard({
 type SidebarDeletionTarget =
   | { item: FamilyMember; type: "member" }
   | { item: FamilyCategory; type: "category" };
-
-const deleteCategoryDescription =
-  "La catégorie ainsi que ses lignes associées seront supprimées définitivement.";
-const deleteLineDescription = "La ligne sera supprimée définitivement.";
-const deleteMemberDescription =
-  "Le membre, sa catégorie professionnelle ainsi que ses lignes associées seront supprimés définitivement.";
 
 function getCategoryLabel(family: Family, line: RecurringLine | null): string {
   if (!line) {
@@ -309,4 +310,15 @@ function getCategoryLabel(family: Family, line: RecurringLine | null): string {
     family.categories.find((category) => category.id === line.categoryId)
       ?.label ?? line.categoryId
   );
+}
+
+function getFamilyLocalValidationErrorMessage(
+  error: FamilyLocalValidationError,
+  t: TFunction,
+): string {
+  if (error === "duplicateCategoryLabel") {
+    return t("family.localErrors.duplicateCategoryLabel");
+  }
+
+  return t("family.localErrors.duplicateMemberName");
 }

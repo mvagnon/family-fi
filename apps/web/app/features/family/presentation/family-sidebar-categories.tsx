@@ -4,6 +4,7 @@ import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import { ActionIconButton } from "@repo/ui/action-icon-button";
 import { SectionPanel } from "@repo/ui/section-panel";
+import { useTranslation } from "react-i18next";
 
 import type { FamilyCategory } from "../domain/family";
 
@@ -22,19 +23,21 @@ export function FamilySidebarCategories({
   onAddCategory,
   onDeleteCategory,
 }: FamilySidebarCategoriesProps) {
+  const { t } = useTranslation();
+
   return (
     <SectionPanel
       action={
         <ActionIconButton
           disabled={disabled}
           icon={<AddIcon />}
-          label="Ajouter une catégorie"
+          label={t("family.sidebar.categories.addLabel")}
           onClick={onAddCategory}
         />
       }
       contentSx={{ pb: { md: 2, xs: 1.5 }, px: { md: 2, xs: 1.5 } }}
       headerSx={{ p: { md: 2, xs: 1.5 } }}
-      title="Catégories"
+      title={t("family.sidebar.categories.title")}
       titleId="family-categories-title"
       titleVariant="h3"
     >

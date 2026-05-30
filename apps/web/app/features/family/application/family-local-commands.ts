@@ -9,11 +9,14 @@ import type {
 } from "../domain/family";
 
 export type CreateFamilyEntityId = (prefix: string, label: string) => string;
+export type FamilyLocalValidationError =
+  | "duplicateCategoryLabel"
+  | "duplicateMemberName";
 
-export const duplicateFamilyCategoryLabelMessage =
-  "Une catégorie avec ce nom existe déjà.";
-export const duplicateFamilyMemberNameMessage =
-  "Un membre avec ce nom existe déjà.";
+const familyLocalValidationErrorMessages = {
+  duplicateCategoryLabel: "A category with this name already exists.",
+  duplicateMemberName: "A member with this name already exists.",
+} satisfies Record<FamilyLocalValidationError, string>;
 
 export function addLocalFamilyCategory(
   family: Family,
@@ -125,22 +128,34 @@ export function getDuplicateFamilyCategoryLabelMessage(
   categories: FamilyCategory[],
   label: string,
 ): string | undefined {
-  if (hasFamilyCategoryLabel(categories, label)) {
-    return duplicateFamilyCategoryLabelMessage;
-  }
+  const error = getDuplicateFamilyCategoryLabelError(categories, label);
 
-  return undefined;
+  return error ? familyLocalValidationErrorMessages[error] : undefined;
 }
 
 export function getDuplicateFamilyMemberNameMessage(
   members: FamilyMember[],
   name: string,
 ): string | undefined {
-  if (hasFamilyMemberName(members, name)) {
-    return duplicateFamilyMemberNameMessage;
-  }
+  const error = getDuplicateFamilyMemberNameError(members, name);
 
-  return undefined;
+  return error ? familyLocalValidationErrorMessages[error] : undefined;
+}
+
+export function getDuplicateFamilyCategoryLabelError(
+  categories: FamilyCategory[],
+  label: string,
+): FamilyLocalValidationError | undefined {
+  return hasFamilyCategoryLabel(categories, label)
+    ? "duplicateCategoryLabel"
+    : undefined;
+}
+
+export function getDuplicateFamilyMemberNameError(
+  members: FamilyMember[],
+  name: string,
+): FamilyLocalValidationError | undefined {
+  return hasFamilyMemberName(members, name) ? "duplicateMemberName" : undefined;
 }
 
 export function createSluggedFamilyEntityId(

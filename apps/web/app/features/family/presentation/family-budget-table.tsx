@@ -9,6 +9,7 @@ import Typography from "@mui/material/Typography";
 import AddIcon from "@mui/icons-material/Add";
 import { LoadingButton } from "@repo/ui/loading-button";
 import { SectionPanel } from "@repo/ui/section-panel";
+import { useTranslation } from "react-i18next";
 
 import { getCategoryGroups } from "../domain/family-budget";
 import type { FamilyCategory, RecurringLine } from "../domain/family";
@@ -38,6 +39,7 @@ export function FamilyBudgetTable({
   onEditLine,
   onViewLine,
 }: FamilyBudgetTableProps) {
+  const { t } = useTranslation();
   const categoryGroups = getCategoryGroups(categories, lines);
   const hasLines = lines.length > 0;
 
@@ -50,7 +52,7 @@ export function FamilyBudgetTable({
           startIcon={<AddIcon />}
           variant="contained"
         >
-          Ajouter une ligne
+          {t("family.budget.addLine")}
         </LoadingButton>
       }
       contentSx={{ p: 0 }}
@@ -58,7 +60,7 @@ export function FamilyBudgetTable({
         alignItems: { sm: "center", xs: "flex-start" },
         flexDirection: { sm: "row", xs: "column" },
       }}
-      title="Budget récurrent"
+      title={t("family.budget.title")}
       titleId="family-budget-title"
     >
       {!hasLines ? <FamilyBudgetEmptyState /> : null}
@@ -70,7 +72,7 @@ export function FamilyBudgetTable({
         }}
       >
         <Table
-          aria-label="Configuration des dépenses et revenus récurrents"
+          aria-label={t("family.budget.tableAriaLabel")}
           stickyHeader
           sx={{
             borderCollapse: "separate",
@@ -90,16 +92,16 @@ export function FamilyBudgetTable({
                   }}
                 >
                   <Typography sx={familyBudgetTableHeaderTextSx}>
-                    Intitulé
+                    {t("family.budget.columns.title")}
                   </Typography>
                   <Typography sx={familyBudgetTableHeaderTextSx}>
-                    Montant
+                    {t("family.budget.columns.amount")}
                   </Typography>
                   <Typography sx={familyBudgetTableHeaderTextSx}>
-                    Récurrence
+                    {t("family.budget.columns.recurrence")}
                   </Typography>
                   <Typography align="right" sx={familyBudgetTableHeaderTextSx}>
-                    Actions
+                    {t("family.budget.columns.actions")}
                   </Typography>
                 </Box>
               </TableCell>
