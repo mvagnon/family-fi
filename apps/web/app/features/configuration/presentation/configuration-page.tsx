@@ -10,18 +10,20 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import type { SxProps, Theme } from "@mui/material/styles";
-import { PageShell } from "@repo/ui/page-shell";
 import { SectionPanel } from "@repo/ui/section-panel";
 import type { ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 
+import {
+  AppShellContent,
+  AppShellHeader,
+} from "../../app-shell/presentation/app-shell-layout";
 import { useLanguagePreference } from "../application/language-preference-provider";
 import { parseSupportedLanguage } from "../domain/language-preference";
 import {
   supportedLanguages,
   type SupportedLanguage,
 } from "../domain/supported-language";
-import { FamilySidebarNavigation } from "../../family/presentation/family-sidebar-navigation";
 
 export function ConfigurationPage() {
   const { t } = useTranslation();
@@ -46,78 +48,80 @@ export function ConfigurationPage() {
   }
 
   return (
-    <PageShell
-      navigation={<FamilySidebarNavigation />}
-      subtitle={t("configuration.page.subtitle")}
-      title={t("configuration.page.title")}
-    >
-      <SectionPanel
-        action={
-          <Chip
-            color={source === "explicit" ? "primary" : "default"}
-            label={t(`configuration.language.source.${source}`)}
-            size="small"
-            variant={source === "explicit" ? "filled" : "outlined"}
-          />
-        }
-        contentSx={{ p: { md: 2.5, xs: 2 }, pt: 0 }}
-        subtitle={t("configuration.language.subtitle")}
-        title={t("configuration.language.title")}
-        titleId="configuration-language-title"
-      >
-        <Stack spacing={2.5}>
-          <Typography color="text.secondary" variant="body1">
-            {t("configuration.language.description")}
-          </Typography>
-
-          <FormControl component="fieldset" fullWidth>
-            <RadioGroup
-              aria-label={t("configuration.language.ariaLabel")}
-              name="configuration-language"
-              onChange={handleLanguageChange}
-              sx={{ gap: 1 }}
-              value={activeLanguage}
-            >
-              {supportedLanguages.map((language) => (
-                <FormControlLabel
-                  control={<Radio />}
-                  key={language}
-                  label={<LanguageOptionLabel language={language} />}
-                  sx={getLanguageOptionSx(activeLanguage === language)}
-                  value={language}
-                />
-              ))}
-            </RadioGroup>
-          </FormControl>
-
-          <Stack
-            direction={{ sm: "row", xs: "column" }}
-            spacing={1.5}
-            sx={{
-              alignItems: { sm: "center", xs: "stretch" },
-              justifyContent: "space-between",
-            }}
-          >
-            <Typography color="text.secondary" variant="body2">
-              {t(
-                hasExplicitLanguage
-                  ? "configuration.language.browserDetected"
-                  : "configuration.language.browserActive",
-                { language: browserLanguageLabel },
-              )}
+    <>
+      <AppShellHeader
+        subtitle={t("configuration.page.subtitle")}
+        title={t("configuration.page.title")}
+      />
+      <AppShellContent>
+        <SectionPanel
+          action={
+            <Chip
+              color={source === "explicit" ? "primary" : "default"}
+              label={t(`configuration.language.source.${source}`)}
+              size="small"
+              variant={source === "explicit" ? "filled" : "outlined"}
+            />
+          }
+          contentSx={{ p: { md: 2.5, xs: 2 }, pt: 0 }}
+          subtitle={t("configuration.language.subtitle")}
+          title={t("configuration.language.title")}
+          titleId="configuration-language-title"
+        >
+          <Stack spacing={2.5}>
+            <Typography color="text.secondary" variant="body1">
+              {t("configuration.language.description")}
             </Typography>
-            <Button
-              disabled={!hasExplicitLanguage}
-              onClick={resetLanguage}
-              startIcon={<RestartAltIcon />}
-              variant="outlined"
+
+            <FormControl component="fieldset" fullWidth>
+              <RadioGroup
+                aria-label={t("configuration.language.ariaLabel")}
+                name="configuration-language"
+                onChange={handleLanguageChange}
+                sx={{ gap: 1 }}
+                value={activeLanguage}
+              >
+                {supportedLanguages.map((language) => (
+                  <FormControlLabel
+                    control={<Radio />}
+                    key={language}
+                    label={<LanguageOptionLabel language={language} />}
+                    sx={getLanguageOptionSx(activeLanguage === language)}
+                    value={language}
+                  />
+                ))}
+              </RadioGroup>
+            </FormControl>
+
+            <Stack
+              direction={{ sm: "row", xs: "column" }}
+              spacing={1.5}
+              sx={{
+                alignItems: { sm: "center", xs: "stretch" },
+                justifyContent: "space-between",
+              }}
             >
-              {t("configuration.language.reset")}
-            </Button>
+              <Typography color="text.secondary" variant="body2">
+                {t(
+                  hasExplicitLanguage
+                    ? "configuration.language.browserDetected"
+                    : "configuration.language.browserActive",
+                  { language: browserLanguageLabel },
+                )}
+              </Typography>
+              <Button
+                disabled={!hasExplicitLanguage}
+                onClick={resetLanguage}
+                startIcon={<RestartAltIcon />}
+                variant="outlined"
+              >
+                {t("configuration.language.reset")}
+              </Button>
+            </Stack>
           </Stack>
-        </Stack>
-      </SectionPanel>
-    </PageShell>
+        </SectionPanel>
+      </AppShellContent>
+    </>
   );
 }
 

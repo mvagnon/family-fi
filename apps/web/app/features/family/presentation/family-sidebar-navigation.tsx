@@ -15,7 +15,8 @@ import { alpha } from "@mui/material/styles";
 import type { Theme } from "@mui/material/styles";
 import type { SvgIconComponent } from "@mui/icons-material";
 import { SectionPanel } from "@repo/ui/section-panel";
-import { Link, useLocation } from "react-router";
+import { memo } from "react";
+import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 
 const sidebarNavigationItems: SidebarNavigationItem[] = [
@@ -39,8 +40,7 @@ interface SidebarNavigationItem {
   to?: string;
 }
 
-export function FamilySidebarNavigation() {
-  const location = useLocation();
+export const FamilySidebarNavigation = memo(function FamilySidebarNavigation() {
   const { t } = useTranslation();
 
   return (
@@ -55,24 +55,14 @@ export function FamilySidebarNavigation() {
     >
       <List aria-label={t("family.navigation.ariaLabel")} disablePadding>
         {sidebarNavigationItems.map((item) => (
-          <SidebarNavigationRow
-            isActive={isNavigationItemActive(location.pathname, item)}
-            item={item}
-            key={item.labelKey}
-          />
+          <SidebarNavigationRow item={item} key={item.labelKey} />
         ))}
       </List>
     </SectionPanel>
   );
-}
+});
 
-function SidebarNavigationRow({
-  isActive,
-  item,
-}: {
-  isActive: boolean;
-  item: SidebarNavigationItem;
-}) {
+function SidebarNavigationRow({ item }: { item: SidebarNavigationItem }) {
   const { t } = useTranslation();
   const Icon = item.icon;
   const label = t(`family.navigation.${item.labelKey}`);
@@ -90,8 +80,9 @@ function SidebarNavigationRow({
         primary={
           <Box sx={{ minWidth: 0 }}>
             <Typography
+              className={navigationLabelClassName}
               sx={{
-                fontWeight: isActive ? 600 : 400,
+                fontWeight: 400,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -110,9 +101,9 @@ function SidebarNavigationRow({
     return (
       <ListItem disablePadding sx={{ display: "block" }}>
         <ListItemButton
-          aria-current={isActive ? "page" : undefined}
-          component={Link}
-          sx={getNavigationRowSx(isActive)}
+          component={NavLink}
+          end={item.to === "/family"}
+          sx={navigationRowSx}
           to={item.to}
         >
           {content}
@@ -121,38 +112,30 @@ function SidebarNavigationRow({
     );
   }
 
-  return (
-    <ListItem
-      aria-current={isActive ? "page" : undefined}
-      sx={getNavigationRowSx(isActive)}
-    >
-      {content}
-    </ListItem>
-  );
+  return <ListItem sx={navigationRowSx}>{content}</ListItem>;
 }
 
-function getNavigationRowSx(isActive: boolean) {
-  return (theme: Theme) => ({
-    borderRadius: 1,
-    color: isActive ? "primary.main" : "text.primary",
-    gap: 1.25,
-    minHeight: 36,
-    px: 1,
-    py: 0.75,
-    ...(isActive && {
-      bgcolor: alpha(theme.palette.primary.main, 0.08),
-    }),
-  });
-}
+const navigationLabelClassName = "FamilySidebarNavigation-label";
 
-function isNavigationItemActive(pathname: string, item: SidebarNavigationItem) {
-  if (!item.to) {
-    return false;
-  }
-
-  if (item.to === "/family") {
-    return pathname === item.to;
-  }
-
-  return pathname === item.to || pathname.startsWith(`${item.to}/`);
-}
+const navigationRowSx = (theme: Theme) => ({
+  borderRadius: 1,
+  color: "text.primary",
+  gap: 1.25,
+  minHeight: 36,
+  px: 1,
+  py: 0.75,
+  textDecoration: "none",
+  "&.active": {
+    bgcolor: alpha(theme.palette.primary.main, 0.08),
+    color: "primary.main",
+    [`& .${navigationLabelClassName}`]: {
+      fontWeight: 600,
+    },
+  },
+  "&:hover": {
+    bgcolor: alpha(theme.palette.primary.main, 0.05),
+  },
+  "&.active:hover": {
+    bgcolor: alpha(theme.palette.primary.main, 0.1),
+  },
+});

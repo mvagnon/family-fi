@@ -1,11 +1,10 @@
 import RefreshIcon from "@mui/icons-material/Refresh";
 import Alert from "@mui/material/Alert";
 import { LoadingButton } from "@repo/ui/loading-button";
-import { PageShell } from "@repo/ui/page-shell";
 import { SectionPanel } from "@repo/ui/section-panel";
 import { useTranslation } from "react-i18next";
 
-import { FamilySidebarNavigation } from "./family-sidebar-navigation";
+import { AppShellContent } from "../../app-shell/presentation/app-shell-layout";
 
 interface FamilyErrorStateProps {
   isRetrying: boolean;
@@ -21,7 +20,7 @@ export function FamilyErrorState({
   const { t } = useTranslation();
 
   return (
-    <PageShell navigation={<FamilySidebarNavigation />}>
+    <AppShellContent>
       <SectionPanel
         action={
           <LoadingButton
@@ -42,6 +41,6 @@ export function FamilyErrorState({
           {message}
         </Alert>
       </SectionPanel>
-    </PageShell>
+    </AppShellContent>
   );
 }
