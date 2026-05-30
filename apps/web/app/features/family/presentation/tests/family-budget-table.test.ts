@@ -7,6 +7,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { ActionIconButton } from "@repo/ui/action-icon-button";
 
 import type { RecurringLine } from "../../domain/family";
+import { FamilyBudgetLineRow } from "../family-budget-line-row";
 import { FamilyBudgetTable } from "../family-budget-table";
 
 const rentLine: RecurringLine = {
@@ -209,14 +210,14 @@ test("renders recurring line details trigger as a MUI button", () => {
 test("keeps delete action clicks separate from details button clicks", () => {
   const deletedLineIds: string[] = [];
   const viewedLineIds: string[] = [];
-  const tree = FamilyBudgetTable({
-    categories: [{ id: "housing", kind: "shared", label: "Logement" }],
-    lines: [rentLine],
-    onAddLine: () => {},
+  const tree = FamilyBudgetLineRow({
+    disabled: false,
+    line: rentLine,
     onDeleteLine: (line) => deletedLineIds.push(line.id),
     onEditLine: () => {},
     onViewLine: (line) => viewedLineIds.push(line.id),
   });
+
   const detailButton = findElement(
     tree,
     (element) => element.props["aria-label"] === "Voir Loyer",

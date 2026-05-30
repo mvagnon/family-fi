@@ -34,7 +34,12 @@ export function SectionPanel({
     <Paper
       aria-labelledby={titleId}
       component={component}
-      sx={[{ overflow: "hidden" }, ...(Array.isArray(sx) ? sx : [sx])]}
+      sx={[
+        {
+          overflow: "hidden",
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
     >
       <Stack
         direction="row"
@@ -43,7 +48,7 @@ export function SectionPanel({
             alignItems: "center",
             gap: 1.5,
             justifyContent: "space-between",
-            p: { md: 3, xs: 2 },
+            p: { md: 2.5, xs: 2 },
           },
           ...(Array.isArray(headerSx) ? headerSx : [headerSx]),
         ]}
