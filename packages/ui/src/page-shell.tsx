@@ -37,9 +37,12 @@ export function PageShell({
         {
           bgcolor: "background.default",
           color: "text.primary",
+          maxWidth: PAGE_SHELL_MAX_WIDTH,
           minHeight: "100vh",
+          mx: "auto",
           px: { lg: 4, md: 3, xs: 2 },
           py: { md: 3, xs: 2 },
+          width: "100%",
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
@@ -91,6 +94,8 @@ export function PageShell({
     </Box>
   );
 }
+
+const PAGE_SHELL_MAX_WIDTH = 1920;
 
 const pageShellLayoutGridSx = {
   alignItems: "start",
