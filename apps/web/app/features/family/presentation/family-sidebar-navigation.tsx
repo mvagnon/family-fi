@@ -7,26 +7,28 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
+import type { Theme } from "@mui/material/styles";
 import type { SvgIconComponent } from "@mui/icons-material";
 import { SectionPanel } from "@repo/ui/section-panel";
+import { Link, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
 
 const sidebarNavigationItems: SidebarNavigationItem[] = [
-  { icon: DashboardIcon, isActive: true, labelKey: "dashboard" },
+  { icon: DashboardIcon, labelKey: "dashboard", to: "/family" },
   { icon: ReceiptLongIcon, labelKey: "recurringBudget" },
   { icon: GroupsIcon, labelKey: "members" },
   { icon: CategoryIcon, labelKey: "categories" },
   { icon: AccountCircleIcon, labelKey: "account" },
-  { icon: SettingsIcon, labelKey: "settings" },
+  { icon: SettingsIcon, labelKey: "settings", to: "/configuration" },
 ];
 
 interface SidebarNavigationItem {
   icon: SvgIconComponent;
-  isActive?: boolean;
   labelKey:
     | "account"
     | "categories"
@@ -34,9 +36,11 @@ interface SidebarNavigationItem {
     | "members"
     | "recurringBudget"
     | "settings";
+  to?: string;
 }
 
 export function FamilySidebarNavigation() {
+  const location = useLocation();
   const { t } = useTranslation();
 
   return (
@@ -51,33 +55,29 @@ export function FamilySidebarNavigation() {
     >
       <List aria-label={t("family.navigation.ariaLabel")} disablePadding>
         {sidebarNavigationItems.map((item) => (
-          <SidebarNavigationRow item={item} key={item.labelKey} />
+          <SidebarNavigationRow
+            isActive={isNavigationItemActive(location.pathname, item)}
+            item={item}
+            key={item.labelKey}
+          />
         ))}
       </List>
     </SectionPanel>
   );
 }
 
-function SidebarNavigationRow({ item }: { item: SidebarNavigationItem }) {
+function SidebarNavigationRow({
+  isActive,
+  item,
+}: {
+  isActive: boolean;
+  item: SidebarNavigationItem;
+}) {
   const { t } = useTranslation();
   const Icon = item.icon;
   const label = t(`family.navigation.${item.labelKey}`);
-
-  return (
-    <ListItem
-      aria-current={item.isActive ? "page" : undefined}
-      sx={(theme) => ({
-        borderRadius: 1,
-        color: item.isActive ? "primary.main" : "text.primary",
-        gap: 1.25,
-        minHeight: 36,
-        px: 1,
-        py: 0.75,
-        ...(item.isActive && {
-          bgcolor: alpha(theme.palette.primary.main, 0.08),
-        }),
-      })}
-    >
+  const content = (
+    <>
       <ListItemIcon
         sx={{
           color: "inherit",
@@ -91,7 +91,7 @@ function SidebarNavigationRow({ item }: { item: SidebarNavigationItem }) {
           <Box sx={{ minWidth: 0 }}>
             <Typography
               sx={{
-                fontWeight: item.isActive ? 600 : 400,
+                fontWeight: isActive ? 600 : 400,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -103,6 +103,56 @@ function SidebarNavigationRow({ item }: { item: SidebarNavigationItem }) {
           </Box>
         }
       />
+    </>
+  );
+
+  if (item.to) {
+    return (
+      <ListItem disablePadding sx={{ display: "block" }}>
+        <ListItemButton
+          aria-current={isActive ? "page" : undefined}
+          component={Link}
+          sx={getNavigationRowSx(isActive)}
+          to={item.to}
+        >
+          {content}
+        </ListItemButton>
+      </ListItem>
+    );
+  }
+
+  return (
+    <ListItem
+      aria-current={isActive ? "page" : undefined}
+      sx={getNavigationRowSx(isActive)}
+    >
+      {content}
     </ListItem>
   );
+}
+
+function getNavigationRowSx(isActive: boolean) {
+  return (theme: Theme) => ({
+    borderRadius: 1,
+    color: isActive ? "primary.main" : "text.primary",
+    gap: 1.25,
+    minHeight: 36,
+    px: 1,
+    py: 0.75,
+    ...(isActive && {
+      bgcolor: alpha(theme.palette.primary.main, 0.08),
+    }),
+  });
+}
+
+function isNavigationItemActive(pathname: string, item: SidebarNavigationItem) {
+  if (!item.to) {
+    return false;
+  }
+
+  if (item.to === "/family") {
+    return pathname === item.to;
+  }
+
+  return pathname === item.to || pathname.startsWith(`${item.to}/`);
 }

@@ -1,8 +1,13 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
-export const defaultLanguage = "en";
-export const supportedLanguages = ["en", "fr", "ja"] as const;
+import {
+  defaultLanguage,
+  supportedLanguages,
+} from "./features/configuration/domain/supported-language";
+
+export { defaultLanguage, supportedLanguages };
+export type { SupportedLanguage } from "./features/configuration/domain/supported-language";
 
 export const resources = {
   en: {
@@ -15,6 +20,44 @@ export const resources = {
         delete: "Delete",
         retry: "Retry",
         save: "Save",
+      },
+      configuration: {
+        language: {
+          ariaLabel: "App language",
+          browserActive: "Using {{language}} from this browser.",
+          browserDetected: "Browser language: {{language}}",
+          description:
+            "Choose the language used across Family-Fi. An explicit choice is saved on this device.",
+          reset: "Use browser language",
+          source: {
+            browser: "Browser language",
+            explicit: "Saved preference",
+          },
+          subtitle: "English, French, and Japanese are available.",
+          title: "Language",
+        },
+        languages: {
+          en: {
+            label: "English",
+            native: "English",
+          },
+          fr: {
+            label: "French",
+            native: "Français",
+          },
+          ja: {
+            label: "Japanese",
+            native: "日本語",
+          },
+        },
+        meta: {
+          description: "Family-Fi app configuration.",
+          title: "Family-Fi | Configuration",
+        },
+        page: {
+          subtitle: "Adjust app-level preferences for this browser.",
+          title: "Configuration",
+        },
       },
       family: {
         budget: {
@@ -163,6 +206,45 @@ export const resources = {
         retry: "Réessayer",
         save: "Enregistrer",
       },
+      configuration: {
+        language: {
+          ariaLabel: "Langue de l'application",
+          browserActive: "{{language}} est utilisée depuis ce navigateur.",
+          browserDetected: "Langue du navigateur : {{language}}",
+          description:
+            "Choisissez la langue utilisée dans Family-Fi. Un choix explicite est enregistré sur cet appareil.",
+          reset: "Utiliser la langue du navigateur",
+          source: {
+            browser: "Langue du navigateur",
+            explicit: "Préférence enregistrée",
+          },
+          subtitle: "Anglais, français et japonais sont disponibles.",
+          title: "Langue",
+        },
+        languages: {
+          en: {
+            label: "Anglais",
+            native: "English",
+          },
+          fr: {
+            label: "Français",
+            native: "Français",
+          },
+          ja: {
+            label: "Japonais",
+            native: "日本語",
+          },
+        },
+        meta: {
+          description: "Configuration de l'application Family-Fi.",
+          title: "Family-Fi | Configuration",
+        },
+        page: {
+          subtitle:
+            "Ajustez les préférences de l'application pour ce navigateur.",
+          title: "Configuration",
+        },
+      },
       family: {
         budget: {
           addLine: "Ajouter une ligne",
@@ -309,6 +391,44 @@ export const resources = {
         delete: "削除",
         retry: "再試行",
         save: "保存",
+      },
+      configuration: {
+        language: {
+          ariaLabel: "アプリの言語",
+          browserActive: "このブラウザの{{language}}を使用しています。",
+          browserDetected: "ブラウザの言語: {{language}}",
+          description:
+            "Family-Fi全体で使う言語を選びます。明示的な選択はこの端末に保存されます。",
+          reset: "ブラウザの言語を使う",
+          source: {
+            browser: "ブラウザの言語",
+            explicit: "保存済みの設定",
+          },
+          subtitle: "英語、フランス語、日本語を利用できます。",
+          title: "言語",
+        },
+        languages: {
+          en: {
+            label: "英語",
+            native: "English",
+          },
+          fr: {
+            label: "フランス語",
+            native: "Français",
+          },
+          ja: {
+            label: "日本語",
+            native: "日本語",
+          },
+        },
+        meta: {
+          description: "Family-Fiアプリの設定。",
+          title: "Family-Fi | 設定",
+        },
+        page: {
+          subtitle: "このブラウザで使うアプリ設定を調整します。",
+          title: "設定",
+        },
       },
       family: {
         budget: {
