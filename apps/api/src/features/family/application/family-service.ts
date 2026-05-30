@@ -224,36 +224,52 @@ function normalizeRecurringLine(line: RecurringLine): RecurringLine {
     line.categoryId,
     "Recurring line category is required.",
   );
+  const description = line.description.trim();
   const recurrenceMonths = requirePositiveNumber(
     line.recurrenceMonths,
     "Recurring line recurrence must be positive.",
-  );
-  const amount = requireFiniteNumber(
-    line.amount,
-    "Recurring line amount must be a valid number.",
   );
 
   if (line.movement !== "positive" && line.movement !== "negative") {
     throw new InvalidFamilyInputError("Recurring line movement is invalid.");
   }
 
+  if (line.isEstimate) {
+    const minAmount = requirePositiveNumber(
+      line.minAmount,
+      "Minimum amount is required.",
+    );
+    const maxAmount = requirePositiveNumber(
+      line.maxAmount,
+      "Maximum amount is required.",
+    );
+    const normalizedMinAmount = Math.min(minAmount, maxAmount);
+    const normalizedMaxAmount = Math.max(minAmount, maxAmount);
+
+    return {
+      ...line,
+      amount: (normalizedMinAmount + normalizedMaxAmount) / 2,
+      categoryId,
+      description,
+      maxAmount: normalizedMaxAmount,
+      minAmount: normalizedMinAmount,
+      recurrenceMonths,
+      title,
+    };
+  }
+
+  const amount = requirePositiveNumber(
+    line.amount,
+    "Recurring line amount must be positive.",
+  );
+
   return {
     ...line,
     amount,
     categoryId,
-    description: line.description.trim(),
-    maxAmount: line.isEstimate
-      ? requireFiniteNumber(
-          line.maxAmount ?? amount,
-          "Maximum amount is invalid.",
-        )
-      : undefined,
-    minAmount: line.isEstimate
-      ? requireFiniteNumber(
-          line.minAmount ?? amount,
-          "Minimum amount is invalid.",
-        )
-      : undefined,
+    description,
+    maxAmount: undefined,
+    minAmount: undefined,
     recurrenceMonths,
     title,
   };
@@ -285,15 +301,21 @@ function requireText(value: string, message: string): string {
   return text;
 }
 
-function requireFiniteNumber(value: number, message: string): number {
-  if (!Number.isFinite(value)) {
+function requireFiniteNumber(
+  value: number | undefined,
+  message: string,
+): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
     throw new InvalidFamilyInputError(message);
   }
 
   return value;
 }
 
-function requirePositiveNumber(value: number, message: string): number {
+function requirePositiveNumber(
+  value: number | undefined,
+  message: string,
+): number {
   const number = requireFiniteNumber(value, message);
 
   if (number <= 0) {

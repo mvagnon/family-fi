@@ -16,6 +16,7 @@ interface FormDialogProps {
   contentSx?: SxProps<Theme>;
   isSubmitting?: boolean;
   maxWidth?: DialogProps["maxWidth"];
+  noValidate?: boolean;
   onClose: () => void;
   onSubmit: FormEventHandler<HTMLFormElement>;
   open: boolean;
@@ -29,6 +30,7 @@ export function FormDialog({
   contentSx,
   isSubmitting = false,
   maxWidth = "sm",
+  noValidate = false,
   onClose,
   onSubmit,
   open,
@@ -43,7 +45,7 @@ export function FormDialog({
       open={open}
     >
       <DialogTitle>{title}</DialogTitle>
-      <Box component="form" onSubmit={onSubmit}>
+      <Box component="form" noValidate={noValidate} onSubmit={onSubmit}>
         <DialogContent sx={contentSx}>{children}</DialogContent>
         <DialogActions>
           <Button disabled={isSubmitting} onClick={onClose} type="button">

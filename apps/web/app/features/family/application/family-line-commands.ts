@@ -11,13 +11,13 @@ export function createDraftRecurringLine(
 ): RecurringLine {
   return {
     amount: 0,
-    categoryId: family.categories[0]?.id ?? "budget",
+    categoryId: family.categories[0]?.id ?? "",
     description: "",
     id,
     isEstimate: false,
     movement: "negative",
     recurrenceMonths: 1,
-    title: "Nouvelle ligne",
+    title: "",
   };
 }
 

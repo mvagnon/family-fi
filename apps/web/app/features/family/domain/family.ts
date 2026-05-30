@@ -1,3 +1,5 @@
+export { recurringLineInputSchema } from "@repo/api-contracts/family";
+
 export type {
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
