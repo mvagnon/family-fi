@@ -1,9 +1,10 @@
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import CategoryIcon from "@mui/icons-material/Category";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import CallSplitIcon from "@mui/icons-material/CallSplit";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import GroupsIcon from "@mui/icons-material/Groups";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import SettingsIcon from "@mui/icons-material/Settings";
+import ShowChartIcon from "@mui/icons-material/ShowChart";
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -20,21 +21,23 @@ import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 
 const sidebarNavigationItems: SidebarNavigationItem[] = [
-  { icon: DashboardIcon, labelKey: "dashboard", to: "/family" },
-  { icon: ReceiptLongIcon, labelKey: "recurringBudget" },
-  { icon: GroupsIcon, labelKey: "members" },
-  { icon: CategoryIcon, labelKey: "categories" },
-  { icon: AccountCircleIcon, labelKey: "account" },
+  { icon: DashboardIcon, labelKey: "dashboard" },
+  { icon: ReceiptLongIcon, labelKey: "recurringBudget", to: "/family" },
+  { icon: AccountBalanceIcon, labelKey: "loans" },
+  { icon: GroupsIcon, labelKey: "participations" },
+  { icon: CallSplitIcon, labelKey: "distribution" },
+  { icon: ShowChartIcon, labelKey: "investments" },
   { icon: SettingsIcon, labelKey: "settings", to: "/configuration" },
 ];
 
 interface SidebarNavigationItem {
   icon: SvgIconComponent;
   labelKey:
-    | "account"
-    | "categories"
     | "dashboard"
-    | "members"
+    | "distribution"
+    | "investments"
+    | "loans"
+    | "participations"
     | "recurringBudget"
     | "settings";
   to?: string;
