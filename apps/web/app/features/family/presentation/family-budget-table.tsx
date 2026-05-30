@@ -76,6 +76,7 @@ export function FamilyBudgetTable({
                   sx={{
                     display: "grid",
                     gridTemplateColumns: familyBudgetTableGridColumns,
+                    backgroundColor: "Background",
                     pb: 1,
                   }}
                 >
