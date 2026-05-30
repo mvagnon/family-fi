@@ -24,14 +24,9 @@ export const resources = {
       configuration: {
         language: {
           ariaLabel: "App language",
-          browserDetected: "Browser language: {{language}}",
+          browserDetected: "From this browser",
           description:
             "Choose the language used across Family-Fi. An explicit choice is saved on this device.",
-          source: {
-            browser: "Browser language",
-            explicit: "Saved preference",
-          },
-          subtitle: "English, French, and Japanese are available.",
           title: "Language",
         },
         languages: {
@@ -207,14 +202,9 @@ export const resources = {
       configuration: {
         language: {
           ariaLabel: "Langue de l'application",
-          browserDetected: "Langue du navigateur : {{language}}",
+          browserDetected: "Depuis ce navigateur",
           description:
             "Choisissez la langue utilisée dans Family-Fi. Un choix explicite est enregistré sur cet appareil.",
-          source: {
-            browser: "Langue du navigateur",
-            explicit: "Préférence enregistrée",
-          },
-          subtitle: "Anglais, français et japonais sont disponibles.",
           title: "Langue",
         },
         languages: {
@@ -391,14 +381,9 @@ export const resources = {
       configuration: {
         language: {
           ariaLabel: "アプリの言語",
-          browserDetected: "ブラウザの言語: {{language}}",
+          browserDetected: "このブラウザから",
           description:
             "Family-Fi全体で使う言語を選びます。明示的な選択はこの端末に保存されます。",
-          source: {
-            browser: "ブラウザの言語",
-            explicit: "保存済みの設定",
-          },
-          subtitle: "英語、フランス語、日本語を利用できます。",
           title: "言語",
         },
         languages: {

@@ -1,5 +1,4 @@
 import Box from "@mui/material/Box";
-import Chip from "@mui/material/Chip";
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Radio from "@mui/material/Radio";
@@ -35,7 +34,6 @@ export function ConfigurationPage() {
     hasExplicitLanguage,
     resetLanguage,
     setLanguage,
-    source,
   } = useLanguagePreference();
   const browserLanguageLabel = t(
     `configuration.languages.${browserLanguage}.label`,
@@ -65,24 +63,12 @@ export function ConfigurationPage() {
       />
       <AppShellContent>
         <SectionPanel
-          action={
-            <Chip
-              color={source === "explicit" ? "primary" : "default"}
-              label={t(`configuration.language.source.${source}`)}
-              size="small"
-              variant={source === "explicit" ? "filled" : "outlined"}
-            />
-          }
           contentSx={{ p: { md: 2.5, xs: 2 }, pt: 0 }}
-          subtitle={t("configuration.language.subtitle")}
+          subtitle={t("configuration.language.description")}
           title={t("configuration.language.title")}
           titleId="configuration-language-title"
         >
           <Stack spacing={2.5}>
-            <Typography color="text.secondary" variant="body1">
-              {t("configuration.language.description")}
-            </Typography>
-
             <FormControl component="fieldset" fullWidth>
               <RadioGroup
                 aria-label={t("configuration.language.ariaLabel")}
@@ -132,13 +118,9 @@ function BrowserLanguageOptionLabel({
 
   return (
     <Box sx={{ minWidth: 0 }}>
-      <Typography variant="body1">
-        {t("configuration.language.source.browser")}
-      </Typography>
+      <Typography variant="body1">{browserLanguageLabel}</Typography>
       <Typography color="text.secondary" variant="body2">
-        {t("configuration.language.browserDetected", {
-          language: browserLanguageLabel,
-        })}
+        {t("configuration.language.browserDetected")}
       </Typography>
     </Box>
   );
