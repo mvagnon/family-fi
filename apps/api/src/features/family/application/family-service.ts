@@ -4,7 +4,12 @@ import {
   DEV_USER_ID,
   DUPLICATE_FAMILY_CATEGORY_LABEL_MESSAGE,
   DUPLICATE_FAMILY_MEMBER_NAME_MESSAGE,
+  FAMILY_CATEGORY_IN_USE_MESSAGE,
+  FAMILY_MEMBER_CATEGORY_IN_USE_MESSAGE,
+  FamilyCategoryNotFoundError,
+  FamilyMemberNotFoundError,
   InvalidFamilyInputError,
+  LINKED_FAMILY_CATEGORY_DELETE_MESSAGE,
   RecurringLineNotFoundError,
 } from "../domain/family.js";
 import type {
@@ -100,6 +105,59 @@ export class FamilyService {
           ownerId: input.ownerId,
         },
       ],
+    });
+  }
+
+  async deleteMember(memberId: string): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily();
+    const hasMember = family.members.some((item) => item.id === memberId);
+
+    if (!hasMember) {
+      throw new FamilyMemberNotFoundError(memberId);
+    }
+
+    const linkedCategoryIds = new Set(
+      family.categories
+        .filter((category) => category.ownerId === memberId)
+        .map((category) => category.id),
+    );
+
+    assertCategoriesAreUnused(
+      family.recurringLines,
+      linkedCategoryIds,
+      FAMILY_MEMBER_CATEGORY_IN_USE_MESSAGE,
+    );
+
+    return this.repository.saveFamily({
+      ...family,
+      categories: family.categories.filter(
+        (category) => category.ownerId !== memberId,
+      ),
+      members: family.members.filter((item) => item.id !== memberId),
+    });
+  }
+
+  async deleteCategory(categoryId: string): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily();
+    const category = family.categories.find((item) => item.id === categoryId);
+
+    if (!category) {
+      throw new FamilyCategoryNotFoundError(categoryId);
+    }
+
+    if (category.ownerId) {
+      throw new InvalidFamilyInputError(LINKED_FAMILY_CATEGORY_DELETE_MESSAGE);
+    }
+
+    assertCategoriesAreUnused(
+      family.recurringLines,
+      new Set([categoryId]),
+      FAMILY_CATEGORY_IN_USE_MESSAGE,
+    );
+
+    return this.repository.saveFamily({
+      ...family,
+      categories: family.categories.filter((item) => item.id !== categoryId),
     });
   }
 
@@ -207,6 +265,20 @@ function assertUniqueMemberName(members: FamilyMember[], name: string) {
 
   if (hasDuplicate) {
     throw new InvalidFamilyInputError(DUPLICATE_FAMILY_MEMBER_NAME_MESSAGE);
+  }
+}
+
+function assertCategoriesAreUnused(
+  recurringLines: RecurringLine[],
+  categoryIds: Set<string>,
+  message: string,
+) {
+  const isUsed = recurringLines.some((line) =>
+    categoryIds.has(line.categoryId),
+  );
+
+  if (isUsed) {
+    throw new InvalidFamilyInputError(message);
   }
 }
 

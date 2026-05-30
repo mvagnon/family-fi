@@ -34,11 +34,16 @@ test("renders mutation errors in a snackbar", () => {
       onAddCategory: () => {},
       onAddMember: () => {},
       onCreateRecurringLine: () => {},
+      onDeleteCategory: () => {},
+      onDeleteMember: () => {},
       onDeleteRecurringLine: () => {},
       onUpdateRecurringLine: () => {},
     }),
   );
 
   assert.equal(markup.includes("MuiSnackbar-root"), true);
-  assert.equal(markup.includes("La ligne n&#x27;a pas pu être supprimée."), true);
+  assert.equal(
+    markup.includes("La ligne n&#x27;a pas pu être supprimée."),
+    true,
+  );
 });

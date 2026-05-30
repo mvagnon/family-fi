@@ -18,6 +18,8 @@ import type {
   CreateFamilyMemberInput,
   CreateRecurringLineInput,
   Family,
+  FamilyCategory,
+  FamilyMember,
   RecurringLine,
   UpdateRecurringLineInput,
 } from "../domain/family";
@@ -38,6 +40,8 @@ interface FamilyDashboardProps {
   onCreateRecurringLine: (
     input: CreateRecurringLineInput,
   ) => Promise<void> | void;
+  onDeleteCategory: (categoryId: string) => Promise<void> | void;
+  onDeleteMember: (memberId: string) => Promise<void> | void;
   onDeleteRecurringLine: (lineId: string) => Promise<void> | void;
   onUpdateRecurringLine: (
     lineId: string,
@@ -52,6 +56,8 @@ export function FamilyDashboard({
   onAddCategory,
   onAddMember,
   onCreateRecurringLine,
+  onDeleteCategory,
+  onDeleteMember,
   onDeleteRecurringLine,
   onUpdateRecurringLine,
 }: FamilyDashboardProps) {
@@ -66,6 +72,8 @@ export function FamilyDashboard({
   );
   const [linePendingDeletion, setLinePendingDeletion] =
     useState<RecurringLine | null>(null);
+  const [sidebarItemPendingDeletion, setSidebarItemPendingDeletion] =
+    useState<SidebarDeletionTarget | null>(null);
   const [summaryLine, setSummaryLine] = useState<RecurringLine | null>(null);
   const [selectedLine, setSelectedLine] = useState<RecurringLine | null>(null);
 
@@ -140,6 +148,14 @@ export function FamilyDashboard({
     setLinePendingDeletion(line);
   }
 
+  function handleRequestDeleteMember(member: FamilyMember) {
+    setSidebarItemPendingDeletion({ item: member, type: "member" });
+  }
+
+  function handleRequestDeleteCategory(category: FamilyCategory) {
+    setSidebarItemPendingDeletion({ item: category, type: "category" });
+  }
+
   async function handleConfirmDeleteLine() {
     if (!linePendingDeletion) {
       return;
@@ -148,6 +164,24 @@ export function FamilyDashboard({
     try {
       await onDeleteRecurringLine(linePendingDeletion.id);
       setLinePendingDeletion(null);
+    } catch {
+      return;
+    }
+  }
+
+  async function handleConfirmDeleteSidebarItem() {
+    if (!sidebarItemPendingDeletion) {
+      return;
+    }
+
+    try {
+      if (sidebarItemPendingDeletion.type === "member") {
+        await onDeleteMember(sidebarItemPendingDeletion.item.id);
+      } else {
+        await onDeleteCategory(sidebarItemPendingDeletion.item.id);
+      }
+
+      setSidebarItemPendingDeletion(null);
     } catch {
       return;
     }
@@ -198,6 +232,8 @@ export function FamilyDashboard({
           members={family.members}
           onAddCategory={() => setIsCategoryModalOpen(true)}
           onAddMember={() => setIsMemberModalOpen(true)}
+          onDeleteCategory={handleRequestDeleteCategory}
+          onDeleteMember={handleRequestDeleteMember}
         />
       </Box>
 
@@ -232,6 +268,19 @@ export function FamilyDashboard({
         confirmColor="error"
         confirmFirst
         confirmLabel="Supprimer"
+        description={getDeleteSidebarItemDescription(
+          sidebarItemPendingDeletion,
+        )}
+        isPending={isSaving}
+        onCancel={() => setSidebarItemPendingDeletion(null)}
+        onConfirm={handleConfirmDeleteSidebarItem}
+        open={sidebarItemPendingDeletion !== null}
+        title={getDeleteSidebarItemTitle(sidebarItemPendingDeletion)}
+      />
+      <ConfirmationDialog
+        confirmColor="error"
+        confirmFirst
+        confirmLabel="Supprimer"
         description={getDeleteLineDescription(linePendingDeletion)}
         isPending={isSaving}
         onCancel={() => setLinePendingDeletion(null)}
@@ -242,6 +291,10 @@ export function FamilyDashboard({
     </PageShell>
   );
 }
+
+type SidebarDeletionTarget =
+  | { item: FamilyMember; type: "member" }
+  | { item: FamilyCategory; type: "category" };
 
 function getCategoryLabel(family: Family, line: RecurringLine | null): string {
   if (!line) {
@@ -260,4 +313,28 @@ function getDeleteLineDescription(line: RecurringLine | null): string {
   }
 
   return `La ligne "${line.title}" sera supprimée définitivement.`;
+}
+
+function getDeleteSidebarItemTitle(
+  target: SidebarDeletionTarget | null,
+): string {
+  if (target?.type === "member") {
+    return "Supprimer ce membre ?";
+  }
+
+  return "Supprimer cette catégorie ?";
+}
+
+function getDeleteSidebarItemDescription(
+  target: SidebarDeletionTarget | null,
+): string {
+  if (!target) {
+    return "";
+  }
+
+  if (target.type === "member") {
+    return `Le membre "${target.item.name}" et sa catégorie professionnelle seront supprimés définitivement.`;
+  }
+
+  return `La catégorie "${target.item.label}" sera supprimée définitivement.`;
 }

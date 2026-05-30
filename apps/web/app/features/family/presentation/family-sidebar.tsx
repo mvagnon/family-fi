@@ -4,6 +4,7 @@ import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { ActionIconButton } from "@repo/ui/action-icon-button";
 import { SectionPanel } from "@repo/ui/section-panel";
 
@@ -15,6 +16,8 @@ interface FamilySidebarProps {
   members: FamilyMember[];
   onAddCategory: () => void;
   onAddMember: () => void;
+  onDeleteCategory: (category: FamilyCategory) => void;
+  onDeleteMember: (member: FamilyMember) => void;
 }
 
 export function FamilySidebar({
@@ -23,6 +26,8 @@ export function FamilySidebar({
   members,
   onAddCategory,
   onAddMember,
+  onDeleteCategory,
+  onDeleteMember,
 }: FamilySidebarProps) {
   const sharedCategories = categories.filter(
     (category) => category.kind === "shared",
@@ -57,7 +62,7 @@ export function FamilySidebar({
                 alignItems: "center",
                 display: "grid",
                 gap: 1.25,
-                gridTemplateColumns: "40px minmax(0, 1fr)",
+                gridTemplateColumns: "40px minmax(0, 1fr) auto",
                 py: 1.25,
               }}
             >
@@ -80,6 +85,14 @@ export function FamilySidebar({
                   </Typography>
                 ) : null}
               </Box>
+              <ActionIconButton
+                disabled={disabled}
+                icon={<DeleteIcon fontSize="small" />}
+                label={`Supprimer ${member.name}`}
+                onClick={() => onDeleteMember(member)}
+                size="small"
+                tooltip="Supprimer le membre"
+              />
             </Box>
           ))}
         </Stack>
@@ -102,7 +115,20 @@ export function FamilySidebar({
       >
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
           {sharedCategories.map((category) => (
-            <Chip key={category.id} label={category.label} />
+            <Box
+              key={category.id}
+              sx={{ alignItems: "center", display: "inline-flex", gap: 0.25 }}
+            >
+              <Chip label={category.label} />
+              <ActionIconButton
+                disabled={disabled}
+                icon={<DeleteIcon fontSize="small" />}
+                label={`Supprimer ${category.label}`}
+                onClick={() => onDeleteCategory(category)}
+                size="small"
+                tooltip="Supprimer la catégorie"
+              />
+            </Box>
           ))}
         </Box>
 
