@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { ConfirmationDialog } from "@repo/ui/confirmation-dialog";
 import { FeedbackSnackbar } from "@repo/ui/feedback-snackbar";
-import { PageShell } from "@repo/ui/page-shell";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 
+import {
+  AppShellContent,
+  AppShellTop,
+  AppShellWidgets,
+} from "../../app-shell/presentation/app-shell-layout";
 import {
   getDuplicateFamilyCategoryLabelError,
   getDuplicateFamilyMemberNameError,
@@ -29,7 +33,6 @@ import { FamilyBudgetTable } from "./family-budget-table";
 import { FamilyCategoryModal } from "./family-category-modal";
 import { FamilyMemberModal } from "./family-member-modal";
 import { FamilySidebar } from "./family-sidebar";
-import { FamilySidebarNavigation } from "./family-sidebar-navigation";
 import { FamilySummaryStrip } from "./family-summary-strip";
 import { LineEditDialog } from "./line-edit-dialog";
 import { LineSummaryDialog } from "./line-summary-dialog";
@@ -201,10 +204,90 @@ export function FamilyDashboard({
   }
 
   return (
-    <PageShell
-      navigation={<FamilySidebarNavigation />}
-      top={<FamilySummaryStrip lines={family.recurringLines} />}
-      widgets={
+    <>
+      <AppShellTop>
+        <FamilySummaryStrip lines={family.recurringLines} />
+      </AppShellTop>
+      <AppShellContent>
+        <FamilyBudgetTable
+          categories={family.categories}
+          disabled={isSaving}
+          lines={family.recurringLines}
+          onAddLine={handleAddLine}
+          onDeleteLine={handleRequestDeleteLine}
+          onEditLine={handleEditLine}
+          onViewLine={handleViewLine}
+        />
+        <FeedbackSnackbar
+          key={localError ? `local-${localError.revision}` : mutationErrorKey}
+          message={localError?.message ?? mutationError}
+        />
+
+        <FamilyCategoryModal
+          isSaving={isSaving}
+          onClose={() => setIsCategoryModalOpen(false)}
+          onSave={handleSaveCategory}
+          open={isCategoryModalOpen}
+        />
+        <FamilyMemberModal
+          isSaving={isSaving}
+          onClose={() => setIsMemberModalOpen(false)}
+          onSave={handleSaveMember}
+          open={isMemberModalOpen}
+        />
+        <LineEditDialog
+          categories={family.categories}
+          isSaving={isSaving}
+          line={selectedLine}
+          mode={lineDialogMode}
+          onClose={() => setSelectedLine(null)}
+          onSave={handleSaveLine}
+          open={selectedLine !== null}
+        />
+        <LineSummaryDialog
+          categoryLabel={getCategoryLabel(family, summaryLine)}
+          line={summaryLine}
+          onClose={() => setSummaryLine(null)}
+          open={summaryLine !== null}
+        />
+        <ConfirmationDialog
+          confirmColor="error"
+          confirmFirst
+          cancelLabel={t("common.cancel")}
+          confirmLabel={t("family.deletion.confirm")}
+          description={t("family.deletion.memberDescription")}
+          isPending={isSaving}
+          onCancel={() => setSidebarItemPendingDeletion(null)}
+          onConfirm={handleConfirmDeleteSidebarItem}
+          open={sidebarItemPendingDeletion?.type === "member"}
+          title={t("family.deletion.memberTitle")}
+        />
+        <ConfirmationDialog
+          confirmColor="error"
+          confirmFirst
+          cancelLabel={t("common.cancel")}
+          confirmLabel={t("family.deletion.confirm")}
+          description={t("family.deletion.categoryDescription")}
+          isPending={isSaving}
+          onCancel={() => setSidebarItemPendingDeletion(null)}
+          onConfirm={handleConfirmDeleteSidebarItem}
+          open={sidebarItemPendingDeletion?.type === "category"}
+          title={t("family.deletion.categoryTitle")}
+        />
+        <ConfirmationDialog
+          confirmColor="error"
+          confirmFirst
+          cancelLabel={t("common.cancel")}
+          confirmLabel={t("family.deletion.confirm")}
+          description={t("family.deletion.lineDescription")}
+          isPending={isSaving}
+          onCancel={() => setLinePendingDeletion(null)}
+          onConfirm={handleConfirmDeleteLine}
+          open={linePendingDeletion !== null}
+          title={t("family.deletion.lineTitle")}
+        />
+      </AppShellContent>
+      <AppShellWidgets>
         <FamilySidebar
           categories={family.categories}
           disabled={isSaving}
@@ -214,86 +297,8 @@ export function FamilyDashboard({
           onDeleteCategory={handleRequestDeleteCategory}
           onDeleteMember={handleRequestDeleteMember}
         />
-      }
-    >
-      <FamilyBudgetTable
-        categories={family.categories}
-        disabled={isSaving}
-        lines={family.recurringLines}
-        onAddLine={handleAddLine}
-        onDeleteLine={handleRequestDeleteLine}
-        onEditLine={handleEditLine}
-        onViewLine={handleViewLine}
-      />
-      <FeedbackSnackbar
-        key={localError ? `local-${localError.revision}` : mutationErrorKey}
-        message={localError?.message ?? mutationError}
-      />
-
-      <FamilyCategoryModal
-        isSaving={isSaving}
-        onClose={() => setIsCategoryModalOpen(false)}
-        onSave={handleSaveCategory}
-        open={isCategoryModalOpen}
-      />
-      <FamilyMemberModal
-        isSaving={isSaving}
-        onClose={() => setIsMemberModalOpen(false)}
-        onSave={handleSaveMember}
-        open={isMemberModalOpen}
-      />
-      <LineEditDialog
-        categories={family.categories}
-        isSaving={isSaving}
-        line={selectedLine}
-        mode={lineDialogMode}
-        onClose={() => setSelectedLine(null)}
-        onSave={handleSaveLine}
-        open={selectedLine !== null}
-      />
-      <LineSummaryDialog
-        categoryLabel={getCategoryLabel(family, summaryLine)}
-        line={summaryLine}
-        onClose={() => setSummaryLine(null)}
-        open={summaryLine !== null}
-      />
-      <ConfirmationDialog
-        confirmColor="error"
-        confirmFirst
-        cancelLabel={t("common.cancel")}
-        confirmLabel={t("family.deletion.confirm")}
-        description={t("family.deletion.memberDescription")}
-        isPending={isSaving}
-        onCancel={() => setSidebarItemPendingDeletion(null)}
-        onConfirm={handleConfirmDeleteSidebarItem}
-        open={sidebarItemPendingDeletion?.type === "member"}
-        title={t("family.deletion.memberTitle")}
-      />
-      <ConfirmationDialog
-        confirmColor="error"
-        confirmFirst
-        cancelLabel={t("common.cancel")}
-        confirmLabel={t("family.deletion.confirm")}
-        description={t("family.deletion.categoryDescription")}
-        isPending={isSaving}
-        onCancel={() => setSidebarItemPendingDeletion(null)}
-        onConfirm={handleConfirmDeleteSidebarItem}
-        open={sidebarItemPendingDeletion?.type === "category"}
-        title={t("family.deletion.categoryTitle")}
-      />
-      <ConfirmationDialog
-        confirmColor="error"
-        confirmFirst
-        cancelLabel={t("common.cancel")}
-        confirmLabel={t("family.deletion.confirm")}
-        description={t("family.deletion.lineDescription")}
-        isPending={isSaving}
-        onCancel={() => setLinePendingDeletion(null)}
-        onConfirm={handleConfirmDeleteLine}
-        open={linePendingDeletion !== null}
-        title={t("family.deletion.lineTitle")}
-      />
-    </PageShell>
+      </AppShellWidgets>
+    </>
   );
 }
 

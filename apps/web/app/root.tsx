@@ -15,7 +15,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { I18nextProvider } from "react-i18next";
 
 import type { Route } from "./+types/root";
-import i18n, { defaultLanguage } from "./i18n";
+import { browserLanguagePreferenceRepository } from "./features/configuration/infrastructure/browser-language-preference-repository";
+import { LanguagePreferenceProvider } from "./features/configuration/presentation/language-preference-provider";
+import i18n, { defaultLanguage, type SupportedLanguage } from "./i18n";
 import "./app.css";
 
 export const links: Route.LinksFunction = () => [...fontPreloadLinks];
@@ -54,13 +56,28 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
-        <ThemeProvider theme={appTheme}>
-          <CssBaseline />
-          <Outlet />
-        </ThemeProvider>
+        <LanguagePreferenceProvider
+          onLanguageChange={syncAppLanguage}
+          repository={browserLanguagePreferenceRepository}
+        >
+          <ThemeProvider theme={appTheme}>
+            <CssBaseline />
+            <Outlet />
+          </ThemeProvider>
+        </LanguagePreferenceProvider>
       </I18nextProvider>
     </QueryClientProvider>
   );
+}
+
+function syncAppLanguage(language: SupportedLanguage) {
+  if (i18n.language !== language) {
+    void i18n.changeLanguage(language);
+  }
+
+  if (typeof document !== "undefined") {
+    document.documentElement.lang = language;
+  }
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

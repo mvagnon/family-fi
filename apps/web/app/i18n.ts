@@ -1,12 +1,31 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
-export const defaultLanguage = "en";
-export const supportedLanguages = ["en", "fr", "ja"] as const;
+import {
+  defaultLanguage,
+  supportedLanguages,
+} from "./features/configuration/domain/supported-language";
+
+export { defaultLanguage, supportedLanguages };
+export type { SupportedLanguage } from "./features/configuration/domain/supported-language";
 
 export const resources = {
   en: {
     translation: {
+      appShell: {
+        navigation: {
+          ariaLabel: "Finance navigation",
+          assets: "Assets",
+          dashboard: "Dashboard",
+          distribution: "Distribution",
+          investments: "Investments",
+          loans: "Loans",
+          participations: "Participations",
+          recurringBudget: "Recurring budget",
+          settings: "Settings",
+          subtitle: "Family Finances",
+        },
+      },
       common: {
         actions: "Actions",
         add: "Add",
@@ -15,6 +34,37 @@ export const resources = {
         delete: "Delete",
         retry: "Retry",
         save: "Save",
+      },
+      configuration: {
+        language: {
+          ariaLabel: "App language",
+          browserDetected: "From this browser",
+          description:
+            "Choose the language used across Family-Fi. An explicit choice is saved on this device.",
+          title: "Language",
+        },
+        languages: {
+          en: {
+            label: "English",
+            native: "English",
+          },
+          fr: {
+            label: "French",
+            native: "Français",
+          },
+          ja: {
+            label: "Japanese",
+            native: "日本語",
+          },
+        },
+        meta: {
+          description: "Family-Fi app configuration.",
+          title: "Family-Fi | Configuration",
+        },
+        page: {
+          subtitle: "Adjust app-level preferences for this browser.",
+          title: "Configuration",
+        },
       },
       family: {
         budget: {
@@ -117,16 +167,6 @@ export const resources = {
           description: "Household recurring finances setup.",
           title: "Family-Fi | Household",
         },
-        navigation: {
-          account: "Account management",
-          ariaLabel: "Finance navigation",
-          categories: "Categories",
-          dashboard: "Dashboard",
-          members: "Members",
-          recurringBudget: "Recurring budget",
-          settings: "Settings",
-          subtitle: "Household finances",
-        },
         sidebar: {
           categories: {
             addLabel: "Add category",
@@ -154,6 +194,20 @@ export const resources = {
   },
   fr: {
     translation: {
+      appShell: {
+        navigation: {
+          ariaLabel: "Navigation finances",
+          assets: "Patrimoine",
+          dashboard: "Tableau de bord",
+          distribution: "Distribution",
+          investments: "Investissements",
+          loans: "Prêts",
+          participations: "Participations",
+          recurringBudget: "Budget récurrent",
+          settings: "Réglages",
+          subtitle: "Family Finances",
+        },
+      },
       common: {
         actions: "Actions",
         add: "Ajouter",
@@ -162,6 +216,38 @@ export const resources = {
         delete: "Supprimer",
         retry: "Réessayer",
         save: "Enregistrer",
+      },
+      configuration: {
+        language: {
+          ariaLabel: "Langue de l'application",
+          browserDetected: "Depuis ce navigateur",
+          description:
+            "Choisissez la langue utilisée dans Family-Fi. Un choix explicite est enregistré sur cet appareil.",
+          title: "Langue",
+        },
+        languages: {
+          en: {
+            label: "Anglais",
+            native: "English",
+          },
+          fr: {
+            label: "Français",
+            native: "Français",
+          },
+          ja: {
+            label: "Japonais",
+            native: "日本語",
+          },
+        },
+        meta: {
+          description: "Configuration de l'application Family-Fi.",
+          title: "Family-Fi | Configuration",
+        },
+        page: {
+          subtitle:
+            "Ajustez les préférences de l'application pour ce navigateur.",
+          title: "Configuration",
+        },
       },
       family: {
         budget: {
@@ -264,16 +350,6 @@ export const resources = {
           description: "Configuration des finances récurrentes du foyer.",
           title: "Family-Fi | Foyer",
         },
-        navigation: {
-          account: "Gestion du compte",
-          ariaLabel: "Navigation finances",
-          categories: "Catégories",
-          dashboard: "Tableau de bord",
-          members: "Membres",
-          recurringBudget: "Budget récurrent",
-          settings: "Réglages",
-          subtitle: "Finances du foyer",
-        },
         sidebar: {
           categories: {
             addLabel: "Ajouter une catégorie",
@@ -301,6 +377,20 @@ export const resources = {
   },
   ja: {
     translation: {
+      appShell: {
+        navigation: {
+          ariaLabel: "家計ナビゲーション",
+          assets: "資産",
+          dashboard: "ダッシュボード",
+          distribution: "分配",
+          investments: "投資",
+          loans: "ローン",
+          participations: "持分",
+          recurringBudget: "定期予算",
+          settings: "設定",
+          subtitle: "ファミリー・ファイナンス",
+        },
+      },
       common: {
         actions: "操作",
         add: "追加",
@@ -309,6 +399,37 @@ export const resources = {
         delete: "削除",
         retry: "再試行",
         save: "保存",
+      },
+      configuration: {
+        language: {
+          ariaLabel: "アプリの言語",
+          browserDetected: "このブラウザから",
+          description:
+            "Family-Fi全体で使う言語を選びます。明示的な選択はこの端末に保存されます。",
+          title: "言語",
+        },
+        languages: {
+          en: {
+            label: "英語",
+            native: "English",
+          },
+          fr: {
+            label: "フランス語",
+            native: "Français",
+          },
+          ja: {
+            label: "日本語",
+            native: "日本語",
+          },
+        },
+        meta: {
+          description: "Family-Fiアプリの設定。",
+          title: "Family-Fi | 設定",
+        },
+        page: {
+          subtitle: "このブラウザで使うアプリ設定を調整します。",
+          title: "設定",
+        },
       },
       family: {
         budget: {
@@ -407,16 +528,6 @@ export const resources = {
         meta: {
           description: "世帯の定期的な収支設定。",
           title: "Family-Fi | 世帯",
-        },
-        navigation: {
-          account: "アカウント管理",
-          ariaLabel: "家計ナビゲーション",
-          categories: "カテゴリ",
-          dashboard: "ダッシュボード",
-          members: "メンバー",
-          recurringBudget: "定期予算",
-          settings: "設定",
-          subtitle: "世帯の家計",
         },
         sidebar: {
           categories: {
