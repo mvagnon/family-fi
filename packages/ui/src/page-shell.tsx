@@ -8,20 +8,27 @@ interface PageShellProps {
   actions?: ReactNode;
   children: ReactNode;
   component?: ElementType;
+  navigation?: ReactNode;
   subtitle?: ReactNode;
   sx?: SxProps<Theme>;
   title?: ReactNode;
+  top?: ReactNode;
+  widgets?: ReactNode;
 }
 
 export function PageShell({
   actions,
   children,
   component = "main",
+  navigation,
   subtitle,
   sx,
   title,
+  top,
+  widgets,
 }: PageShellProps) {
   const hasHeader = Boolean(actions || subtitle || title);
+  const hasPageLayout = Boolean(navigation || top || widgets);
 
   return (
     <Box
@@ -66,8 +73,65 @@ export function PageShell({
           </Stack>
         ) : null}
 
-        {children}
+        {hasPageLayout ? (
+          <Box sx={pageShellLayoutGridSx}>
+            {top ? <Box sx={pageShellTopAreaSx}>{top}</Box> : null}
+            <Box sx={pageShellContentAreaSx}>{children}</Box>
+            {navigation ? (
+              <Box sx={pageShellNavigationAreaSx}>{navigation}</Box>
+            ) : null}
+            {widgets ? (
+              <Box sx={pageShellWidgetsAreaSx}>{widgets}</Box>
+            ) : null}
+          </Box>
+        ) : (
+          children
+        )}
       </Stack>
     </Box>
   );
 }
+
+const pageShellLayoutGridSx = {
+  alignItems: "start",
+  columnGap: 2.5,
+  display: "grid",
+  gridTemplateAreas: {
+    lg: `"top top" "content navigation" "content widgets"`,
+    xl: `"top top top" "navigation content widgets"`,
+    xs: `"navigation" "top" "content" "widgets"`,
+  },
+  gridTemplateColumns: {
+    lg: "minmax(0, 1fr) 320px",
+    xl: "280px minmax(0, 1fr) 320px",
+    xs: "minmax(0, 1fr)",
+  },
+  gridTemplateRows: {
+    lg: "auto auto 1fr",
+    xl: "auto auto",
+  },
+  rowGap: {
+    lg: 2,
+    xs: 2.5,
+  },
+} satisfies SxProps<Theme>;
+
+const pageShellContentAreaSx = {
+  gridArea: "content",
+  minWidth: 0,
+} satisfies SxProps<Theme>;
+
+const pageShellNavigationAreaSx = {
+  gridArea: "navigation",
+  minWidth: 0,
+} satisfies SxProps<Theme>;
+
+const pageShellTopAreaSx = {
+  gridArea: "top",
+  minWidth: 0,
+} satisfies SxProps<Theme>;
+
+const pageShellWidgetsAreaSx = {
+  gridArea: "widgets",
+  minWidth: 0,
+} satisfies SxProps<Theme>;

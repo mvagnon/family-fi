@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Box from "@mui/material/Box";
 import { ConfirmationDialog } from "@repo/ui/confirmation-dialog";
 import { FeedbackSnackbar } from "@repo/ui/feedback-snackbar";
 import { PageShell } from "@repo/ui/page-shell";
@@ -23,13 +22,6 @@ import type {
   RecurringLine,
   UpdateRecurringLineInput,
 } from "../domain/family";
-import {
-  familyDashboardBudgetAreaSx,
-  familyDashboardContentGridSx,
-  familyDashboardNavigationAreaSx,
-  familyDashboardSidebarAreaSx,
-  familyDashboardSummaryAreaSx,
-} from "./family-dashboard-layout";
 import { FamilyBudgetTable } from "./family-budget-table";
 import { FamilyCategoryModal } from "./family-category-modal";
 import { FamilyMemberModal } from "./family-member-modal";
@@ -203,42 +195,34 @@ export function FamilyDashboard({
   }
 
   return (
-    <PageShell>
+    <PageShell
+      navigation={<FamilySidebarNavigation />}
+      top={<FamilySummaryStrip lines={family.recurringLines} />}
+      widgets={
+        <FamilySidebar
+          categories={family.categories}
+          disabled={isSaving}
+          members={family.members}
+          onAddCategory={() => setIsCategoryModalOpen(true)}
+          onAddMember={() => setIsMemberModalOpen(true)}
+          onDeleteCategory={handleRequestDeleteCategory}
+          onDeleteMember={handleRequestDeleteMember}
+        />
+      }
+    >
+      <FamilyBudgetTable
+        categories={family.categories}
+        disabled={isSaving}
+        lines={family.recurringLines}
+        onAddLine={handleAddLine}
+        onDeleteLine={handleRequestDeleteLine}
+        onEditLine={handleEditLine}
+        onViewLine={handleViewLine}
+      />
       <FeedbackSnackbar
         key={localError ? `local-${localError.revision}` : mutationError}
         message={localError?.message ?? mutationError}
       />
-
-      <Box sx={familyDashboardContentGridSx}>
-        <Box sx={familyDashboardSummaryAreaSx}>
-          <FamilySummaryStrip lines={family.recurringLines} />
-        </Box>
-        <Box sx={familyDashboardBudgetAreaSx}>
-          <FamilyBudgetTable
-            categories={family.categories}
-            disabled={isSaving}
-            lines={family.recurringLines}
-            onAddLine={handleAddLine}
-            onDeleteLine={handleRequestDeleteLine}
-            onEditLine={handleEditLine}
-            onViewLine={handleViewLine}
-          />
-        </Box>
-        <Box sx={familyDashboardNavigationAreaSx}>
-          <FamilySidebarNavigation />
-        </Box>
-        <Box sx={familyDashboardSidebarAreaSx}>
-          <FamilySidebar
-            categories={family.categories}
-            disabled={isSaving}
-            members={family.members}
-            onAddCategory={() => setIsCategoryModalOpen(true)}
-            onAddMember={() => setIsMemberModalOpen(true)}
-            onDeleteCategory={handleRequestDeleteCategory}
-            onDeleteMember={handleRequestDeleteMember}
-          />
-        </Box>
-      </Box>
 
       <FamilyCategoryModal
         isSaving={isSaving}
