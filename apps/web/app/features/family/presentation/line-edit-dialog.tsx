@@ -180,9 +180,6 @@ function LineEditDialogForm({
   });
   const isEstimate = watch("isEstimate");
   const { ref: titleRef, ...titleField } = register("title");
-  const { ref: categoryIdRef, ...categoryIdField } = register("categoryId");
-  const { ref: recurrenceMonthsRef, ...recurrenceMonthsField } =
-    register("recurrenceMonths");
   const { ref: amountRef, ...amountField } = register("amount");
   const { ref: minAmountRef, ...minAmountField } = register("minAmount");
   const { ref: maxAmountRef, ...maxAmountField } = register("maxAmount");
@@ -216,24 +213,36 @@ function LineEditDialogForm({
             label="Intitulé"
             required
           />
-          <TextField
-            {...categoryIdField}
-            disabled={isSaving}
-            error={Boolean(errors.categoryId)}
-            fullWidth
-            helperText={getFieldErrorMessage(errors.categoryId)}
-            id={`${line.id}-edit-category`}
-            inputRef={categoryIdRef}
-            label="Catégorie"
-            required
-            select
-          >
-            {categories.map((category) => (
-              <MenuItem key={category.id} value={category.id}>
-                {category.label}
-              </MenuItem>
-            ))}
-          </TextField>
+          <Controller
+            control={control}
+            name="categoryId"
+            render={({ field }) => (
+              <TextField
+                disabled={isSaving}
+                error={Boolean(errors.categoryId)}
+                fullWidth
+                helperText={getFieldErrorMessage(errors.categoryId)}
+                id={`${line.id}-edit-category`}
+                inputRef={field.ref}
+                label="Catégorie"
+                name={field.name}
+                onBlur={field.onBlur}
+                onChange={field.onChange}
+                required
+                select
+                value={field.value ?? ""}
+              >
+                <MenuItem disabled value="">
+                  Sélectionner une catégorie
+                </MenuItem>
+                {categories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
         </Stack>
 
         <Controller
@@ -256,24 +265,36 @@ function LineEditDialogForm({
           )}
         />
 
-        <TextField
-          {...recurrenceMonthsField}
-          disabled={isSaving}
-          error={Boolean(errors.recurrenceMonths)}
-          fullWidth
-          helperText={getFieldErrorMessage(errors.recurrenceMonths)}
-          id={`${line.id}-edit-recurrence`}
-          inputRef={recurrenceMonthsRef}
-          label="Récurrence"
-          required
-          select
-        >
-          {recurrenceOptions.map((months) => (
-            <MenuItem key={months} value={String(months)}>
-              {formatRecurrence(months)}
-            </MenuItem>
-          ))}
-        </TextField>
+        <Controller
+          control={control}
+          name="recurrenceMonths"
+          render={({ field }) => (
+            <TextField
+              disabled={isSaving}
+              error={Boolean(errors.recurrenceMonths)}
+              fullWidth
+              helperText={getFieldErrorMessage(errors.recurrenceMonths)}
+              id={`${line.id}-edit-recurrence`}
+              inputRef={field.ref}
+              label="Récurrence"
+              name={field.name}
+              onBlur={field.onBlur}
+              onChange={field.onChange}
+              required
+              select
+              value={field.value ?? ""}
+            >
+              <MenuItem disabled value="">
+                Sélectionner une récurrence
+              </MenuItem>
+              {recurrenceOptions.map((months) => (
+                <MenuItem key={months} value={String(months)}>
+                  {formatRecurrence(months)}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
+        />
 
         <FormControlLabel
           control={
