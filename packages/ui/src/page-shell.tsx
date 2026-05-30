@@ -29,13 +29,13 @@ export function PageShell({
           bgcolor: "background.default",
           color: "text.primary",
           minHeight: "100vh",
-          px: { lg: 5, md: 3, xs: 2 },
-          py: { md: 4, xs: 2.5 },
+          px: { lg: 4, md: 3, xs: 2 },
+          py: { md: 3, xs: 2 },
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Stack spacing={{ md: 3, xs: 2.25 }}>
+      <Stack spacing={{ md: 2.5, xs: 2 }}>
         <Stack
           component="header"
           direction={{ md: "row", xs: "column" }}

@@ -28,7 +28,7 @@ export function MetricSummaryCard({
       sx={[
         {
           bgcolor: "background.paper",
-          p: { md: 2.25, xs: 1.75 },
+          p: { md: 2.5, xs: 2 },
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
@@ -54,10 +54,9 @@ export function MetricSummaryCard({
             </Typography>
             <Typography
               sx={{
-                fontFamily: '"Fraunces Variable", "Fraunces", serif',
-                fontSize: { md: "1.7rem", xs: "1.45rem" },
-                fontWeight: 760,
-                lineHeight: 1,
+                fontSize: { md: "1.5rem", xs: "1.25rem" },
+                fontWeight: 600,
+                lineHeight: { md: 32 / 24, xs: 28 / 20 },
                 mt: 0.5,
               }}
             >

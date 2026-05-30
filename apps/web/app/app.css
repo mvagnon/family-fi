@@ -1,12 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Sora Variable", "Sora", ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans: "Nunito Sans Variable", "Nunito Sans", ui-sans-serif, system-ui,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji";
 }
 
 html,
 body {
-  background-color: #FFF8ED;
-  font-family: "Sora Variable", "Sora", ui-sans-serif, system-ui, sans-serif;
+  background-color: #f7f8fa;
+  font-family: "Nunito Sans Variable", "Nunito Sans", ui-sans-serif, system-ui,
+    sans-serif;
 }
