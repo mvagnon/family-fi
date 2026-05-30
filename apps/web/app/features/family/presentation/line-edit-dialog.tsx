@@ -21,7 +21,10 @@ const recurrenceOptions = [1, 2, 3, 6, 12];
 
 const lineFormBaseSchema = z.object({
   categoryId: requiredTextSchema("La catégorie est obligatoire."),
-  description: z.string().transform((value) => value.trim()),
+  description: z
+    .string()
+    .optional()
+    .transform((value) => value?.trim() ?? ""),
   recurrenceMonths: requiredNumberTextSchema(
     "La récurrence est obligatoire.",
   ).refine((value) => value > 0, {
@@ -178,8 +181,6 @@ function LineEditDialogForm({
   const isEstimate = watch("isEstimate");
   const { ref: titleRef, ...titleField } = register("title");
   const { ref: categoryIdRef, ...categoryIdField } = register("categoryId");
-  const { ref: descriptionRef, ...descriptionField } =
-    register("description");
   const { ref: recurrenceMonthsRef, ...recurrenceMonthsField } =
     register("recurrenceMonths");
   const { ref: amountRef, ...amountField } = register("amount");
@@ -235,15 +236,24 @@ function LineEditDialogForm({
           </TextField>
         </Stack>
 
-        <TextField
-          {...descriptionField}
-          disabled={isSaving}
-          fullWidth
-          id={`${line.id}-edit-description`}
-          inputRef={descriptionRef}
-          label="Description"
-          minRows={3}
-          multiline
+        <Controller
+          control={control}
+          name="description"
+          render={({ field }) => (
+            <TextField
+              disabled={isSaving}
+              fullWidth
+              id={`${line.id}-edit-description`}
+              inputRef={field.ref}
+              label="Description"
+              minRows={3}
+              multiline
+              name={field.name}
+              onBlur={field.onBlur}
+              onChange={field.onChange}
+              value={field.value ?? ""}
+            />
+          )}
         />
 
         <TextField
