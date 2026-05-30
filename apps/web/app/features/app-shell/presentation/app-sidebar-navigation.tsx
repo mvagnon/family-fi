@@ -12,9 +12,9 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
+import type { SvgIconComponent } from "@mui/icons-material";
 import { alpha } from "@mui/material/styles";
 import type { Theme } from "@mui/material/styles";
-import type { SvgIconComponent } from "@mui/icons-material";
 import { SectionPanel } from "@repo/ui/section-panel";
 import { memo } from "react";
 import { NavLink } from "react-router";
@@ -43,7 +43,7 @@ interface SidebarNavigationItem {
   to?: string;
 }
 
-export const FamilySidebarNavigation = memo(function FamilySidebarNavigation() {
+export const AppSidebarNavigation = memo(function AppSidebarNavigation() {
   const { t } = useTranslation();
 
   return (
@@ -51,12 +51,12 @@ export const FamilySidebarNavigation = memo(function FamilySidebarNavigation() {
       component="nav"
       contentSx={{ pb: { md: 1.5, xs: 1 }, px: { md: 1.5, xs: 1 } }}
       headerSx={{ pb: 1.25 }}
-      subtitle={t("family.navigation.subtitle")}
+      subtitle={t("appShell.navigation.subtitle")}
       title="Family-Fi"
-      titleId="family-navigation-title"
+      titleId="app-navigation-title"
       titleVariant="h3"
     >
-      <List aria-label={t("family.navigation.ariaLabel")} disablePadding>
+      <List aria-label={t("appShell.navigation.ariaLabel")} disablePadding>
         {sidebarNavigationItems.map((item) => (
           <SidebarNavigationRow item={item} key={item.labelKey} />
         ))}
@@ -68,7 +68,7 @@ export const FamilySidebarNavigation = memo(function FamilySidebarNavigation() {
 function SidebarNavigationRow({ item }: { item: SidebarNavigationItem }) {
   const { t } = useTranslation();
   const Icon = item.icon;
-  const label = t(`family.navigation.${item.labelKey}`);
+  const label = t(`appShell.navigation.${item.labelKey}`);
   const content = (
     <>
       <ListItemIcon
@@ -118,7 +118,7 @@ function SidebarNavigationRow({ item }: { item: SidebarNavigationItem }) {
   return <ListItem sx={navigationRowSx}>{content}</ListItem>;
 }
 
-const navigationLabelClassName = "FamilySidebarNavigation-label";
+const navigationLabelClassName = "AppSidebarNavigation-label";
 
 const navigationRowSx = (theme: Theme) => ({
   borderRadius: 1,

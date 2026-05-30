@@ -5,7 +5,7 @@ import type { SxProps, Theme } from "@mui/material/styles";
 import { useMemo, type ReactNode } from "react";
 import { Outlet } from "react-router";
 
-import { FamilySidebarNavigation } from "../../family/presentation/family-sidebar-navigation";
+import { AppSidebarNavigation } from "./app-sidebar-navigation";
 
 interface AppShellAreaProps {
   children: ReactNode;
@@ -18,7 +18,7 @@ interface AppShellHeaderProps {
 }
 
 export function AppShellLayout() {
-  const navigation = useMemo(() => <FamilySidebarNavigation />, []);
+  const navigation = useMemo(() => <AppSidebarNavigation />, []);
 
   return (
     <Box component="main" sx={appShellRootSx}>

@@ -12,6 +12,19 @@ export type { SupportedLanguage } from "./features/configuration/domain/supporte
 export const resources = {
   en: {
     translation: {
+      appShell: {
+        navigation: {
+          ariaLabel: "Finance navigation",
+          dashboard: "Dashboard",
+          distribution: "Distribution",
+          investments: "Investments",
+          loans: "Loans",
+          participations: "Participations",
+          recurringBudget: "Recurring budget",
+          settings: "Settings",
+          subtitle: "Family Finances",
+        },
+      },
       common: {
         actions: "Actions",
         add: "Add",
@@ -153,17 +166,6 @@ export const resources = {
           description: "Household recurring finances setup.",
           title: "Family-Fi | Household",
         },
-        navigation: {
-          ariaLabel: "Finance navigation",
-          dashboard: "Dashboard",
-          distribution: "Distribution",
-          investments: "Investments",
-          loans: "Loans",
-          participations: "Participations",
-          recurringBudget: "Recurring budget",
-          settings: "Settings",
-          subtitle: "Family Finances",
-        },
         sidebar: {
           categories: {
             addLabel: "Add category",
@@ -191,6 +193,19 @@ export const resources = {
   },
   fr: {
     translation: {
+      appShell: {
+        navigation: {
+          ariaLabel: "Navigation finances",
+          dashboard: "Tableau de bord",
+          distribution: "Distribution",
+          investments: "Investissements",
+          loans: "Prêts",
+          participations: "Participations",
+          recurringBudget: "Budget récurrent",
+          settings: "Réglages",
+          subtitle: "Family Finances",
+        },
+      },
       common: {
         actions: "Actions",
         add: "Ajouter",
@@ -333,17 +348,6 @@ export const resources = {
           description: "Configuration des finances récurrentes du foyer.",
           title: "Family-Fi | Foyer",
         },
-        navigation: {
-          ariaLabel: "Navigation finances",
-          dashboard: "Tableau de bord",
-          distribution: "Distribution",
-          investments: "Investissements",
-          loans: "Prêts",
-          participations: "Participations",
-          recurringBudget: "Budget récurrent",
-          settings: "Réglages",
-          subtitle: "Family Finances",
-        },
         sidebar: {
           categories: {
             addLabel: "Ajouter une catégorie",
@@ -371,6 +375,19 @@ export const resources = {
   },
   ja: {
     translation: {
+      appShell: {
+        navigation: {
+          ariaLabel: "家計ナビゲーション",
+          dashboard: "ダッシュボード",
+          distribution: "分配",
+          investments: "投資",
+          loans: "ローン",
+          participations: "持分",
+          recurringBudget: "定期予算",
+          settings: "設定",
+          subtitle: "ファミリー・ファイナンス",
+        },
+      },
       common: {
         actions: "操作",
         add: "追加",
@@ -508,17 +525,6 @@ export const resources = {
         meta: {
           description: "世帯の定期的な収支設定。",
           title: "Family-Fi | 世帯",
-        },
-        navigation: {
-          ariaLabel: "家計ナビゲーション",
-          dashboard: "ダッシュボード",
-          distribution: "分配",
-          investments: "投資",
-          loans: "ローン",
-          participations: "持分",
-          recurringBudget: "定期予算",
-          settings: "設定",
-          subtitle: "ファミリー・ファイナンス",
         },
         sidebar: {
           categories: {

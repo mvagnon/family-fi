@@ -15,8 +15,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { I18nextProvider } from "react-i18next";
 
 import type { Route } from "./+types/root";
-import { LanguagePreferenceProvider } from "./features/configuration/application/language-preference-provider";
 import { browserLanguagePreferenceRepository } from "./features/configuration/infrastructure/browser-language-preference-repository";
+import { LanguagePreferenceProvider } from "./features/configuration/presentation/language-preference-provider";
 import i18n, { defaultLanguage, type SupportedLanguage } from "./i18n";
 import "./app.css";
 

@@ -8,10 +8,10 @@ import {
   type ReactNode,
 } from "react";
 
+import { readLanguagePreference } from "../application/language-preference-state";
 import type { LanguagePreference } from "../domain/language-preference";
 import type { LanguagePreferenceRepository } from "../domain/language-preference-repository";
 import type { SupportedLanguage } from "../domain/supported-language";
-import { readLanguagePreference } from "./language-preference-state";
 
 interface LanguagePreferenceContextValue extends LanguagePreference {
   hasExplicitLanguage: boolean;

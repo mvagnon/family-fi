@@ -15,12 +15,12 @@ import {
   AppShellContent,
   AppShellHeader,
 } from "../../app-shell/presentation/app-shell-layout";
-import { useLanguagePreference } from "../application/language-preference-provider";
 import { parseSupportedLanguage } from "../domain/language-preference";
 import {
   supportedLanguages,
   type SupportedLanguage,
 } from "../domain/supported-language";
+import { useLanguagePreference } from "./language-preference-provider";
 
 const browserLanguageChoice = "browser";
 
