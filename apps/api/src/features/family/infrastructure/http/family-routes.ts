@@ -138,6 +138,7 @@ function parseCreateMemberInput(
   value: Record<string, unknown>,
 ): CreateFamilyMemberInput {
   return {
+    isActive: getOptionalBoolean(value, "isActive") ?? true,
     name: getString(value, "name"),
   };
 }
@@ -197,6 +198,23 @@ function getOptionalString(
 
   if (typeof item !== "string") {
     throw new InvalidFamilyInputError(`${key} must be a string.`);
+  }
+
+  return item;
+}
+
+function getOptionalBoolean(
+  value: Record<string, unknown>,
+  key: string,
+): boolean | undefined {
+  const item = value[key];
+
+  if (item === undefined || item === null) {
+    return undefined;
+  }
+
+  if (typeof item !== "boolean") {
+    throw new InvalidFamilyInputError(`${key} must be a boolean.`);
   }
 
   return item;

@@ -297,7 +297,38 @@ function toRecurringLine(line: RecurringLineRecord): RecurringLine {
 }
 
 function parseMembers(value: unknown): FamilyMember[] {
-  return Array.isArray(value) ? (value as FamilyMember[]) : [];
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((item) => {
+    if (typeof item !== "object" || item === null || Array.isArray(item)) {
+      return [];
+    }
+
+    const member = item as Record<string, unknown>;
+    const id = member.id;
+    const name = member.name;
+    const role = member.role;
+    const isActive = member.isActive;
+
+    if (
+      typeof id !== "string" ||
+      typeof name !== "string" ||
+      typeof role !== "string"
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        id,
+        isActive: typeof isActive === "boolean" ? isActive : true,
+        name,
+        role,
+      },
+    ];
+  });
 }
 
 function parseCategories(value: unknown): FamilyCategory[] {

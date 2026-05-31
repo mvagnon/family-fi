@@ -67,6 +67,7 @@ export class FamilyService {
     );
     const member = {
       id: memberId,
+      isActive: input.isActive,
       name,
       role: "",
     };

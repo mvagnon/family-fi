@@ -138,8 +138,20 @@ type LineFormInput = z.input<ReturnType<typeof createLineFormSchema>>;
 type LineFormValues = z.output<ReturnType<typeof createLineFormSchema>>;
 type LineFormRawValues = z.output<ReturnType<typeof createLineFormRawSchema>>;
 
+interface LineSelectOption {
+  disabled?: boolean;
+  label: string;
+  value: string;
+}
+
 interface LineEditDialogProps {
+  categoryFieldLabel?: string;
+  categoryHelperText?: string;
+  categoryOptions?: LineSelectOption[];
+  categoryPlaceholder?: string;
   categories: FamilyCategory[];
+  createTitle?: string;
+  editTitle?: string;
   isSaving?: boolean;
   line: RecurringLine | null;
   mode: "create" | "edit";
@@ -154,7 +166,13 @@ interface VisibleLineEditDialog {
 }
 
 export function LineEditDialog({
+  categoryFieldLabel,
+  categoryHelperText,
+  categoryOptions,
+  categoryPlaceholder,
   categories,
+  createTitle,
+  editTitle,
   isSaving = false,
   line,
   mode,
@@ -185,7 +203,13 @@ export function LineEditDialog({
 
   return (
     <LineEditDialogForm
+      categoryFieldLabel={categoryFieldLabel}
+      categoryHelperText={categoryHelperText}
+      categoryOptions={categoryOptions}
+      categoryPlaceholder={categoryPlaceholder}
       categories={categories}
+      createTitle={createTitle}
+      editTitle={editTitle}
       isSaving={isSaving}
       key={`${dialog.mode}-${dialog.line.id}`}
       line={dialog.line}
@@ -199,7 +223,13 @@ export function LineEditDialog({
 }
 
 function LineEditDialogForm({
+  categoryFieldLabel,
+  categoryHelperText,
+  categoryOptions,
+  categoryPlaceholder,
   categories,
+  createTitle,
+  editTitle,
   isSaving,
   line,
   mode,
@@ -214,6 +244,12 @@ function LineEditDialogForm({
 }) {
   const { t } = useTranslation();
   const familyFormat = useFamilyFormat();
+  const selectOptions: LineSelectOption[] =
+    categoryOptions ??
+    categories.map((category) => ({
+      label: category.label,
+      value: category.id,
+    }));
   const lineFormSchema = useMemo(
     () => createLineFormSchema(getLineFormValidationMessages(t)),
     [t],
@@ -253,8 +289,8 @@ function LineEditDialogForm({
       submitLabel={mode === "create" ? t("common.add") : t("common.save")}
       title={
         mode === "create"
-          ? t("family.line.createTitle")
-          : t("family.line.editTitle")
+          ? (createTitle ?? t("family.line.createTitle"))
+          : (editTitle ?? t("family.line.editTitle"))
       }
     >
       <Stack spacing={2.25} sx={{ pt: 1 }}>
@@ -279,10 +315,12 @@ function LineEditDialogForm({
                 disabled={isSaving}
                 error={Boolean(errors.categoryId)}
                 fullWidth
-                helperText={getFieldErrorMessage(errors.categoryId)}
+                helperText={
+                  getFieldErrorMessage(errors.categoryId) ?? categoryHelperText
+                }
                 id={`${line.id}-edit-category`}
                 inputRef={field.ref}
-                label={t("family.line.fields.category")}
+                label={categoryFieldLabel ?? t("family.line.fields.category")}
                 name={field.name}
                 onBlur={field.onBlur}
                 onChange={field.onChange}
@@ -291,11 +329,15 @@ function LineEditDialogForm({
                 value={field.value ?? ""}
               >
                 <MenuItem disabled value="">
-                  {t("family.line.selectCategory")}
+                  {categoryPlaceholder ?? t("family.line.selectCategory")}
                 </MenuItem>
-                {categories.map((category) => (
-                  <MenuItem key={category.id} value={category.id}>
-                    {category.label}
+                {selectOptions.map((option) => (
+                  <MenuItem
+                    disabled={option.disabled}
+                    key={option.value}
+                    value={option.value}
+                  >
+                    {option.label}
                   </MenuItem>
                 ))}
               </TextField>

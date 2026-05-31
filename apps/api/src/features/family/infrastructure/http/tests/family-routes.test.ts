@@ -87,25 +87,43 @@ test("family routes delete recurring lines", async () => {
   );
 });
 
-test("family routes create members from names only", async () => {
+test("family routes create members with active flags and defaults", async () => {
   const app = createTestApp();
 
+  const defaultResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/members`,
+    {
+      body: JSON.stringify({ name: "Camille" }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
+  const defaultFamily = await defaultResponse.json();
+  const defaultMember = defaultFamily.members.find(
+    (item: { name: string }) => item.name === "Camille",
+  );
+
+  assert.equal(defaultResponse.status, 201);
+  assert.equal(defaultMember?.isActive, true);
+
   const response = await authenticatedRequest(app, `${familyPath}/members`, {
-    body: JSON.stringify({ name: "Camille" }),
+    body: JSON.stringify({ isActive: false, name: "Noa" }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
   });
   const family = await response.json();
   const member = family.members.find(
-    (item: { name: string }) => item.name === "Camille",
+    (item: { name: string }) => item.name === "Noa",
   );
 
   assert.equal(response.status, 201);
+  assert.equal(member?.isActive, false);
   assert.equal(member?.role, "");
   assert.equal(
     family.categories.some(
       (category: { label: string; ownerId?: string }) =>
-        category.label === "Camille" && category.ownerId === member?.id,
+        category.label === "Noa" && category.ownerId === member?.id,
     ),
     true,
   );

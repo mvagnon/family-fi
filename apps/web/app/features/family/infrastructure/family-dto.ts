@@ -31,6 +31,7 @@ function parseMember(value: unknown): FamilyMember {
 
   return {
     id: getString(member, "id"),
+    isActive: getOptionalBoolean(member, "isActive") ?? true,
     name: getString(member, "name"),
     role: getString(member, "role"),
   };
@@ -141,6 +142,23 @@ function parseStringItem(value: unknown): string {
 
 function getBoolean(value: Record<string, unknown>, key: string): boolean {
   const item = value[key];
+
+  if (typeof item === "boolean") {
+    return item;
+  }
+
+  throw new FamilyApiError(invalidFamilyMessage);
+}
+
+function getOptionalBoolean(
+  value: Record<string, unknown>,
+  key: string,
+): boolean | undefined {
+  const item = value[key];
+
+  if (item === undefined || item === null) {
+    return undefined;
+  }
 
   if (typeof item === "boolean") {
     return item;

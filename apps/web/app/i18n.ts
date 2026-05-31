@@ -201,6 +201,7 @@ export const resources = {
           duplicateMemberName: "A member with this name already exists.",
         },
         memberModal: {
+          isActive: "Active member",
           label: "Name",
           title: "Add member",
         },
@@ -217,6 +218,7 @@ export const resources = {
             addLabel: "Add member",
             deleteLabel: "Delete {{name}}",
             deleteTooltip: "Delete member",
+            inactive: "Inactive",
             subtitle_one: "{{count}} person",
             subtitle_other: "{{count}} people",
             title: "Members",
@@ -229,6 +231,60 @@ export const resources = {
           max: "Max.",
           min: "Min.",
           monthly: "Monthly",
+        },
+      },
+      participations: {
+        creation: {
+          errors: {
+            inactiveMember: "This member is no longer active.",
+            missingCategory:
+              "No professional category is available for this active member.",
+            missingMember: "This member no longer exists.",
+            noActiveMember:
+              "No active member is available for new participation lines.",
+          },
+          memberField: "Member",
+          missingCategoryHint: "Missing professional category: {{names}}",
+          selectMember: "Select an active member",
+          title: "Add participation line",
+        },
+        meta: {
+          description: "Family member participation tracking.",
+          title: "Family-Fi | Participations",
+        },
+        metrics: {
+          difference: "Difference",
+          expenses: "Avg. expenses",
+          income: "Avg. income",
+        },
+        table: {
+          addLine: "Add participation",
+          ariaLabel: "Monthly member participations",
+          collapseMonth: "Collapse {{month}}",
+          columns: {
+            amount: "Amount",
+            monthlyAverage: "Monthly avg.",
+            recurrence: "Recurrence",
+            title: "Movement",
+          },
+          empty: {
+            description:
+              "{{name}} has no professional movements for this year.",
+            noMember: "Add a family member to see participations.",
+            title: "No participation movements",
+          },
+          expandMonth: "Expand {{month}}",
+          subtitle: "For {{name}}",
+          title: "Monthly participations",
+        },
+        top: {
+          averageMetrics: "Selected member monthly averages",
+          inactive: "Inactive",
+          inactiveSelected: "Inactive member shown for consultation.",
+          memberLabel: "Member",
+          nextYear: "Next year",
+          previousYear: "Previous year",
+          yearAriaLabel: "Participation year",
         },
       },
       spaces: {
@@ -440,6 +496,7 @@ export const resources = {
           duplicateMemberName: "Un membre avec ce nom existe déjà.",
         },
         memberModal: {
+          isActive: "Membre actif",
           label: "Nom",
           title: "Ajouter un membre",
         },
@@ -456,6 +513,7 @@ export const resources = {
             addLabel: "Ajouter un membre",
             deleteLabel: "Supprimer {{name}}",
             deleteTooltip: "Supprimer le membre",
+            inactive: "Inactif",
             subtitle_one: "{{count}} personne",
             subtitle_other: "{{count}} personnes",
             title: "Membres",
@@ -468,6 +526,62 @@ export const resources = {
           max: "Max.",
           min: "Min.",
           monthly: "Mensuel",
+        },
+      },
+      participations: {
+        creation: {
+          errors: {
+            inactiveMember: "Ce membre n'est plus actif.",
+            missingCategory:
+              "Aucune catégorie professionnelle n'est disponible pour ce membre actif.",
+            missingMember: "Ce membre n'existe plus.",
+            noActiveMember:
+              "Aucun membre actif n'est disponible pour ajouter une ligne.",
+          },
+          memberField: "Membre",
+          missingCategoryHint:
+            "Catégorie professionnelle manquante : {{names}}",
+          selectMember: "Sélectionner un membre actif",
+          title: "Ajouter une ligne de participation",
+        },
+        meta: {
+          description: "Suivi des participations par membre du foyer.",
+          title: "Family-Fi | Participations",
+        },
+        metrics: {
+          difference: "Différence",
+          expenses: "Dépenses moy.",
+          income: "Revenus moy.",
+        },
+        table: {
+          addLine: "Ajouter une participation",
+          ariaLabel: "Participations mensuelles par membre",
+          collapseMonth: "Réduire {{month}}",
+          columns: {
+            amount: "Montant",
+            monthlyAverage: "Moy. mensuelle",
+            recurrence: "Récurrence",
+            title: "Mouvement",
+          },
+          empty: {
+            description:
+              "{{name}} n'a aucun mouvement professionnel pour cette année.",
+            noMember:
+              "Ajoutez un membre du foyer pour afficher les participations.",
+            title: "Aucun mouvement de participation",
+          },
+          expandMonth: "Déplier {{month}}",
+          subtitle: "Pour {{name}}",
+          title: "Participations mensuelles",
+        },
+        top: {
+          averageMetrics: "Moyennes mensuelles du membre sélectionné",
+          inactive: "Inactif",
+          inactiveSelected: "Membre inactif affiché en consultation.",
+          memberLabel: "Membre",
+          nextYear: "Année suivante",
+          previousYear: "Année précédente",
+          yearAriaLabel: "Année des participations",
         },
       },
       spaces: {
@@ -675,6 +789,7 @@ export const resources = {
           duplicateMemberName: "同じ名前のメンバーがすでに存在します。",
         },
         memberModal: {
+          isActive: "有効なメンバー",
           label: "名前",
           title: "メンバーを追加",
         },
@@ -691,6 +806,7 @@ export const resources = {
             addLabel: "メンバーを追加",
             deleteLabel: "{{name}}を削除",
             deleteTooltip: "メンバーを削除",
+            inactive: "無効",
             subtitle_other: "{{count}}人",
             title: "メンバー",
           },
@@ -702,6 +818,57 @@ export const resources = {
           max: "最大",
           min: "最小",
           monthly: "月次",
+        },
+      },
+      participations: {
+        creation: {
+          errors: {
+            inactiveMember: "このメンバーは現在有効ではありません。",
+            missingCategory: "この有効なメンバーの職業カテゴリがありません。",
+            missingMember: "このメンバーは存在しません。",
+            noActiveMember: "新しい持分明細に使える有効なメンバーがいません。",
+          },
+          memberField: "メンバー",
+          missingCategoryHint: "職業カテゴリがありません: {{names}}",
+          selectMember: "有効なメンバーを選択",
+          title: "持分明細を追加",
+        },
+        meta: {
+          description: "家族メンバー別の持分追跡。",
+          title: "Family-Fi | 持分",
+        },
+        metrics: {
+          difference: "差額",
+          expenses: "平均支出",
+          income: "平均収入",
+        },
+        table: {
+          addLine: "持分を追加",
+          ariaLabel: "メンバー別の月次持分",
+          collapseMonth: "{{month}}を折りたたむ",
+          columns: {
+            amount: "金額",
+            monthlyAverage: "月平均",
+            recurrence: "頻度",
+            title: "動き",
+          },
+          empty: {
+            description: "{{name}}のこの年の職業上の動きはありません。",
+            noMember: "持分を表示するには家族メンバーを追加してください。",
+            title: "持分の動きはありません",
+          },
+          expandMonth: "{{month}}を展開",
+          subtitle: "{{name}}",
+          title: "月次持分",
+        },
+        top: {
+          averageMetrics: "選択メンバーの月平均",
+          inactive: "無効",
+          inactiveSelected: "無効なメンバーを参照表示しています。",
+          memberLabel: "メンバー",
+          nextYear: "翌年",
+          previousYear: "前年",
+          yearAriaLabel: "持分の年",
         },
       },
       spaces: {

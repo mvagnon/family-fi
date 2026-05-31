@@ -12,6 +12,7 @@ import type { FamilyRepository } from "../domain/family-repository";
 import { FamilyDashboard } from "./family-dashboard";
 import { FamilyErrorState } from "./family-error-state";
 import { FamilyLoadingState } from "./family-loading-state";
+import { getFamilyMutationError } from "./family-mutation-error";
 import { useTranslation } from "react-i18next";
 
 interface FamilyPageProps {
@@ -37,7 +38,7 @@ export function FamilyPage({ repository, spaceId }: FamilyPageProps) {
     deleteLineMutation.isPending ||
     deleteMemberMutation.isPending ||
     updateLineMutation.isPending;
-  const mutationError = getMutationError([
+  const mutationError = getFamilyMutationError([
     addMemberMutation,
     addCategoryMutation,
     createLineMutation,
@@ -97,39 +98,4 @@ export function FamilyPage({ repository, spaceId }: FamilyPageProps) {
 
 function getErrorMessage(error: Error | null): string | undefined {
   return error?.message;
-}
-
-type FamilyMutation = {
-  error: Error | null;
-  submittedAt: number;
-};
-
-function getMutationError(mutations: FamilyMutation[]) {
-  const mutation = mutations.reduce<FamilyMutation | undefined>(
-    (latestMutation, currentMutation) => {
-      if (!currentMutation.error) {
-        return latestMutation;
-      }
-
-      if (
-        !latestMutation ||
-        currentMutation.submittedAt >= latestMutation.submittedAt
-      ) {
-        return currentMutation;
-      }
-
-      return latestMutation;
-    },
-    undefined,
-  );
-  const message = getErrorMessage(mutation?.error ?? null);
-
-  if (!mutation || !message) {
-    return undefined;
-  }
-
-  return {
-    key: `${mutation.submittedAt}-${message}`,
-    message,
-  };
 }

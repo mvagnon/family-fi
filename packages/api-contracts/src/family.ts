@@ -6,6 +6,7 @@ export type Movement = z.infer<typeof movementSchema>;
 
 export interface FamilyMember {
   id: string;
+  isActive: boolean;
   name: string;
   role: string;
 }
@@ -38,6 +39,7 @@ export interface Family {
 }
 
 export interface CreateFamilyMemberInput {
+  isActive: boolean;
   name: string;
 }
 
