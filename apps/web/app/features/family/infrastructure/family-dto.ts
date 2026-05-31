@@ -73,7 +73,7 @@ function parseParticipationLine(value: unknown): ParticipationLine {
   const line = getRecord(value);
 
   return {
-    amount: getPositiveNumber(line, "amount"),
+    amount: getNonZeroNumber(line, "amount"),
     id: getString(line, "id"),
     memberId: getString(line, "memberId"),
     month: getMonth(line),
@@ -247,6 +247,16 @@ function getPositiveInteger(
   const item = getPositiveNumber(value, key);
 
   if (Number.isInteger(item)) {
+    return item;
+  }
+
+  throw new FamilyApiError(invalidFamilyMessage);
+}
+
+function getNonZeroNumber(value: Record<string, unknown>, key: string): number {
+  const item = getFiniteNumber(value, key);
+
+  if (item !== 0) {
     return item;
   }
 

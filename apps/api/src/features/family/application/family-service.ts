@@ -207,9 +207,9 @@ export class FamilyService {
       throw new InvalidFamilyInputError("Le membre n'est pas actif.");
     }
 
-    const amount = requirePositiveNumber(
+    const amount = requireNonZeroNumber(
       input.amount,
-      "Participation amount must be positive.",
+      "Participation amount must be different from zero.",
     );
     const year = requireInteger(input.year, "Participation year is invalid.");
     const month = requireInteger(
@@ -459,6 +459,19 @@ function requirePositiveNumber(
   const number = requireFiniteNumber(value, message);
 
   if (number <= 0) {
+    throw new InvalidFamilyInputError(message);
+  }
+
+  return number;
+}
+
+function requireNonZeroNumber(
+  value: number | undefined,
+  message: string,
+): number {
+  const number = requireFiniteNumber(value, message);
+
+  if (number === 0) {
     throw new InvalidFamilyInputError(message);
   }
 

@@ -246,7 +246,7 @@ export const resources = {
           month: "Month",
           title: "Add participation line",
           validation: {
-            amountPositive: "Amount must be greater than 0.",
+            amountNonZero: "Amount must be different from 0.",
             amountRequired: "Amount is required.",
             memberRequired: "Member is required.",
             monthRequired: "Month is required.",
@@ -261,15 +261,16 @@ export const resources = {
         },
         metrics: {
           difference: "Difference",
-          expenses: "Avg. expenses",
-          income: "Avg. income",
+          expenses: "Expenses",
+          income: "Income",
         },
         table: {
           addLine: "Add participation",
           ariaLabel: "Monthly member participations",
           collapseMonth: "Collapse {{month}}",
           columns: {
-            amount: "Amount",
+            expense: "Expense",
+            income: "Income",
             member: "Member",
           },
           empty: {
@@ -547,7 +548,7 @@ export const resources = {
           month: "Mois",
           title: "Ajouter une ligne de participation",
           validation: {
-            amountPositive: "Le montant doit être supérieur à 0.",
+            amountNonZero: "Le montant doit être différent de 0.",
             amountRequired: "Le montant est obligatoire.",
             memberRequired: "Le membre est obligatoire.",
             monthRequired: "Le mois est obligatoire.",
@@ -562,15 +563,16 @@ export const resources = {
         },
         metrics: {
           difference: "Différence",
-          expenses: "Dépenses moy.",
-          income: "Revenus moy.",
+          expenses: "Dépenses",
+          income: "Revenus",
         },
         table: {
           addLine: "Ajouter une participation",
           ariaLabel: "Participations mensuelles par membre",
           collapseMonth: "Réduire {{month}}",
           columns: {
-            amount: "Montant",
+            expense: "Dépense",
+            income: "Revenu",
             member: "Membre",
           },
           empty: {
@@ -843,7 +845,7 @@ export const resources = {
           month: "月",
           title: "持分明細を追加",
           validation: {
-            amountPositive: "金額は0より大きくしてください。",
+            amountNonZero: "金額は0以外にしてください。",
             amountRequired: "金額は必須です。",
             memberRequired: "メンバーは必須です。",
             monthRequired: "月は必須です。",
@@ -858,15 +860,16 @@ export const resources = {
         },
         metrics: {
           difference: "差額",
-          expenses: "平均支出",
-          income: "平均収入",
+          expenses: "支出",
+          income: "収入",
         },
         table: {
           addLine: "持分を追加",
           ariaLabel: "メンバー別の月次持分",
           collapseMonth: "{{month}}を折りたたむ",
           columns: {
-            amount: "金額",
+            expense: "支出",
+            income: "収入",
             member: "メンバー",
           },
           empty: {

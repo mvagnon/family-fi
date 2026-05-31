@@ -26,7 +26,12 @@ import type {
 import { familyBudgetTableHeaderTextSx } from "./family-budget-table-layout";
 import { useFamilyFormat } from "./use-family-format";
 
-const participationTableGridColumns = "minmax(240px, 1fr) 180px";
+const participationTableGridColumns = "minmax(220px, 1fr) 160px 160px";
+const participationMonthGridColumns = "40px minmax(180px, 1fr) 160px 160px";
+const participationAmountHeaderTextSx = {
+  ...familyBudgetTableHeaderTextSx,
+  textAlign: "right",
+};
 
 interface FamilyParticipationsTableProps {
   disabled?: boolean;
@@ -101,12 +106,12 @@ export function FamilyParticipationsTable({
           sx={{
             borderCollapse: "separate",
             borderSpacing: 0,
-            minWidth: 520,
+            minWidth: 700,
           }}
         >
           <TableHead>
             <TableRow>
-              <TableCell colSpan={2} sx={{ p: 0 }}>
+              <TableCell colSpan={3} sx={{ p: 0 }}>
                 <Box
                   sx={{
                     backgroundColor: "Background",
@@ -118,8 +123,11 @@ export function FamilyParticipationsTable({
                   <Typography sx={familyBudgetTableHeaderTextSx}>
                     {t("participations.table.columns.member")}
                   </Typography>
-                  <Typography sx={familyBudgetTableHeaderTextSx}>
-                    {t("participations.table.columns.amount")}
+                  <Typography sx={participationAmountHeaderTextSx}>
+                    {t("participations.table.columns.income")}
+                  </Typography>
+                  <Typography sx={participationAmountHeaderTextSx}>
+                    {t("participations.table.columns.expense")}
                   </Typography>
                 </Box>
               </TableCell>
@@ -156,7 +164,6 @@ function ParticipationMonthGroup({
   onToggle: () => void;
 }) {
   const { t } = useTranslation();
-  const familyFormat = useFamilyFormat();
   const toggleLabel = collapsed
     ? t("participations.table.expandMonth", { month: monthLabel })
     : t("participations.table.collapseMonth", { month: monthLabel });
@@ -164,14 +171,14 @@ function ParticipationMonthGroup({
   return (
     <Fragment>
       <TableRow>
-        <TableCell colSpan={2} component="th" scope="rowgroup" sx={{ p: 0 }}>
+        <TableCell colSpan={3} component="th" scope="rowgroup" sx={{ p: 0 }}>
           <Box
             sx={(theme) => ({
               alignItems: "center",
               bgcolor: alpha(theme.palette.primary.main, 0.08),
               display: "grid",
               gap: 1,
-              gridTemplateColumns: "40px minmax(0, 1fr) auto",
+              gridTemplateColumns: participationMonthGridColumns,
               px: { md: 2, xs: 1.5 },
               py: 0.85,
             })}
@@ -190,20 +197,19 @@ function ParticipationMonthGroup({
             <Typography sx={{ fontWeight: 700, textTransform: "capitalize" }}>
               {monthLabel}
             </Typography>
-            <Typography
-              sx={{
-                fontWeight: 700,
-                justifySelf: "end",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {familyFormat.formatCurrency(group.total)}
-            </Typography>
+            <ParticipationAmountCell
+              value={getIncomeAmount(group.lines)}
+              weight={700}
+            />
+            <ParticipationAmountCell
+              value={getExpenseAmount(group.lines)}
+              weight={700}
+            />
           </Box>
         </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell colSpan={2} sx={{ borderBottom: 0, p: 0 }}>
+        <TableCell colSpan={3} sx={{ borderBottom: 0, p: 0 }}>
           <Collapse in={!collapsed} timeout="auto" unmountOnExit>
             {group.memberGroups.map((memberGroup) => (
               <ParticipationMemberGroup
@@ -223,8 +229,6 @@ function ParticipationMemberGroup({
 }: {
   group: FamilyParticipationMemberMonthGroup;
 }) {
-  const familyFormat = useFamilyFormat();
-
   return (
     <Box>
       <Box
@@ -240,16 +244,8 @@ function ParticipationMemberGroup({
             {group.member.name}
           </Typography>
         </Box>
-        <Box
-          sx={{
-            alignSelf: "center",
-            fontWeight: 700,
-            px: 2,
-            py: 1.25,
-          }}
-        >
-          {familyFormat.formatCurrency(group.total)}
-        </Box>
+        <ParticipationAmountCell value={getIncomeAmount(group.lines)} />
+        <ParticipationAmountCell value={getExpenseAmount(group.lines)} />
       </Box>
       {group.lines.length > 0 ? (
         group.lines.map((line) => (
@@ -279,13 +275,12 @@ function ParticipationEmptyLine() {
         </Typography>
       </Box>
       <Box />
+      <Box />
     </Box>
   );
 }
 
 function ParticipationLineRow({ line }: { line: FamilyParticipationLine }) {
-  const familyFormat = useFamilyFormat();
-
   return (
     <Box
       sx={(theme) => ({
@@ -299,10 +294,54 @@ function ParticipationLineRow({ line }: { line: FamilyParticipationLine }) {
           {line.member.name}
         </Typography>
       </Box>
-      <Box sx={{ alignSelf: "center", px: 2, py: 1.5 }}>
-        {familyFormat.formatCurrency(line.monthlyValue)}
-      </Box>
+      <ParticipationAmountCell
+        value={line.line.amount > 0 ? line.line.amount : null}
+      />
+      <ParticipationAmountCell
+        value={line.line.amount < 0 ? line.line.amount : null}
+      />
     </Box>
+  );
+}
+
+function ParticipationAmountCell({
+  value,
+  weight = 400,
+}: {
+  value: number | null;
+  weight?: number;
+}) {
+  const familyFormat = useFamilyFormat();
+
+  return (
+    <Box
+      sx={{
+        alignSelf: "center",
+        fontWeight: weight,
+        px: 2,
+        py: 1.25,
+        textAlign: "right",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {value === null || value === 0
+        ? null
+        : familyFormat.formatCurrency(value)}
+    </Box>
+  );
+}
+
+function getIncomeAmount(lines: FamilyParticipationLine[]): number {
+  return lines.reduce(
+    (total, line) => total + Math.max(line.line.amount, 0),
+    0,
+  );
+}
+
+function getExpenseAmount(lines: FamilyParticipationLine[]): number {
+  return lines.reduce(
+    (total, line) => total + Math.min(line.line.amount, 0),
+    0,
   );
 }
 

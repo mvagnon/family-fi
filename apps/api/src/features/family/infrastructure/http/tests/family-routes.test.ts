@@ -158,6 +158,28 @@ test("family routes create participation lines for active members", async () => 
   assert.equal(line?.amount, 42.5);
   assert.equal(line?.month, 5);
   assert.equal(line?.year, year);
+
+  const expenseResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/participation-lines`,
+    {
+      body: JSON.stringify({
+        amount: -12.75,
+        memberId: "lea",
+        month: 5,
+        year,
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
+  const updatedFamily = await expenseResponse.json();
+  const expenseLine = updatedFamily.participationLines.find(
+    (item: { amount: number }) => item.amount === -12.75,
+  );
+
+  assert.equal(expenseResponse.status, 201);
+  assert.equal(expenseLine?.amount, -12.75);
 });
 
 test("family routes reject participation lines for inactive members", async () => {
@@ -272,7 +294,7 @@ test("family routes reject invalid participation line amounts", async () => {
 
   assert.equal(response.status, 400);
   assert.deepEqual(body, {
-    message: "Participation amount must be positive.",
+    message: "Participation amount must be different from zero.",
   });
 });
 

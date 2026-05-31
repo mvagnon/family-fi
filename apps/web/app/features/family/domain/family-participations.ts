@@ -139,7 +139,7 @@ function getParticipationLines(
       {
         line,
         member,
-        monthlyValue: -line.amount,
+        monthlyValue: line.amount,
       },
     ];
   });
@@ -215,11 +215,26 @@ function getVisibleMonthIndexes(
 function getParticipationSummary(
   lines: FamilyParticipationLine[],
 ): FamilyParticipationSummary {
-  const expenses = lines.reduce((total, line) => total + line.line.amount, 0);
+  const totals = lines.reduce(
+    (summary, line) => {
+      if (line.line.amount > 0) {
+        return {
+          ...summary,
+          income: summary.income + line.line.amount,
+        };
+      }
+
+      return {
+        ...summary,
+        expenses: summary.expenses + Math.abs(line.line.amount),
+      };
+    },
+    { expenses: 0, income: 0 },
+  );
 
   return {
-    difference: -expenses,
-    expenses,
-    income: 0,
+    difference: totals.income - totals.expenses,
+    expenses: totals.expenses,
+    income: totals.income,
   };
 }

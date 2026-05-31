@@ -126,7 +126,9 @@ export const recurringLineInputSchema = recurringLineRawInputSchema.transform(
 );
 
 export const participationLineInputSchema = z.object({
-  amount: positiveNumberSchema("Participation amount must be positive."),
+  amount: nonZeroNumberSchema(
+    "Participation amount must be different from zero.",
+  ),
   memberId: requiredTextSchema("Participation member is required."),
   month: z
     .number({ error: "Participation month is invalid." })
@@ -145,6 +147,12 @@ function requiredTextSchema(message: string) {
 
 function positiveNumberSchema(message: string) {
   return z.number({ error: message }).positive({ message });
+}
+
+function nonZeroNumberSchema(message: string) {
+  return z
+    .number({ error: message })
+    .refine((value) => value !== 0, { message });
 }
 
 function optionalPositiveNumberSchema(message: string) {

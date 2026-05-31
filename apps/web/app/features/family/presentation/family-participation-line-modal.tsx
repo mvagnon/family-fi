@@ -17,7 +17,7 @@ import type {
 import { participationLineInputSchema } from "../domain/family";
 
 interface ParticipationLineFormValidationMessages {
-  amountPositive: string;
+  amountNonZero: string;
   amountRequired: string;
   memberRequired: string;
   monthRequired: string;
@@ -32,8 +32,8 @@ function createParticipationLineFormSchema(
   return z
     .object({
       amount: requiredNumberTextSchema(messages.amountRequired).refine(
-        (value) => value > 0,
-        { message: messages.amountPositive },
+        (value) => value !== 0,
+        { message: messages.amountNonZero },
       ),
       memberId: requiredTextSchema(messages.memberRequired),
       month: requiredIntegerTextSchema(messages.monthRequired).refine(
@@ -249,7 +249,7 @@ function getParticipationLineFormValidationMessages(
   t: TFunction,
 ): ParticipationLineFormValidationMessages {
   return {
-    amountPositive: t("participations.creation.validation.amountPositive"),
+    amountNonZero: t("participations.creation.validation.amountNonZero"),
     amountRequired: t("participations.creation.validation.amountRequired"),
     memberRequired: t("participations.creation.validation.memberRequired"),
     monthRequired: t("participations.creation.validation.monthRequired"),
