@@ -129,6 +129,153 @@ test("family routes create members with active flags and defaults", async () => 
   );
 });
 
+test("family routes create participation lines for active members", async () => {
+  const app = createTestApp();
+  const year = new Date().getFullYear();
+
+  await authenticatedRequest(app, familyPath);
+
+  const response = await authenticatedRequest(
+    app,
+    `${familyPath}/participation-lines`,
+    {
+      body: JSON.stringify({
+        amount: 42.5,
+        memberId: "lea",
+        month: 5,
+        year,
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
+  const family = await response.json();
+  const line = family.participationLines.find(
+    (item: { memberId: string }) => item.memberId === "lea",
+  );
+
+  assert.equal(response.status, 201);
+  assert.equal(line?.amount, 42.5);
+  assert.equal(line?.month, 5);
+  assert.equal(line?.year, year);
+});
+
+test("family routes reject participation lines for inactive members", async () => {
+  const app = createTestApp();
+  const year = new Date().getFullYear();
+
+  const memberResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/members`,
+    {
+      body: JSON.stringify({ isActive: false, name: "Noa" }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
+  const family = await memberResponse.json();
+  const member = family.members.find(
+    (item: { name: string }) => item.name === "Noa",
+  );
+
+  const response = await authenticatedRequest(
+    app,
+    `${familyPath}/participation-lines`,
+    {
+      body: JSON.stringify({
+        amount: 20,
+        memberId: member.id,
+        month: 6,
+        year,
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
+  const body = await response.json();
+
+  assert.equal(response.status, 400);
+  assert.deepEqual(body, {
+    message: "Le membre n'est pas actif.",
+  });
+});
+
+test("family routes reject invalid participation line periods", async () => {
+  const app = createTestApp();
+  const year = new Date().getFullYear();
+
+  await authenticatedRequest(app, familyPath);
+
+  const monthResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/participation-lines`,
+    {
+      body: JSON.stringify({
+        amount: 20,
+        memberId: "lea",
+        month: 13,
+        year,
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
+  const monthBody = await monthResponse.json();
+
+  assert.equal(monthResponse.status, 400);
+  assert.deepEqual(monthBody, {
+    message: "Participation month is invalid.",
+  });
+
+  const yearResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/participation-lines`,
+    {
+      body: JSON.stringify({
+        amount: 20,
+        memberId: "lea",
+        month: 6,
+        year: year + 1,
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
+  const yearBody = await yearResponse.json();
+
+  assert.equal(yearResponse.status, 400);
+  assert.deepEqual(yearBody, {
+    message: "Participation year is invalid.",
+  });
+});
+
+test("family routes reject invalid participation line amounts", async () => {
+  const app = createTestApp();
+
+  await authenticatedRequest(app, familyPath);
+
+  const response = await authenticatedRequest(
+    app,
+    `${familyPath}/participation-lines`,
+    {
+      body: JSON.stringify({
+        amount: 0,
+        memberId: "lea",
+        month: 6,
+        year: new Date().getFullYear(),
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
+  const body = await response.json();
+
+  assert.equal(response.status, 400);
+  assert.deepEqual(body, {
+    message: "Participation amount must be positive.",
+  });
+});
+
 test("family routes reject duplicate member names", async () => {
   const app = createTestApp();
 

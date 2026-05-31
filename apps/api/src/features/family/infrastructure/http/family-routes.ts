@@ -9,11 +9,13 @@ import {
 import type { FamilyService } from "../../application/family-service.js";
 import {
   InvalidFamilyInputError,
+  participationLineInputSchema,
   recurringLineInputSchema,
 } from "../../domain/family.js";
 import type {
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
+  CreateParticipationLineInput,
   CreateRecurringLineInput,
   UpdateRecurringLineInput,
 } from "../../domain/family.js";
@@ -78,6 +80,18 @@ export function createFamilyRouter(
       validateJson(parseRecurringLineInput),
       async (context) => {
         const family = await service.createRecurringLine(
+          await getFamilyRouteRequest(context, authProvider),
+          context.req.valid("json"),
+        );
+
+        return context.json(family, 201);
+      },
+    )
+    .post(
+      "/participation-lines",
+      validateJson(parseParticipationLineInput),
+      async (context) => {
+        const family = await service.createParticipationLine(
           await getFamilyRouteRequest(context, authProvider),
           context.req.valid("json"),
         );
@@ -170,6 +184,20 @@ function parseRecurringLineInput(
   if (!result.success) {
     throw new InvalidFamilyInputError(
       result.error.issues[0]?.message ?? "Recurring line input is invalid.",
+    );
+  }
+
+  return result.data;
+}
+
+function parseParticipationLineInput(
+  value: Record<string, unknown>,
+): CreateParticipationLineInput {
+  const result = participationLineInputSchema.safeParse(value);
+
+  if (!result.success) {
+    throw new InvalidFamilyInputError(
+      result.error.issues[0]?.message ?? "Participation input is invalid.",
     );
   }
 

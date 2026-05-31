@@ -1,5 +1,5 @@
 import {
-  useCreateFamilyRecurringLine,
+  useCreateFamilyParticipationLine,
   useFamily,
 } from "../application/family-queries";
 import type { FamilyRepository } from "../domain/family-repository";
@@ -20,7 +20,10 @@ export function FamilyParticipationsPage({
 }: FamilyParticipationsPageProps) {
   const { t } = useTranslation();
   const familyQuery = useFamily(repository, spaceId);
-  const createLineMutation = useCreateFamilyRecurringLine(repository, spaceId);
+  const createLineMutation = useCreateFamilyParticipationLine(
+    repository,
+    spaceId,
+  );
   const mutationError = getFamilyMutationError([createLineMutation]);
 
   if (familyQuery.isPending) {
@@ -45,7 +48,7 @@ export function FamilyParticipationsPage({
       isSaving={createLineMutation.isPending}
       mutationError={mutationError?.message}
       mutationErrorKey={mutationError?.key}
-      onCreateRecurringLine={async (input) => {
+      onCreateParticipationLine={async (input) => {
         await createLineMutation.mutateAsync(input);
       }}
     />

@@ -12,10 +12,12 @@ import {
 import type {
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
+  CreateParticipationLineInput,
   CreateRecurringLineInput,
   FamilyCategory,
   FamilyMember,
   FamilySnapshot,
+  ParticipationLine,
   RecurringLine,
   UpdateRecurringLineInput,
 } from "../domain/family.js";
@@ -184,6 +186,59 @@ export class FamilyService {
     });
 
     return this.repository.createRecurringLine(family.id, line);
+  }
+
+  async createParticipationLine(
+    request: FamilyRequest,
+    input: CreateParticipationLineInput,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
+    const memberId = requireText(
+      input.memberId,
+      "Participation member is required.",
+    );
+    const member = family.members.find((item) => item.id === memberId);
+
+    if (!member) {
+      throw new FamilyMemberNotFoundError(memberId);
+    }
+
+    if (!member.isActive) {
+      throw new InvalidFamilyInputError("Le membre n'est pas actif.");
+    }
+
+    const amount = requirePositiveNumber(
+      input.amount,
+      "Participation amount must be positive.",
+    );
+    const year = requireInteger(input.year, "Participation year is invalid.");
+    const month = requireInteger(
+      input.month,
+      "Participation month is invalid.",
+    );
+    const currentYear = new Date().getFullYear();
+
+    if (year > currentYear) {
+      throw new InvalidFamilyInputError("Participation year is invalid.");
+    }
+
+    if (month < 1 || month > 12) {
+      throw new InvalidFamilyInputError("Participation month is invalid.");
+    }
+
+    const line: ParticipationLine = {
+      amount,
+      id: this.createUniqueId(
+        "participation",
+        `${member.name}-${year}-${month}`,
+        family.participationLines.map((item) => item.id),
+      ),
+      memberId,
+      month,
+      year,
+    };
+
+    return this.repository.createParticipationLine(family.id, line);
   }
 
   async updateRecurringLine(
@@ -404,6 +459,16 @@ function requirePositiveNumber(
   const number = requireFiniteNumber(value, message);
 
   if (number <= 0) {
+    throw new InvalidFamilyInputError(message);
+  }
+
+  return number;
+}
+
+function requireInteger(value: number | undefined, message: string): number {
+  const number = requireFiniteNumber(value, message);
+
+  if (!Number.isInteger(number)) {
     throw new InvalidFamilyInputError(message);
   }
 

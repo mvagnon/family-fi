@@ -3,6 +3,7 @@ import type {
   FamilyCategory,
   FamilyMember,
   Movement,
+  ParticipationLine,
   RecurringLine,
 } from "../domain/family";
 
@@ -22,6 +23,9 @@ export function parseFamilyResponse(value: unknown): Family {
     categories: getArray(family, "categories").map(parseCategory),
     id: getString(family, "id"),
     members: getArray(family, "members").map(parseMember),
+    participationLines: getOptionalArray(family, "participationLines").map(
+      parseParticipationLine,
+    ),
     recurringLines: getArray(family, "recurringLines").map(parseRecurringLine),
   };
 }
@@ -65,6 +69,18 @@ function parseRecurringLine(value: unknown): RecurringLine {
   };
 }
 
+function parseParticipationLine(value: unknown): ParticipationLine {
+  const line = getRecord(value);
+
+  return {
+    amount: getPositiveNumber(line, "amount"),
+    id: getString(line, "id"),
+    memberId: getString(line, "memberId"),
+    month: getMonth(line),
+    year: getPositiveInteger(line, "year"),
+  };
+}
+
 function getCategoryKind(
   value: Record<string, unknown>,
 ): FamilyCategory["kind"] {
@@ -97,6 +113,23 @@ function getRecord(value: unknown): Record<string, unknown> {
 
 function getArray(value: Record<string, unknown>, key: string): unknown[] {
   const item = value[key];
+
+  if (Array.isArray(item)) {
+    return item;
+  }
+
+  throw new FamilyApiError(invalidFamilyMessage);
+}
+
+function getOptionalArray(
+  value: Record<string, unknown>,
+  key: string,
+): unknown[] {
+  const item = value[key];
+
+  if (item === undefined || item === null) {
+    return [];
+  }
 
   if (Array.isArray(item)) {
     return item;
@@ -202,6 +235,29 @@ function getPositiveNumber(
 
   if (item > 0) {
     return item;
+  }
+
+  throw new FamilyApiError(invalidFamilyMessage);
+}
+
+function getPositiveInteger(
+  value: Record<string, unknown>,
+  key: string,
+): number {
+  const item = getPositiveNumber(value, key);
+
+  if (Number.isInteger(item)) {
+    return item;
+  }
+
+  throw new FamilyApiError(invalidFamilyMessage);
+}
+
+function getMonth(value: Record<string, unknown>): number {
+  const month = getPositiveInteger(value, "month");
+
+  if (month >= 1 && month <= 12) {
+    return month;
   }
 
   throw new FamilyApiError(invalidFamilyMessage);

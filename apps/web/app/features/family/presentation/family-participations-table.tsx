@@ -23,11 +23,10 @@ import type {
   FamilyParticipationMonthGroup,
 } from "../domain/family-participations";
 import type { FamilyMember } from "../domain/family";
-import {
-  familyBudgetTableGridColumns,
-  familyBudgetTableHeaderTextSx,
-} from "./family-budget-table-layout";
+import { familyBudgetTableHeaderTextSx } from "./family-budget-table-layout";
 import { useFamilyFormat } from "./use-family-format";
+
+const participationTableGridColumns = "minmax(240px, 1fr) 180px";
 
 interface FamilyParticipationsTableProps {
   disabled?: boolean;
@@ -110,31 +109,25 @@ export function FamilyParticipationsTable({
           sx={{
             borderCollapse: "separate",
             borderSpacing: 0,
-            minWidth: 760,
+            minWidth: 520,
           }}
         >
           <TableHead>
             <TableRow>
-              <TableCell colSpan={4} sx={{ p: 0 }}>
+              <TableCell colSpan={2} sx={{ p: 0 }}>
                 <Box
                   sx={{
                     backgroundColor: "Background",
                     display: "grid",
-                    gridTemplateColumns: familyBudgetTableGridColumns,
+                    gridTemplateColumns: participationTableGridColumns,
                     pb: 1,
                   }}
                 >
                   <Typography sx={familyBudgetTableHeaderTextSx}>
-                    {t("participations.table.columns.title")}
+                    {t("participations.table.columns.member")}
                   </Typography>
                   <Typography sx={familyBudgetTableHeaderTextSx}>
                     {t("participations.table.columns.amount")}
-                  </Typography>
-                  <Typography sx={familyBudgetTableHeaderTextSx}>
-                    {t("participations.table.columns.monthlyAverage")}
-                  </Typography>
-                  <Typography sx={familyBudgetTableHeaderTextSx}>
-                    {t("participations.table.columns.recurrence")}
                   </Typography>
                 </Box>
               </TableCell>
@@ -179,7 +172,7 @@ function ParticipationMonthGroup({
   return (
     <Fragment>
       <TableRow>
-        <TableCell colSpan={4} component="th" scope="rowgroup" sx={{ p: 0 }}>
+        <TableCell colSpan={2} component="th" scope="rowgroup" sx={{ p: 0 }}>
           <Box
             sx={(theme) => ({
               alignItems: "center",
@@ -218,7 +211,7 @@ function ParticipationMonthGroup({
         </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell colSpan={4} sx={{ borderBottom: 0, p: 0 }}>
+        <TableCell colSpan={2} sx={{ borderBottom: 0, p: 0 }}>
           <Collapse in={!collapsed} timeout="auto" unmountOnExit>
             {group.lines.map((line) => (
               <ParticipationLineRow key={line.line.id} line={line} />
@@ -238,34 +231,14 @@ function ParticipationLineRow({ line }: { line: FamilyParticipationLine }) {
       sx={(theme) => ({
         borderTop: `1px solid ${theme.palette.divider}`,
         display: "grid",
-        gridTemplateColumns: familyBudgetTableGridColumns,
+        gridTemplateColumns: participationTableGridColumns,
       })}
     >
       <Box sx={{ minWidth: 0, px: 2, py: 1.5 }}>
-        <Typography sx={{ fontWeight: 600 }}>{line.line.title}</Typography>
-        <Typography
-          sx={(theme) => ({
-            color: alpha(theme.palette.text.secondary, 0.76),
-            display: "-webkit-box",
-            mt: 0.5,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            WebkitBoxOrient: "vertical",
-            WebkitLineClamp: 1,
-          })}
-          variant="body2"
-        >
-          {line.line.description}
-        </Typography>
-      </Box>
-      <Box sx={{ alignSelf: "center", px: 2, py: 1.5 }}>
-        {familyFormat.formatLineAmount(line.line)}
+        <Typography sx={{ fontWeight: 600 }}>{line.member.name}</Typography>
       </Box>
       <Box sx={{ alignSelf: "center", px: 2, py: 1.5 }}>
         {familyFormat.formatCurrency(line.monthlyValue)}
-      </Box>
-      <Box sx={{ alignSelf: "center", px: 2, py: 1.5 }}>
-        {familyFormat.formatRecurrence(line.line.recurrenceMonths)}
       </Box>
     </Box>
   );

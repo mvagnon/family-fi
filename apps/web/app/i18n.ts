@@ -235,18 +235,17 @@ export const resources = {
       },
       participations: {
         creation: {
+          amount: "Amount",
           errors: {
             inactiveMember: "This member is no longer active.",
-            missingCategory:
-              "No professional category is available for this active member.",
             missingMember: "This member no longer exists.",
             noActiveMember:
               "No active member is available for new participation lines.",
           },
           memberField: "Member",
-          missingCategoryHint: "Missing professional category: {{names}}",
-          selectMember: "Select an active member",
+          month: "Month",
           title: "Add participation line",
+          year: "Year",
         },
         meta: {
           description: "Family member participation tracking.",
@@ -263,15 +262,13 @@ export const resources = {
           collapseMonth: "Collapse {{month}}",
           columns: {
             amount: "Amount",
-            monthlyAverage: "Monthly avg.",
-            recurrence: "Recurrence",
-            title: "Movement",
+            member: "Member",
           },
           empty: {
             description:
-              "{{name}} has no professional movements for this year.",
+              "{{name}} has no participation expenses for this year.",
             noMember: "Add a family member to see participations.",
-            title: "No participation movements",
+            title: "No participation expenses",
           },
           expandMonth: "Expand {{month}}",
           subtitle: "For {{name}}",
@@ -284,6 +281,7 @@ export const resources = {
           memberLabel: "Member",
           nextYear: "Next year",
           previousYear: "Previous year",
+          selection: "Selection",
           yearAriaLabel: "Participation year",
         },
       },
@@ -530,19 +528,17 @@ export const resources = {
       },
       participations: {
         creation: {
+          amount: "Montant",
           errors: {
             inactiveMember: "Ce membre n'est plus actif.",
-            missingCategory:
-              "Aucune catégorie professionnelle n'est disponible pour ce membre actif.",
             missingMember: "Ce membre n'existe plus.",
             noActiveMember:
               "Aucun membre actif n'est disponible pour ajouter une ligne.",
           },
           memberField: "Membre",
-          missingCategoryHint:
-            "Catégorie professionnelle manquante : {{names}}",
-          selectMember: "Sélectionner un membre actif",
+          month: "Mois",
           title: "Ajouter une ligne de participation",
+          year: "Année",
         },
         meta: {
           description: "Suivi des participations par membre du foyer.",
@@ -559,16 +555,14 @@ export const resources = {
           collapseMonth: "Réduire {{month}}",
           columns: {
             amount: "Montant",
-            monthlyAverage: "Moy. mensuelle",
-            recurrence: "Récurrence",
-            title: "Mouvement",
+            member: "Membre",
           },
           empty: {
             description:
-              "{{name}} n'a aucun mouvement professionnel pour cette année.",
+              "{{name}} n'a aucune dépense de participation pour cette année.",
             noMember:
               "Ajoutez un membre du foyer pour afficher les participations.",
-            title: "Aucun mouvement de participation",
+            title: "Aucune dépense de participation",
           },
           expandMonth: "Déplier {{month}}",
           subtitle: "Pour {{name}}",
@@ -581,6 +575,7 @@ export const resources = {
           memberLabel: "Membre",
           nextYear: "Année suivante",
           previousYear: "Année précédente",
+          selection: "Sélection",
           yearAriaLabel: "Année des participations",
         },
       },
@@ -822,16 +817,16 @@ export const resources = {
       },
       participations: {
         creation: {
+          amount: "金額",
           errors: {
             inactiveMember: "このメンバーは現在有効ではありません。",
-            missingCategory: "この有効なメンバーの職業カテゴリがありません。",
             missingMember: "このメンバーは存在しません。",
             noActiveMember: "新しい持分明細に使える有効なメンバーがいません。",
           },
           memberField: "メンバー",
-          missingCategoryHint: "職業カテゴリがありません: {{names}}",
-          selectMember: "有効なメンバーを選択",
+          month: "月",
           title: "持分明細を追加",
+          year: "年",
         },
         meta: {
           description: "家族メンバー別の持分追跡。",
@@ -848,14 +843,12 @@ export const resources = {
           collapseMonth: "{{month}}を折りたたむ",
           columns: {
             amount: "金額",
-            monthlyAverage: "月平均",
-            recurrence: "頻度",
-            title: "動き",
+            member: "メンバー",
           },
           empty: {
-            description: "{{name}}のこの年の職業上の動きはありません。",
+            description: "{{name}}のこの年の持分支出はありません。",
             noMember: "持分を表示するには家族メンバーを追加してください。",
-            title: "持分の動きはありません",
+            title: "持分支出はありません",
           },
           expandMonth: "{{month}}を展開",
           subtitle: "{{name}}",
@@ -868,6 +861,7 @@ export const resources = {
           memberLabel: "メンバー",
           nextYear: "翌年",
           previousYear: "前年",
+          selection: "選択",
           yearAriaLabel: "持分の年",
         },
       },

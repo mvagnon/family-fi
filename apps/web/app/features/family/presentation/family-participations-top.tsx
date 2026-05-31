@@ -4,6 +4,7 @@ import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
+import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
@@ -15,6 +16,7 @@ import type { FamilyParticipationSummary } from "../domain/family-participations
 import { useFamilyFormat } from "./use-family-format";
 
 interface FamilyParticipationsTopProps {
+  currentYear: number;
   members: FamilyMember[];
   onMemberChange: (memberId: string) => void;
   onYearChange: (year: number) => void;
@@ -24,6 +26,7 @@ interface FamilyParticipationsTopProps {
 }
 
 export function FamilyParticipationsTop({
+  currentYear,
   members,
   onMemberChange,
   onYearChange,
@@ -35,83 +38,101 @@ export function FamilyParticipationsTop({
   const familyFormat = useFamilyFormat();
 
   return (
-    <Stack spacing={1.5}>
-      <Stack
-        direction={{ md: "row", xs: "column" }}
-        spacing={1.5}
+    <Box
+      sx={{
+        display: "grid",
+        gap: 1.5,
+        gridTemplateColumns: {
+          md: "minmax(280px, 0.7fr) minmax(0, 1fr)",
+          xs: "minmax(0, 1fr)",
+        },
+      }}
+    >
+      <Paper
+        component="section"
         sx={{
-          alignItems: { md: "center", xs: "stretch" },
-          justifyContent: "space-between",
+          bgcolor: "background.paper",
+          p: { md: 2.5, xs: 2 },
         }}
       >
+        <Typography color="text.secondary" variant="overline">
+          {t("participations.top.selection")}
+        </Typography>
         <Stack
-          aria-label={t("participations.top.yearAriaLabel")}
-          direction="row"
-          spacing={0.5}
-          sx={{ alignItems: "center" }}
+          spacing={1.5}
+          sx={{
+            mt: 1,
+          }}
         >
-          <IconButton
-            aria-label={t("participations.top.previousYear")}
-            onClick={() => onYearChange(year - 1)}
+          <Stack
+            aria-label={t("participations.top.yearAriaLabel")}
+            direction="row"
+            spacing={0.5}
+            sx={{ alignItems: "center" }}
           >
-            <KeyboardArrowLeftIcon />
-          </IconButton>
-          <Typography
-            sx={{
-              fontSize: "1.25rem",
-              fontWeight: 700,
-              minWidth: 72,
-              textAlign: "center",
-            }}
-            variant="h2"
-          >
-            {year}
-          </Typography>
-          <IconButton
-            aria-label={t("participations.top.nextYear")}
-            onClick={() => onYearChange(year + 1)}
-          >
-            <KeyboardArrowRightIcon />
-          </IconButton>
-        </Stack>
+            <IconButton
+              aria-label={t("participations.top.previousYear")}
+              onClick={() => onYearChange(year - 1)}
+            >
+              <KeyboardArrowLeftIcon />
+            </IconButton>
+            <Typography
+              sx={{
+                fontSize: "1.25rem",
+                fontWeight: 700,
+                minWidth: 72,
+                textAlign: "center",
+              }}
+              variant="h2"
+            >
+              {year}
+            </Typography>
+            <IconButton
+              aria-label={t("participations.top.nextYear")}
+              disabled={year >= currentYear}
+              onClick={() => onYearChange(year + 1)}
+            >
+              <KeyboardArrowRightIcon />
+            </IconButton>
+          </Stack>
 
-        <TextField
-          disabled={members.length === 0}
-          fullWidth
-          helperText={
-            selectedMember && !selectedMember.isActive
-              ? t("participations.top.inactiveSelected")
-              : undefined
-          }
-          label={t("participations.top.memberLabel")}
-          onChange={(event) => onMemberChange(event.target.value)}
-          select
-          sx={{ maxWidth: { md: 320, xs: "none" } }}
-          value={selectedMember?.id ?? ""}
-        >
-          {members.map((member) => (
-            <MenuItem key={member.id} value={member.id}>
-              <Box
-                sx={{
-                  alignItems: "center",
-                  display: "flex",
-                  gap: 1,
-                  minWidth: 0,
-                }}
-              >
-                <Typography noWrap>{member.name}</Typography>
-                {!member.isActive ? (
-                  <Chip
-                    label={t("participations.top.inactive")}
-                    size="small"
-                    variant="outlined"
-                  />
-                ) : null}
-              </Box>
-            </MenuItem>
-          ))}
-        </TextField>
-      </Stack>
+          <TextField
+            disabled={members.length === 0}
+            fullWidth
+            helperText={
+              selectedMember && !selectedMember.isActive
+                ? t("participations.top.inactiveSelected")
+                : undefined
+            }
+            label={t("participations.top.memberLabel")}
+            onChange={(event) => onMemberChange(event.target.value)}
+            select
+            value={selectedMember?.id ?? ""}
+          >
+            {members.map((member) => (
+              <MenuItem key={member.id} value={member.id}>
+                <Box
+                  sx={{
+                    alignItems: "center",
+                    display: "flex",
+                    gap: 1,
+                    minWidth: 0,
+                  }}
+                >
+                  <Typography noWrap>{member.name}</Typography>
+                  {!member.isActive ? (
+                    <Chip
+                      label={t("participations.top.inactive")}
+                      size="small"
+                      variant="outlined"
+                    />
+                  ) : null}
+                </Box>
+              </MenuItem>
+            ))}
+          </TextField>
+        </Stack>
+      </Paper>
 
       <MetricSummaryCard
         label={t("participations.top.averageMetrics")}
@@ -137,6 +158,6 @@ export function FamilyParticipationsTop({
           },
         ]}
       />
-    </Stack>
+    </Box>
   );
 }

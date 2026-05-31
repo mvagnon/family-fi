@@ -20,6 +20,7 @@ export function createSeedFamily(familyId = "family-dev"): FamilySnapshot {
       { id: "lea", isActive: true, name: "Léa", role: "Parent" },
       { id: "marc", isActive: true, name: "Marc", role: "Parent" },
     ],
+    participationLines: [],
     recurringLines: [
       {
         amount: 1850,

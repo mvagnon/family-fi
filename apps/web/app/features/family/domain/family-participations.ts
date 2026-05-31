@@ -1,16 +1,9 @@
-import { getMonthlyRange } from "./family-budget";
-import type {
-  Family,
-  FamilyCategory,
-  FamilyMember,
-  RecurringLine,
-} from "./family";
+import type { Family, FamilyMember, ParticipationLine } from "./family";
 
 const monthIndexes = Array.from({ length: 12 }, (_, index) => index);
 
 export interface FamilyParticipationLine {
-  category: FamilyCategory;
-  line: RecurringLine;
+  line: ParticipationLine;
   member: FamilyMember;
   monthlyValue: number;
 }
@@ -44,19 +37,9 @@ export interface FamilyParticipationProjection {
   selectedMemberParticipation: FamilyMemberParticipation | null;
 }
 
-export interface ParticipationCreationOption {
-  category: FamilyCategory | null;
-  member: FamilyMember;
-}
-
-export type ParticipationCategoryResolution =
-  | { category: FamilyCategory; member: FamilyMember; status: "available" }
-  | {
-      status:
-        | "inactive-member"
-        | "missing-member"
-        | "missing-professional-category";
-    };
+export type ParticipationMemberResolution =
+  | { member: FamilyMember; status: "available" }
+  | { status: "inactive-member" | "missing-member" };
 
 interface FamilyParticipationProjectionInput {
   selectedMemberId?: string | null;
@@ -70,7 +53,7 @@ export function getFamilyParticipationProjection(
   const membersById = new Map(
     family.members.map((member) => [member.id, member]),
   );
-  const participationLines = getParticipationLines(family, membersById);
+  const participationLines = getParticipationLines(family, membersById, input);
   const linesByMemberId = new Map<string, FamilyParticipationLine[]>();
 
   for (const line of participationLines) {
@@ -107,28 +90,11 @@ export function getFamilyParticipationProjection(
   };
 }
 
-export function getParticipationCreationOptions(
+export function resolveParticipationLineMember(
   family: Family,
-): ParticipationCreationOption[] {
-  return family.members
-    .filter((member) => member.isActive)
-    .map((member) => ({
-      category: findProfessionalCategoryForMember(family.categories, member.id),
-      member,
-    }));
-}
-
-export function resolveParticipationLineCategory(
-  family: Family,
-  categoryId: string,
-): ParticipationCategoryResolution {
-  const category = family.categories.find((item) => item.id === categoryId);
-
-  if (!category || category.kind !== "professional" || !category.ownerId) {
-    return { status: "missing-professional-category" };
-  }
-
-  const member = family.members.find((item) => item.id === category.ownerId);
+  memberId: string,
+): ParticipationMemberResolution {
+  const member = family.members.find((item) => item.id === memberId);
 
   if (!member) {
     return { status: "missing-member" };
@@ -138,52 +104,26 @@ export function resolveParticipationLineCategory(
     return { status: "inactive-member" };
   }
 
-  return { category, member, status: "available" };
-}
-
-export function findProfessionalCategoryForMember(
-  categories: FamilyCategory[],
-  memberId: string,
-): FamilyCategory | null {
-  return (
-    categories.find(
-      (category) =>
-        category.kind === "professional" && category.ownerId === memberId,
-    ) ?? null
-  );
+  return { member, status: "available" };
 }
 
 function getParticipationLines(
   family: Family,
   membersById: Map<string, FamilyMember>,
+  input: FamilyParticipationProjectionInput,
 ): FamilyParticipationLine[] {
-  const professionalCategoriesById = new Map(
-    family.categories
-      .filter(
-        (category) =>
-          category.kind === "professional" &&
-          category.ownerId &&
-          membersById.has(category.ownerId),
-      )
-      .map((category) => [category.id, category]),
-  );
+  return family.participationLines.flatMap((line) => {
+    const member = membersById.get(line.memberId);
 
-  return family.recurringLines.flatMap((line) => {
-    const category = professionalCategoriesById.get(line.categoryId);
-    const member = category?.ownerId
-      ? membersById.get(category.ownerId)
-      : undefined;
-
-    if (!category || !member) {
+    if (!member || line.year !== input.year) {
       return [];
     }
 
     return [
       {
-        category,
         line,
         member,
-        monthlyValue: getMonthlyRange(line).avg,
+        monthlyValue: -line.amount,
       },
     ];
   });
@@ -193,38 +133,29 @@ function buildMonthGroups(
   lines: FamilyParticipationLine[],
   year: number,
 ): FamilyParticipationMonthGroup[] {
-  return monthIndexes.map((monthIndex) => ({
-    id: `${year}-${String(monthIndex + 1).padStart(2, "0")}`,
-    lines,
-    monthIndex,
-    total: lines.reduce((total, line) => total + line.monthlyValue, 0),
-    year,
-  }));
+  return monthIndexes.map((monthIndex) => {
+    const month = monthIndex + 1;
+    const monthLines = lines.filter((line) => line.line.month === month);
+
+    return {
+      id: `${year}-${String(month).padStart(2, "0")}`,
+      lines: monthLines,
+      monthIndex,
+      total: monthLines.reduce((total, line) => total + line.monthlyValue, 0),
+      year,
+    };
+  });
 }
 
 function getParticipationSummary(
   lines: FamilyParticipationLine[],
 ): FamilyParticipationSummary {
-  const totals = lines.reduce(
-    (summary, line) => {
-      if (line.monthlyValue >= 0) {
-        return {
-          ...summary,
-          income: summary.income + line.monthlyValue,
-        };
-      }
-
-      return {
-        ...summary,
-        expenses: summary.expenses + Math.abs(line.monthlyValue),
-      };
-    },
-    { expenses: 0, income: 0 },
-  );
+  const expenses = lines.reduce((total, line) => total + line.line.amount, 0);
+  const averageExpenses = expenses / 12;
 
   return {
-    difference: totals.income - totals.expenses,
-    expenses: totals.expenses,
-    income: totals.income,
+    difference: -averageExpenses,
+    expenses: averageExpenses,
+    income: 0,
   };
 }

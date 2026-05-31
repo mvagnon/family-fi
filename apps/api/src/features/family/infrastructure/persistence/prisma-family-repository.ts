@@ -6,11 +6,19 @@ import type {
   FamilyCategory,
   FamilyMember,
   FamilySnapshot,
+  ParticipationLine,
   RecurringLine,
 } from "../../domain/family.js";
 import type { FamilyRepository } from "../../domain/family-repository.js";
 
 const familyInclude = {
+  participationLines: {
+    orderBy: [
+      { year: "asc" as const },
+      { month: "asc" as const },
+      { createdAt: "asc" as const },
+    ],
+  },
   recurringLines: {
     orderBy: {
       createdAt: "asc" as const,
@@ -23,6 +31,8 @@ type FamilyRecord = Prisma.FamilyGetPayload<{
 }>;
 
 type RecurringLineRecord = FamilyRecord["recurringLines"][number];
+
+type ParticipationLineRecord = FamilyRecord["participationLines"][number];
 
 export class PrismaFamilyRepository implements FamilyRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -39,6 +49,9 @@ export class PrismaFamilyRepository implements FamilyRepository {
         recurringLines: {
           create: family.recurringLines.map(toRecurringLineCreateInput),
         },
+        participationLines: {
+          create: family.participationLines.map(toParticipationLineCreateInput),
+        },
         spaceId,
       },
       include: familyInclude,
@@ -54,6 +67,20 @@ export class PrismaFamilyRepository implements FamilyRepository {
     await this.prisma.recurringLine.create({
       data: {
         ...toRecurringLineCreateInput(line),
+        familyId,
+      },
+    });
+
+    return this.getFamilyById(familyId);
+  }
+
+  async createParticipationLine(
+    familyId: string,
+    line: ParticipationLine,
+  ): Promise<FamilySnapshot> {
+    await this.prisma.participationLine.create({
+      data: {
+        ...toParticipationLineCreateInput(line),
         familyId,
       },
     });
@@ -113,6 +140,13 @@ export class PrismaFamilyRepository implements FamilyRepository {
           },
         });
       }
+
+      await prisma.participationLine.deleteMany({
+        where: {
+          familyId,
+          memberId,
+        },
+      });
 
       const updatedFamily = await prisma.family.update({
         data: {
@@ -275,7 +309,28 @@ function toFamilySnapshot(family: FamilyRecord): FamilySnapshot {
     categories: parseCategories(family.categories),
     id: family.id,
     members: parseMembers(family.members),
+    participationLines: family.participationLines.map(toParticipationLine),
     recurringLines: family.recurringLines.map(toRecurringLine),
+  };
+}
+
+function toParticipationLineCreateInput(line: ParticipationLine) {
+  return {
+    amountCents: toCents(line.amount),
+    id: line.id,
+    memberId: line.memberId,
+    month: line.month,
+    year: line.year,
+  };
+}
+
+function toParticipationLine(line: ParticipationLineRecord): ParticipationLine {
+  return {
+    amount: fromCents(line.amountCents),
+    id: line.id,
+    memberId: line.memberId,
+    month: line.month,
+    year: line.year,
   };
 }
 
