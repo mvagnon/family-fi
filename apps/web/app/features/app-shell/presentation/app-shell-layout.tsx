@@ -10,6 +10,7 @@ import { AppSidebarNavigation } from "./app-sidebar-navigation";
 
 interface AppShellAreaProps {
   children: ReactNode;
+  sx?: SxProps<Theme>;
 }
 
 interface AppShellHeaderProps {
@@ -51,16 +52,16 @@ export function AppShellLayout({
   );
 }
 
-export function AppShellContent({ children }: AppShellAreaProps) {
-  return <Box sx={appShellContentAreaSx}>{children}</Box>;
+export function AppShellContent({ children, sx }: AppShellAreaProps) {
+  return <Box sx={mergeAreaSx(appShellContentAreaSx, sx)}>{children}</Box>;
 }
 
-export function AppShellTop({ children }: AppShellAreaProps) {
-  return <Box sx={appShellTopAreaSx}>{children}</Box>;
+export function AppShellTop({ children, sx }: AppShellAreaProps) {
+  return <Box sx={mergeAreaSx(appShellTopAreaSx, sx)}>{children}</Box>;
 }
 
-export function AppShellWidgets({ children }: AppShellAreaProps) {
-  return <Box sx={appShellWidgetsAreaSx}>{children}</Box>;
+export function AppShellWidgets({ children, sx }: AppShellAreaProps) {
+  return <Box sx={mergeAreaSx(appShellWidgetsAreaSx, sx)}>{children}</Box>;
 }
 
 export function AppShellHeader({
@@ -159,3 +160,7 @@ const appShellWidgetsAreaSx = {
   gridArea: "widgets",
   minWidth: 0,
 } satisfies SxProps<Theme>;
+
+function mergeAreaSx(baseSx: SxProps<Theme>, sx?: SxProps<Theme>) {
+  return [baseSx, ...(Array.isArray(sx) ? sx : [sx])];
+}
