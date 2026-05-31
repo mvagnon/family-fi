@@ -21,6 +21,10 @@ import { memo } from "react";
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 
+import { AccountMenu } from "../../auth/presentation/account-menu";
+import type { AuthRepository } from "../../auth/domain/auth-repository";
+import { SpaceSwitcher } from "../../spaces/presentation/space-switcher";
+
 const sidebarNavigationItems: SidebarNavigationItem[] = [
   { icon: DashboardIcon, labelKey: "dashboard", to: "/dashboard" },
   { icon: ReceiptLongIcon, labelKey: "recurringBudget", to: "/family" },
@@ -46,7 +50,13 @@ interface SidebarNavigationItem {
   to?: string;
 }
 
-export const AppSidebarNavigation = memo(function AppSidebarNavigation() {
+interface AppSidebarNavigationProps {
+  authRepository: AuthRepository;
+}
+
+export const AppSidebarNavigation = memo(function AppSidebarNavigation({
+  authRepository,
+}: AppSidebarNavigationProps) {
   const { t } = useTranslation();
 
   return (
@@ -59,11 +69,13 @@ export const AppSidebarNavigation = memo(function AppSidebarNavigation() {
       titleId="app-navigation-title"
       titleVariant="h3"
     >
+      <SpaceSwitcher />
       <List aria-label={t("appShell.navigation.ariaLabel")} disablePadding>
         {sidebarNavigationItems.map((item) => (
           <SidebarNavigationRow item={item} key={item.labelKey} />
         ))}
       </List>
+      <AccountMenu repository={authRepository} />
     </SectionPanel>
   );
 });

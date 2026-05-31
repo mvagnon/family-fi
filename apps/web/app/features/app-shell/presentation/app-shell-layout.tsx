@@ -5,6 +5,7 @@ import type { SxProps, Theme } from "@mui/material/styles";
 import { useMemo, type ReactNode } from "react";
 import { Outlet } from "react-router";
 
+import type { AuthRepository } from "../../auth/domain/auth-repository";
 import { AppSidebarNavigation } from "./app-sidebar-navigation";
 
 interface AppShellAreaProps {
@@ -17,8 +18,15 @@ interface AppShellHeaderProps {
   title?: ReactNode;
 }
 
-export function AppShellLayout() {
-  const navigation = useMemo(() => <AppSidebarNavigation />, []);
+interface AppShellLayoutProps {
+  authRepository: AuthRepository;
+}
+
+export function AppShellLayout({ authRepository }: AppShellLayoutProps) {
+  const navigation = useMemo(
+    () => <AppSidebarNavigation authRepository={authRepository} />,
+    [authRepository],
+  );
 
   return (
     <Box component="main" sx={appShellRootSx}>

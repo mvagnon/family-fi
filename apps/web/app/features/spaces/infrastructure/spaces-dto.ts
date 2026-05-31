@@ -34,6 +34,7 @@ function parseSpaceSummary(value: unknown): SpaceSummary {
   return {
     id: getString(space, "id"),
     name: getString(space, "name"),
+    ownerEmail: getString(space, "ownerEmail"),
     role: parseSpaceRole(getString(space, "role")),
   };
 }

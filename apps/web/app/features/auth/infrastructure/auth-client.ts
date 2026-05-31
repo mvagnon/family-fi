@@ -34,4 +34,11 @@ export const authClient: AuthRepository = {
       throw new Error(result.error.message ?? "Invalid email or password.");
     }
   },
+  async signOut() {
+    const result = await betterAuthClient.signOut();
+
+    if (result.error) {
+      throw new Error(result.error.message ?? "Sign out failed.");
+    }
+  },
 };

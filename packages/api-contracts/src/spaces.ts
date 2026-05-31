@@ -7,6 +7,7 @@ export type SpaceRole = z.infer<typeof spaceRoleSchema>;
 export interface SpaceSummary {
   id: string;
   name: string;
+  ownerEmail: string;
   role: SpaceRole;
 }
 

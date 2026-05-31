@@ -15,6 +15,8 @@ import {
   AppShellContent,
   AppShellHeader,
 } from "../../app-shell/presentation/app-shell-layout";
+import type { SpaceRepository } from "../../spaces/domain/space-repository";
+import { DefaultSpaceSettings } from "../../spaces/presentation/default-space-settings";
 import { parseSupportedLanguage } from "../domain/language-preference";
 import {
   supportedLanguages,
@@ -26,7 +28,11 @@ const browserLanguageChoice = "browser";
 
 type LanguageChoice = SupportedLanguage | typeof browserLanguageChoice;
 
-export function ConfigurationPage() {
+interface ConfigurationPageProps {
+  spaceRepository: SpaceRepository;
+}
+
+export function ConfigurationPage({ spaceRepository }: ConfigurationPageProps) {
   const { t } = useTranslation();
   const {
     activeLanguage,
@@ -62,13 +68,13 @@ export function ConfigurationPage() {
         title={t("configuration.page.title")}
       />
       <AppShellContent>
-        <SectionPanel
-          contentSx={{ p: { md: 2.5, xs: 2 }, pt: 0 }}
-          subtitle={t("configuration.language.description")}
-          title={t("configuration.language.title")}
-          titleId="configuration-language-title"
-        >
-          <Stack spacing={2.5}>
+        <Stack spacing={2.5}>
+          <SectionPanel
+            contentSx={{ p: { md: 2.5, xs: 2 }, pt: 0 }}
+            subtitle={t("configuration.language.description")}
+            title={t("configuration.language.title")}
+            titleId="configuration-language-title"
+          >
             <FormControl component="fieldset" fullWidth>
               <RadioGroup
                 aria-label={t("configuration.language.ariaLabel")}
@@ -102,8 +108,9 @@ export function ConfigurationPage() {
                 ))}
               </RadioGroup>
             </FormControl>
-          </Stack>
-        </SectionPanel>
+          </SectionPanel>
+          <DefaultSpaceSettings repository={spaceRepository} />
+        </Stack>
       </AppShellContent>
     </>
   );

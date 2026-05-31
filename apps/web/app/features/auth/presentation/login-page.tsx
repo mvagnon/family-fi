@@ -76,14 +76,15 @@ export function LoginPage({ client }: LoginPageProps) {
             </Alert>
           ) : null}
 
-          <Stack spacing={2}>
+          <Stack spacing={1.25}>
             <TextField
               autoComplete="email"
               autoFocus
               error={showEmailError}
-              helperText={showEmailError ? t("auth.login.emailRequired") : " "}
+              helperText={showEmailError ? t("auth.login.emailRequired") : null}
               label={t("auth.login.email")}
               onChange={(event) => setEmail(event.target.value)}
+              sx={loginTextFieldSx}
               type="email"
               value={email}
             />
@@ -91,28 +92,32 @@ export function LoginPage({ client }: LoginPageProps) {
               autoComplete="current-password"
               error={showPasswordError}
               helperText={
-                showPasswordError ? t("auth.login.passwordRequired") : " "
+                showPasswordError ? t("auth.login.passwordRequired") : null
               }
               label={t("auth.login.password")}
               onChange={(event) => setPassword(event.target.value)}
+              sx={loginTextFieldSx}
               type="password"
               value={password}
             />
-          </Stack>
 
-          <Stack direction={{ sm: "row", xs: "column" }} spacing={1.5}>
-            <LoadingButton
-              fullWidth
-              isLoading={signInMutation.isPending || session.isRefetching}
-              startIcon={<LoginIcon />}
-              type="submit"
-              variant="contained"
+            <Stack
+              direction={{ sm: "row", xs: "column" }}
+              spacing={1}
+              sx={loginActionsSx}
             >
-              {t("auth.login.submit")}
-            </LoadingButton>
-            <Button disabled fullWidth variant="outlined">
-              {t("auth.login.createAccount")}
-            </Button>
+              <LoadingButton
+                isLoading={signInMutation.isPending || session.isRefetching}
+                startIcon={<LoginIcon />}
+                type="submit"
+                variant="contained"
+              >
+                {t("auth.login.submit")}
+              </LoadingButton>
+              <Button disabled variant="outlined">
+                {t("auth.login.createAccount")}
+              </Button>
+            </Stack>
           </Stack>
         </Stack>
       </Paper>
@@ -133,4 +138,17 @@ const loginPanelSx = {
   mx: "auto",
   p: { md: 4, xs: 3 },
   width: "min(100%, 440px)",
+};
+
+const loginTextFieldSx = {
+  "& .MuiFormHelperText-root": {
+    mt: 0.5,
+  },
+};
+
+const loginActionsSx = {
+  pt: 0.25,
+  "& > *": {
+    flex: 1,
+  },
 };

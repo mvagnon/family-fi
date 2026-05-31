@@ -1,4 +1,5 @@
 import { ConfigurationPage } from "~/features/configuration/presentation/configuration-page";
+import { spacesHttpRepository } from "~/features/spaces/infrastructure/spaces-http-repository";
 import i18n from "~/i18n";
 
 import type { Route } from "./+types/configuration";
@@ -14,5 +15,5 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function ConfigurationRoute() {
-  return <ConfigurationPage />;
+  return <ConfigurationPage spaceRepository={spacesHttpRepository} />;
 }
