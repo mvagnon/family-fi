@@ -1,5 +1,7 @@
 import {
+  useAddFamilyMember,
   useCreateFamilyParticipationLine,
+  useDeleteFamilyMember,
   useFamily,
 } from "../application/family-queries";
 import type { FamilyRepository } from "../domain/family-repository";
@@ -24,7 +26,17 @@ export function FamilyParticipationsPage({
     repository,
     spaceId,
   );
-  const mutationError = getFamilyMutationError([createLineMutation]);
+  const addMemberMutation = useAddFamilyMember(repository, spaceId);
+  const deleteMemberMutation = useDeleteFamilyMember(repository, spaceId);
+  const isSaving =
+    createLineMutation.isPending ||
+    addMemberMutation.isPending ||
+    deleteMemberMutation.isPending;
+  const mutationError = getFamilyMutationError([
+    createLineMutation,
+    addMemberMutation,
+    deleteMemberMutation,
+  ]);
 
   if (familyQuery.isPending) {
     return <FamilyLoadingState />;
@@ -45,11 +57,17 @@ export function FamilyParticipationsPage({
   return (
     <FamilyParticipationsDashboard
       family={familyQuery.data}
-      isSaving={createLineMutation.isPending}
+      isSaving={isSaving}
       mutationError={mutationError?.message}
       mutationErrorKey={mutationError?.key}
+      onAddMember={async (input) => {
+        await addMemberMutation.mutateAsync(input);
+      }}
       onCreateParticipationLine={async (input) => {
         await createLineMutation.mutateAsync(input);
+      }}
+      onDeleteMember={async (memberId) => {
+        await deleteMemberMutation.mutateAsync(memberId);
       }}
     />
   );

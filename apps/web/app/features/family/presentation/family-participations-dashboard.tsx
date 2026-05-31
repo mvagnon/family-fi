@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ConfirmationDialog } from "@repo/ui/confirmation-dialog";
 import { FeedbackSnackbar } from "@repo/ui/feedback-snackbar";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
@@ -8,13 +9,23 @@ import {
   AppShellTop,
   AppShellWidgets,
 } from "../../app-shell/presentation/app-shell-layout";
-import type { CreateParticipationLineInput, Family } from "../domain/family";
+import {
+  getDuplicateFamilyCategoryLabelError,
+  getDuplicateFamilyMemberNameError,
+} from "../application/family-local-commands";
+import type {
+  CreateFamilyMemberInput,
+  CreateParticipationLineInput,
+  Family,
+  FamilyMember,
+} from "../domain/family";
 import {
   getFamilyParticipationProjection,
   resolveParticipationLineMember,
   type ParticipationMemberResolution,
 } from "../domain/family-participations";
 import { FamilyParticipationLineModal } from "./family-participation-line-modal";
+import { FamilyMemberModal } from "./family-member-modal";
 import { FamilySidebarMembers } from "./family-sidebar-members";
 import { FamilyParticipationsTable } from "./family-participations-table";
 import { FamilyParticipationsTop } from "./family-participations-top";
@@ -24,9 +35,11 @@ interface FamilyParticipationsDashboardProps {
   isSaving?: boolean;
   mutationError?: string;
   mutationErrorKey?: string;
+  onAddMember: (input: CreateFamilyMemberInput) => Promise<void> | void;
   onCreateParticipationLine: (
     input: CreateParticipationLineInput,
   ) => Promise<void> | void;
+  onDeleteMember: (memberId: string) => Promise<void> | void;
 }
 
 export function FamilyParticipationsDashboard({
@@ -34,7 +47,9 @@ export function FamilyParticipationsDashboard({
   isSaving = false,
   mutationError,
   mutationErrorKey,
+  onAddMember,
   onCreateParticipationLine,
+  onDeleteMember,
 }: FamilyParticipationsDashboardProps) {
   const { t } = useTranslation();
   const currentDate = new Date();
@@ -43,6 +58,9 @@ export function FamilyParticipationsDashboard({
   const [year, setYear] = useState(currentYear);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
+  const [memberPendingDeletion, setMemberPendingDeletion] =
+    useState<FamilyMember | null>(null);
   const [localError, setLocalError] = useState<{
     message: string;
     revision: number;
@@ -72,6 +90,29 @@ export function FamilyParticipationsDashboard({
     setIsCreateModalOpen(true);
   }
 
+  async function handleSaveMember(input: CreateFamilyMemberInput) {
+    const duplicateError =
+      getDuplicateFamilyMemberNameError(family.members, input.name) ??
+      getDuplicateFamilyCategoryLabelError(family.categories, input.name);
+
+    if (duplicateError) {
+      showLocalError(
+        duplicateError === "duplicateCategoryLabel"
+          ? t("family.localErrors.duplicateCategoryLabel")
+          : t("family.localErrors.duplicateMemberName"),
+      );
+      return;
+    }
+
+    try {
+      await onAddMember(input);
+      setLocalError(null);
+      setIsMemberModalOpen(false);
+    } catch {
+      return;
+    }
+  }
+
   async function handleSaveLine(input: CreateParticipationLineInput) {
     const resolution = resolveParticipationLineMember(family, input.memberId);
 
@@ -86,6 +127,19 @@ export function FamilyParticipationsDashboard({
       setIsCreateModalOpen(false);
       setSelectedMemberId(resolution.member.id);
       setYear(input.year);
+    } catch {
+      return;
+    }
+  }
+
+  async function handleConfirmDeleteMember() {
+    if (!memberPendingDeletion) {
+      return;
+    }
+
+    try {
+      await onDeleteMember(memberPendingDeletion.id);
+      setMemberPendingDeletion(null);
     } catch {
       return;
     }
@@ -141,9 +195,32 @@ export function FamilyParticipationsDashboard({
             open={isCreateModalOpen}
           />
         ) : null}
+        <FamilyMemberModal
+          isSaving={isSaving}
+          onClose={() => setIsMemberModalOpen(false)}
+          onSave={handleSaveMember}
+          open={isMemberModalOpen}
+        />
+        <ConfirmationDialog
+          confirmColor="error"
+          confirmFirst
+          cancelLabel={t("common.cancel")}
+          confirmLabel={t("family.deletion.confirm")}
+          description={t("family.deletion.memberDescription")}
+          isPending={isSaving}
+          onCancel={() => setMemberPendingDeletion(null)}
+          onConfirm={handleConfirmDeleteMember}
+          open={memberPendingDeletion !== null}
+          title={t("family.deletion.memberTitle")}
+        />
       </AppShellContent>
       <AppShellWidgets>
-        <FamilySidebarMembers disabled={isSaving} members={family.members} />
+        <FamilySidebarMembers
+          disabled={isSaving}
+          members={family.members}
+          onAddMember={() => setIsMemberModalOpen(true)}
+          onDeleteMember={setMemberPendingDeletion}
+        />
       </AppShellWidgets>
     </>
   );
