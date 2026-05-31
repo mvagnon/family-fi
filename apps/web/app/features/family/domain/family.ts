@@ -1,6 +1,10 @@
-export { recurringLineInputSchema } from "@repo/api-contracts/family";
+export {
+  participationLineInputSchema,
+  recurringLineInputSchema,
+} from "@repo/api-contracts/family";
 
 export type {
+  CreateParticipationLineInput,
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
   CreateRecurringLineInput,
@@ -8,6 +12,7 @@ export type {
   FamilyCategory,
   FamilyMember,
   Movement,
+  ParticipationLine,
   RecurringLine,
   UpdateRecurringLineInput,
 } from "@repo/api-contracts/family";

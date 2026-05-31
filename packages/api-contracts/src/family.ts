@@ -6,6 +6,7 @@ export type Movement = z.infer<typeof movementSchema>;
 
 export interface FamilyMember {
   id: string;
+  isActive: boolean;
   name: string;
   role: string;
 }
@@ -30,14 +31,25 @@ export interface RecurringLine {
   maxAmount?: number;
 }
 
+export interface ParticipationLine {
+  id: string;
+  createdAt: string;
+  memberId: string;
+  amount: number;
+  year: number;
+  month: number;
+}
+
 export interface Family {
   id: string;
   members: FamilyMember[];
   categories: FamilyCategory[];
   recurringLines: RecurringLine[];
+  participationLines: ParticipationLine[];
 }
 
 export interface CreateFamilyMemberInput {
+  isActive: boolean;
   name: string;
 }
 
@@ -50,6 +62,11 @@ export interface CreateFamilyCategoryInput {
 export type CreateRecurringLineInput = Omit<RecurringLine, "id">;
 
 export type UpdateRecurringLineInput = Omit<RecurringLine, "id">;
+
+export type CreateParticipationLineInput = Omit<
+  ParticipationLine,
+  "createdAt" | "id"
+>;
 
 const recurringLineBaseInputSchema = z.object({
   categoryId: requiredTextSchema("Recurring line category is required."),
@@ -112,12 +129,34 @@ export const recurringLineInputSchema = recurringLineRawInputSchema.transform(
   },
 );
 
+export const participationLineInputSchema = z.object({
+  amount: nonZeroNumberSchema(
+    "Participation amount must be different from zero.",
+  ),
+  memberId: requiredTextSchema("Participation member is required."),
+  month: z
+    .number({ error: "Participation month is invalid." })
+    .int({ message: "Participation month is invalid." })
+    .min(1, { message: "Participation month is invalid." })
+    .max(12, { message: "Participation month is invalid." }),
+  year: z
+    .number({ error: "Participation year is invalid." })
+    .int({ message: "Participation year is invalid." })
+    .positive({ message: "Participation year is invalid." }),
+});
+
 function requiredTextSchema(message: string) {
   return z.string({ error: message }).trim().min(1, { message });
 }
 
 function positiveNumberSchema(message: string) {
   return z.number({ error: message }).positive({ message });
+}
+
+function nonZeroNumberSchema(message: string) {
+  return z
+    .number({ error: message })
+    .refine((value) => value !== 0, { message });
 }
 
 function optionalPositiveNumberSchema(message: string) {

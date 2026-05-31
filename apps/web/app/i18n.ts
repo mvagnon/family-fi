@@ -201,6 +201,7 @@ export const resources = {
           duplicateMemberName: "A member with this name already exists.",
         },
         memberModal: {
+          isActive: "Active member",
           label: "Name",
           title: "Add member",
         },
@@ -217,6 +218,7 @@ export const resources = {
             addLabel: "Add member",
             deleteLabel: "Delete {{name}}",
             deleteTooltip: "Delete member",
+            inactive: "Inactive",
             subtitle_one: "{{count}} person",
             subtitle_other: "{{count}} people",
             title: "Members",
@@ -229,6 +231,66 @@ export const resources = {
           max: "Max.",
           min: "Min.",
           monthly: "Monthly",
+        },
+      },
+      participations: {
+        creation: {
+          amount: "Amount",
+          errors: {
+            inactiveMember: "This member is no longer active.",
+            missingMember: "This member no longer exists.",
+            noActiveMember:
+              "No active member is available for new participation lines.",
+          },
+          memberField: "Member",
+          month: "Month",
+          title: "Add participation line",
+          validation: {
+            amountNonZero: "Amount must be different from 0.",
+            amountRequired: "Amount is required.",
+            memberRequired: "Member is required.",
+            monthFuture: "Month cannot be after the current month.",
+            monthRequired: "Month is required.",
+            yearFuture: "Year cannot be after the current year.",
+            yearRequired: "Year is required.",
+          },
+          year: "Year",
+        },
+        meta: {
+          description: "Family member participation tracking.",
+          title: "Family-Fi | Participations",
+        },
+        metrics: {
+          difference: "Difference",
+          expenses: "Expenses",
+          income: "Income",
+        },
+        table: {
+          addLine: "Add participation",
+          ariaLabel: "Monthly member participations",
+          collapseMonth: "Collapse {{month}}",
+          columns: {
+            expense: "Expense",
+            income: "Income",
+            member: "Member",
+          },
+          empty: {
+            description:
+              "{{name}} has no participation expenses for this year.",
+            memberLines: "No lines",
+            noLinesInYear: "No participation line for this year.",
+            noMember: "Add a family member to see participations.",
+            title: "No participation expenses",
+          },
+          expandMonth: "Expand {{month}}",
+          title: "Monthly participations",
+        },
+        top: {
+          keyFigures: "Key figures",
+          nextYear: "Next year",
+          previousYear: "Previous year",
+          selection: "Year",
+          yearAriaLabel: "Participation year",
         },
       },
       spaces: {
@@ -440,6 +502,7 @@ export const resources = {
           duplicateMemberName: "Un membre avec ce nom existe déjà.",
         },
         memberModal: {
+          isActive: "Membre actif",
           label: "Nom",
           title: "Ajouter un membre",
         },
@@ -456,6 +519,7 @@ export const resources = {
             addLabel: "Ajouter un membre",
             deleteLabel: "Supprimer {{name}}",
             deleteTooltip: "Supprimer le membre",
+            inactive: "Inactif",
             subtitle_one: "{{count}} personne",
             subtitle_other: "{{count}} personnes",
             title: "Membres",
@@ -468,6 +532,67 @@ export const resources = {
           max: "Max.",
           min: "Min.",
           monthly: "Mensuel",
+        },
+      },
+      participations: {
+        creation: {
+          amount: "Montant",
+          errors: {
+            inactiveMember: "Ce membre n'est plus actif.",
+            missingMember: "Ce membre n'existe plus.",
+            noActiveMember:
+              "Aucun membre actif n'est disponible pour ajouter une ligne.",
+          },
+          memberField: "Membre",
+          month: "Mois",
+          title: "Ajouter une ligne de participation",
+          validation: {
+            amountNonZero: "Le montant doit être différent de 0.",
+            amountRequired: "Le montant est obligatoire.",
+            memberRequired: "Le membre est obligatoire.",
+            monthFuture: "Le mois ne peut pas dépasser le mois actuel.",
+            monthRequired: "Le mois est obligatoire.",
+            yearFuture: "L'année ne peut pas dépasser l'année actuelle.",
+            yearRequired: "L'année est obligatoire.",
+          },
+          year: "Année",
+        },
+        meta: {
+          description: "Suivi des participations par membre du foyer.",
+          title: "Family-Fi | Participations",
+        },
+        metrics: {
+          difference: "Différence",
+          expenses: "Dépenses",
+          income: "Revenus",
+        },
+        table: {
+          addLine: "Ajouter une participation",
+          ariaLabel: "Participations mensuelles par membre",
+          collapseMonth: "Réduire {{month}}",
+          columns: {
+            expense: "Dépense",
+            income: "Revenu",
+            member: "Membre",
+          },
+          empty: {
+            description:
+              "{{name}} n'a aucune dépense de participation pour cette année.",
+            memberLines: "Aucune ligne",
+            noLinesInYear: "Aucune ligne de participation pour cette année.",
+            noMember:
+              "Ajoutez un membre du foyer pour afficher les participations.",
+            title: "Aucune dépense de participation",
+          },
+          expandMonth: "Déplier {{month}}",
+          title: "Participations mensuelles",
+        },
+        top: {
+          keyFigures: "Chiffres clés",
+          nextYear: "Année suivante",
+          previousYear: "Année précédente",
+          selection: "Année",
+          yearAriaLabel: "Année des participations",
         },
       },
       spaces: {
@@ -675,6 +800,7 @@ export const resources = {
           duplicateMemberName: "同じ名前のメンバーがすでに存在します。",
         },
         memberModal: {
+          isActive: "有効なメンバー",
           label: "名前",
           title: "メンバーを追加",
         },
@@ -691,6 +817,7 @@ export const resources = {
             addLabel: "メンバーを追加",
             deleteLabel: "{{name}}を削除",
             deleteTooltip: "メンバーを削除",
+            inactive: "無効",
             subtitle_other: "{{count}}人",
             title: "メンバー",
           },
@@ -702,6 +829,64 @@ export const resources = {
           max: "最大",
           min: "最小",
           monthly: "月次",
+        },
+      },
+      participations: {
+        creation: {
+          amount: "金額",
+          errors: {
+            inactiveMember: "このメンバーは現在有効ではありません。",
+            missingMember: "このメンバーは存在しません。",
+            noActiveMember: "新しい持分明細に使える有効なメンバーがいません。",
+          },
+          memberField: "メンバー",
+          month: "月",
+          title: "持分明細を追加",
+          validation: {
+            amountNonZero: "金額は0以外にしてください。",
+            amountRequired: "金額は必須です。",
+            memberRequired: "メンバーは必須です。",
+            monthFuture: "月は現在の月を超えられません。",
+            monthRequired: "月は必須です。",
+            yearFuture: "年は現在の年を超えられません。",
+            yearRequired: "年は必須です。",
+          },
+          year: "年",
+        },
+        meta: {
+          description: "家族メンバー別の持分追跡。",
+          title: "Family-Fi | 持分",
+        },
+        metrics: {
+          difference: "差額",
+          expenses: "支出",
+          income: "収入",
+        },
+        table: {
+          addLine: "持分を追加",
+          ariaLabel: "メンバー別の月次持分",
+          collapseMonth: "{{month}}を折りたたむ",
+          columns: {
+            expense: "支出",
+            income: "収入",
+            member: "メンバー",
+          },
+          empty: {
+            description: "{{name}}のこの年の持分支出はありません。",
+            memberLines: "行はありません",
+            noLinesInYear: "この年の持分明細はありません。",
+            noMember: "持分を表示するには家族メンバーを追加してください。",
+            title: "持分支出はありません",
+          },
+          expandMonth: "{{month}}を展開",
+          title: "月次持分",
+        },
+        top: {
+          keyFigures: "主要指標",
+          nextYear: "翌年",
+          previousYear: "前年",
+          selection: "年",
+          yearAriaLabel: "持分の年",
         },
       },
       spaces: {

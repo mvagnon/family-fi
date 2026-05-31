@@ -1,4 +1,8 @@
-import type { FamilySnapshot, RecurringLine } from "../../domain/family.js";
+import type {
+  FamilySnapshot,
+  ParticipationLine,
+  RecurringLine,
+} from "../../domain/family.js";
 import type { FamilyRepository } from "../../domain/family-repository.js";
 
 export function createInMemoryFamilyRepository(): FamilyRepository {
@@ -19,6 +23,20 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
       const updatedFamily = {
         ...family,
         recurringLines: [...family.recurringLines, cloneLine(line)],
+      };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
+
+    async createParticipationLine(familyId, line) {
+      const family = getFamily(families, familyId);
+      const updatedFamily = {
+        ...family,
+        participationLines: [
+          ...family.participationLines,
+          cloneParticipationLine(line),
+        ],
       };
       families.set(familyId, updatedFamily);
 
@@ -60,6 +78,9 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
           (category) => category.ownerId !== memberId,
         ),
         members: family.members.filter((member) => member.id !== memberId),
+        participationLines: family.participationLines.filter(
+          (line) => line.memberId !== memberId,
+        ),
         recurringLines: family.recurringLines.filter(
           (line) => !linkedCategoryIds.has(line.categoryId),
         ),
@@ -146,10 +167,15 @@ function cloneFamily(family: FamilySnapshot): FamilySnapshot {
     ...family,
     categories: family.categories.map((category) => ({ ...category })),
     members: family.members.map((member) => ({ ...member })),
+    participationLines: family.participationLines.map(cloneParticipationLine),
     recurringLines: family.recurringLines.map(cloneLine),
   };
 }
 
 function cloneLine(line: RecurringLine): RecurringLine {
+  return { ...line };
+}
+
+function cloneParticipationLine(line: ParticipationLine): ParticipationLine {
   return { ...line };
 }

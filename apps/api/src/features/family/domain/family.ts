@@ -5,9 +5,13 @@ export const DUPLICATE_FAMILY_MEMBER_NAME_MESSAGE =
 export const LINKED_FAMILY_CATEGORY_DELETE_MESSAGE =
   "La catégorie liée à un membre doit être supprimée avec ce membre.";
 
-export { recurringLineInputSchema } from "@repo/api-contracts/family";
+export {
+  participationLineInputSchema,
+  recurringLineInputSchema,
+} from "@repo/api-contracts/family";
 
 export type {
+  CreateParticipationLineInput,
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
   CreateRecurringLineInput,
@@ -15,6 +19,7 @@ export type {
   FamilyCategory,
   FamilyMember,
   Movement,
+  ParticipationLine,
   RecurringLine,
   UpdateRecurringLineInput,
 } from "@repo/api-contracts/family";

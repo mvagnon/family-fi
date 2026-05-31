@@ -61,6 +61,15 @@ export function createFamilyHttpRepository(
           param: { spaceId },
         }),
       ),
+    createParticipationLine: async (spaceId, input) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family["participation-lines"].$post(
+          {
+            json: input,
+            param: { spaceId },
+          },
+        ),
+      ),
     deleteCategory: async (spaceId, categoryId) =>
       readFamilyResponse(
         await client.api.spaces[":spaceId"].family.categories[":id"].$delete({

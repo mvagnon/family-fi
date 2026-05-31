@@ -9,11 +9,13 @@ import {
 import type { FamilyService } from "../../application/family-service.js";
 import {
   InvalidFamilyInputError,
+  participationLineInputSchema,
   recurringLineInputSchema,
 } from "../../domain/family.js";
 import type {
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
+  CreateParticipationLineInput,
   CreateRecurringLineInput,
   UpdateRecurringLineInput,
 } from "../../domain/family.js";
@@ -85,6 +87,18 @@ export function createFamilyRouter(
         return context.json(family, 201);
       },
     )
+    .post(
+      "/participation-lines",
+      validateJson(parseParticipationLineInput),
+      async (context) => {
+        const family = await service.createParticipationLine(
+          await getFamilyRouteRequest(context, authProvider),
+          context.req.valid("json"),
+        );
+
+        return context.json(family, 201);
+      },
+    )
     .put(
       "/recurring-lines/:id",
       validateJson(parseRecurringLineInput),
@@ -138,6 +152,7 @@ function parseCreateMemberInput(
   value: Record<string, unknown>,
 ): CreateFamilyMemberInput {
   return {
+    isActive: getOptionalBoolean(value, "isActive") ?? true,
     name: getString(value, "name"),
   };
 }
@@ -175,6 +190,20 @@ function parseRecurringLineInput(
   return result.data;
 }
 
+function parseParticipationLineInput(
+  value: Record<string, unknown>,
+): CreateParticipationLineInput {
+  const result = participationLineInputSchema.safeParse(value);
+
+  if (!result.success) {
+    throw new InvalidFamilyInputError(
+      result.error.issues[0]?.message ?? "Participation input is invalid.",
+    );
+  }
+
+  return result.data;
+}
+
 function getString(value: Record<string, unknown>, key: string): string {
   const item = value[key];
 
@@ -197,6 +226,23 @@ function getOptionalString(
 
   if (typeof item !== "string") {
     throw new InvalidFamilyInputError(`${key} must be a string.`);
+  }
+
+  return item;
+}
+
+function getOptionalBoolean(
+  value: Record<string, unknown>,
+  key: string,
+): boolean | undefined {
+  const item = value[key];
+
+  if (item === undefined || item === null) {
+    return undefined;
+  }
+
+  if (typeof item !== "boolean") {
+    throw new InvalidFamilyInputError(`${key} must be a boolean.`);
   }
 
   return item;

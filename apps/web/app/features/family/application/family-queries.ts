@@ -4,6 +4,7 @@ import type { FamilyRepository } from "../domain/family-repository";
 import type {
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
+  CreateParticipationLineInput,
   CreateRecurringLineInput,
   Family,
   UpdateRecurringLineInput,
@@ -55,6 +56,19 @@ export function useCreateFamilyRecurringLine(
   return useMutation({
     mutationFn: (input: CreateRecurringLineInput) =>
       repository.createRecurringLine(spaceId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
+  });
+}
+
+export function useCreateFamilyParticipationLine(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateParticipationLineInput) =>
+      repository.createParticipationLine(spaceId, input),
     onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
   });
 }

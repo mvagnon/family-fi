@@ -29,7 +29,7 @@ const sidebarNavigationItems: SidebarNavigationItem[] = [
   { icon: DashboardIcon, labelKey: "dashboard", to: "/dashboard" },
   { icon: ReceiptLongIcon, labelKey: "recurringBudget", to: "/family" },
   { icon: AccountBalanceIcon, labelKey: "loans" },
-  { icon: GroupsIcon, labelKey: "participations" },
+  { icon: GroupsIcon, labelKey: "participations", to: "/participations" },
   { icon: CallSplitIcon, labelKey: "distribution" },
   { icon: ShowChartIcon, labelKey: "investments" },
   { icon: AccountBalanceWalletIcon, labelKey: "assets" },
@@ -122,7 +122,11 @@ function SidebarNavigationRow({ item }: { item: SidebarNavigationItem }) {
       <ListItem disablePadding sx={{ display: "block" }}>
         <ListItemButton
           component={NavLink}
-          end={item.to === "/dashboard" || item.to === "/family"}
+          end={
+            item.to === "/dashboard" ||
+            item.to === "/family" ||
+            item.to === "/participations"
+          }
           sx={navigationRowSx}
           to={item.to}
         >

@@ -1,4 +1,8 @@
-import type { FamilySnapshot, RecurringLine } from "./family.js";
+import type {
+  FamilySnapshot,
+  ParticipationLine,
+  RecurringLine,
+} from "./family.js";
 
 export interface FamilyRepository {
   createFamily(
@@ -8,6 +12,10 @@ export interface FamilyRepository {
   createRecurringLine(
     familyId: string,
     line: RecurringLine,
+  ): Promise<FamilySnapshot>;
+  createParticipationLine(
+    familyId: string,
+    line: ParticipationLine,
   ): Promise<FamilySnapshot>;
   deleteCategory(
     familyId: string,

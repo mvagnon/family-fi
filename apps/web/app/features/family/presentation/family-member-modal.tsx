@@ -1,4 +1,6 @@
 import type { FormEvent } from "react";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { FormDialog } from "@repo/ui/form-dialog";
@@ -28,6 +30,7 @@ export function FamilyMemberModal({
     const formData = new FormData(event.currentTarget);
 
     onSave({
+      isActive: formData.get("isActive") === "on",
       name: getFormTextValue(formData, "name"),
     });
   }
@@ -50,6 +53,12 @@ export function FamilyMemberModal({
           id="new-member-name"
           label={t("family.memberModal.label")}
           name="name"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox defaultChecked disabled={isSaving} name="isActive" />
+          }
+          label={t("family.memberModal.isActive")}
         />
       </Stack>
     </FormDialog>

@@ -12,14 +12,15 @@ datasource db {
 }
 
 model Family {
-  id             String          @id
-  spaceId        String          @unique @map("space_id")
-  space          Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  members        Json
-  categories     Json
-  recurringLines RecurringLine[]
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedAt      DateTime        @updatedAt @map("updated_at")
+  id                 String              @id
+  spaceId            String              @unique @map("space_id")
+  space              Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  members            Json
+  categories         Json
+  recurringLines     RecurringLine[]
+  participationLines ParticipationLine[]
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
 
   @@map("family")
 }
@@ -144,4 +145,20 @@ model RecurringLine {
 
   @@index([familyId])
   @@map("recurring_lines")
+}
+
+model ParticipationLine {
+  id          String   @id
+  familyId    String   @map("family_id")
+  family      Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  memberId    String   @map("member_id")
+  amountCents Int      @map("amount_cents")
+  year        Int
+  month       Int
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([familyId])
+  @@index([familyId, memberId])
+  @@map("participation_lines")
 }

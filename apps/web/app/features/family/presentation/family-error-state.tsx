@@ -1,5 +1,6 @@
 import RefreshIcon from "@mui/icons-material/Refresh";
 import Alert from "@mui/material/Alert";
+import type { SxProps, Theme } from "@mui/material/styles";
 import { LoadingButton } from "@repo/ui/loading-button";
 import { SectionPanel } from "@repo/ui/section-panel";
 import { useTranslation } from "react-i18next";
@@ -20,7 +21,7 @@ export function FamilyErrorState({
   const { t } = useTranslation();
 
   return (
-    <AppShellContent>
+    <AppShellContent sx={familyErrorContentSx}>
       <SectionPanel
         action={
           <LoadingButton
@@ -44,3 +45,14 @@ export function FamilyErrorState({
     </AppShellContent>
   );
 }
+
+const familyErrorContentSx = {
+  gridColumn: {
+    lg: 1,
+    xl: 2,
+  },
+  gridRow: {
+    lg: 1,
+    xs: 2,
+  },
+} satisfies SxProps<Theme>;

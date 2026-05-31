@@ -12,18 +12,21 @@ import {
 import type {
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
+  CreateParticipationLineInput,
   CreateRecurringLineInput,
   FamilyCategory,
   FamilyMember,
   FamilySnapshot,
+  ParticipationLine,
   RecurringLine,
   UpdateRecurringLineInput,
 } from "../domain/family.js";
 import type { FamilyRepository } from "../domain/family-repository.js";
 import { createSeedFamily } from "../domain/seed-family.js";
 
-interface FamilyServiceOptions {
+export interface FamilyServiceOptions {
   createId?: (prefix: string, label: string) => string;
+  now?: () => Date;
 }
 
 interface FamilyRequest {
@@ -37,6 +40,7 @@ interface SpaceAccessAuthorizer {
 
 export class FamilyService {
   private readonly createId: (prefix: string, label: string) => string;
+  private readonly now: () => Date;
 
   constructor(
     private readonly repository: FamilyRepository,
@@ -44,6 +48,7 @@ export class FamilyService {
     options: FamilyServiceOptions = {},
   ) {
     this.createId = options.createId ?? createDefaultId;
+    this.now = options.now ?? (() => new Date());
   }
 
   async getFamilyForSpace(request: FamilyRequest): Promise<FamilySnapshot> {
@@ -67,6 +72,7 @@ export class FamilyService {
     );
     const member = {
       id: memberId,
+      isActive: input.isActive,
       name,
       role: "",
     };
@@ -183,6 +189,66 @@ export class FamilyService {
     });
 
     return this.repository.createRecurringLine(family.id, line);
+  }
+
+  async createParticipationLine(
+    request: FamilyRequest,
+    input: CreateParticipationLineInput,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
+    const memberId = requireText(
+      input.memberId,
+      "Participation member is required.",
+    );
+    const member = family.members.find((item) => item.id === memberId);
+
+    if (!member) {
+      throw new FamilyMemberNotFoundError(memberId);
+    }
+
+    if (!member.isActive) {
+      throw new InvalidFamilyInputError("Le membre n'est pas actif.");
+    }
+
+    const amount = requireNonZeroNumber(
+      input.amount,
+      "Participation amount must be different from zero.",
+    );
+    const year = requireInteger(input.year, "Participation year is invalid.");
+    const month = requireInteger(
+      input.month,
+      "Participation month is invalid.",
+    );
+    const createdAt = this.now();
+    const currentYear = createdAt.getFullYear();
+    const currentMonth = createdAt.getMonth() + 1;
+
+    if (year > currentYear) {
+      throw new InvalidFamilyInputError("Participation year is invalid.");
+    }
+
+    if (
+      month < 1 ||
+      month > 12 ||
+      (year === currentYear && month > currentMonth)
+    ) {
+      throw new InvalidFamilyInputError("Participation month is invalid.");
+    }
+
+    const line: ParticipationLine = {
+      amount,
+      createdAt: createdAt.toISOString(),
+      id: this.createUniqueId(
+        "participation",
+        `${member.name}-${year}-${month}`,
+        family.participationLines.map((item) => item.id),
+      ),
+      memberId,
+      month,
+      year,
+    };
+
+    return this.repository.createParticipationLine(family.id, line);
   }
 
   async updateRecurringLine(
@@ -403,6 +469,29 @@ function requirePositiveNumber(
   const number = requireFiniteNumber(value, message);
 
   if (number <= 0) {
+    throw new InvalidFamilyInputError(message);
+  }
+
+  return number;
+}
+
+function requireNonZeroNumber(
+  value: number | undefined,
+  message: string,
+): number {
+  const number = requireFiniteNumber(value, message);
+
+  if (number === 0) {
+    throw new InvalidFamilyInputError(message);
+  }
+
+  return number;
+}
+
+function requireInteger(value: number | undefined, message: string): number {
+  const number = requireFiniteNumber(value, message);
+
+  if (!Number.isInteger(number)) {
     throw new InvalidFamilyInputError(message);
   }
 

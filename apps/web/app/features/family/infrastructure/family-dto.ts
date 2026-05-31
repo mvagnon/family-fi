@@ -3,6 +3,7 @@ import type {
   FamilyCategory,
   FamilyMember,
   Movement,
+  ParticipationLine,
   RecurringLine,
 } from "../domain/family";
 
@@ -22,6 +23,9 @@ export function parseFamilyResponse(value: unknown): Family {
     categories: getArray(family, "categories").map(parseCategory),
     id: getString(family, "id"),
     members: getArray(family, "members").map(parseMember),
+    participationLines: getOptionalArray(family, "participationLines").map(
+      parseParticipationLine,
+    ),
     recurringLines: getArray(family, "recurringLines").map(parseRecurringLine),
   };
 }
@@ -31,6 +35,7 @@ function parseMember(value: unknown): FamilyMember {
 
   return {
     id: getString(member, "id"),
+    isActive: getOptionalBoolean(member, "isActive") ?? true,
     name: getString(member, "name"),
     role: getString(member, "role"),
   };
@@ -61,6 +66,19 @@ function parseRecurringLine(value: unknown): RecurringLine {
     movement: getMovement(line),
     recurrenceMonths: getPositiveNumber(line, "recurrenceMonths"),
     title: getString(line, "title"),
+  };
+}
+
+function parseParticipationLine(value: unknown): ParticipationLine {
+  const line = getRecord(value);
+
+  return {
+    amount: getNonZeroNumber(line, "amount"),
+    createdAt: getDateString(line, "createdAt"),
+    id: getString(line, "id"),
+    memberId: getString(line, "memberId"),
+    month: getMonth(line),
+    year: getPositiveInteger(line, "year"),
   };
 }
 
@@ -104,10 +122,37 @@ function getArray(value: Record<string, unknown>, key: string): unknown[] {
   throw new FamilyApiError(invalidFamilyMessage);
 }
 
+function getOptionalArray(
+  value: Record<string, unknown>,
+  key: string,
+): unknown[] {
+  const item = value[key];
+
+  if (item === undefined || item === null) {
+    return [];
+  }
+
+  if (Array.isArray(item)) {
+    return item;
+  }
+
+  throw new FamilyApiError(invalidFamilyMessage);
+}
+
 function getString(value: Record<string, unknown>, key: string): string {
   const item = value[key];
 
   if (typeof item === "string") {
+    return item;
+  }
+
+  throw new FamilyApiError(invalidFamilyMessage);
+}
+
+function getDateString(value: Record<string, unknown>, key: string): string {
+  const item = getString(value, key);
+
+  if (!Number.isNaN(Date.parse(item))) {
     return item;
   }
 
@@ -141,6 +186,23 @@ function parseStringItem(value: unknown): string {
 
 function getBoolean(value: Record<string, unknown>, key: string): boolean {
   const item = value[key];
+
+  if (typeof item === "boolean") {
+    return item;
+  }
+
+  throw new FamilyApiError(invalidFamilyMessage);
+}
+
+function getOptionalBoolean(
+  value: Record<string, unknown>,
+  key: string,
+): boolean | undefined {
+  const item = value[key];
+
+  if (item === undefined || item === null) {
+    return undefined;
+  }
 
   if (typeof item === "boolean") {
     return item;
@@ -184,6 +246,39 @@ function getPositiveNumber(
 
   if (item > 0) {
     return item;
+  }
+
+  throw new FamilyApiError(invalidFamilyMessage);
+}
+
+function getPositiveInteger(
+  value: Record<string, unknown>,
+  key: string,
+): number {
+  const item = getPositiveNumber(value, key);
+
+  if (Number.isInteger(item)) {
+    return item;
+  }
+
+  throw new FamilyApiError(invalidFamilyMessage);
+}
+
+function getNonZeroNumber(value: Record<string, unknown>, key: string): number {
+  const item = getFiniteNumber(value, key);
+
+  if (item !== 0) {
+    return item;
+  }
+
+  throw new FamilyApiError(invalidFamilyMessage);
+}
+
+function getMonth(value: Record<string, unknown>): number {
+  const month = getPositiveInteger(value, "month");
+
+  if (month >= 1 && month <= 12) {
+    return month;
   }
 
   throw new FamilyApiError(invalidFamilyMessage);
