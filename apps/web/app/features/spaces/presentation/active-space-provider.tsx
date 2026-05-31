@@ -2,7 +2,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -41,30 +40,24 @@ export function ActiveSpaceProvider({
 }: ActiveSpaceProviderProps) {
   const spacesQuery = useSpaces(repository);
   const settingsQuery = useUserSettings(repository);
-  const [activeSpaceId, setActiveSpaceId] = useState<string | null>(null);
+  const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null);
 
   const spaces = spacesQuery.data ?? [];
   const settings = settingsQuery.data ?? null;
   const resolvedActiveSpaceId = useMemo(
     () =>
       resolveActiveSpaceId({
-        activeSpaceId,
+        activeSpaceId: selectedSpaceId,
         settings,
         spaces,
       }),
-    [activeSpaceId, settings, spaces],
+    [selectedSpaceId, settings, spaces],
   );
-
-  useEffect(() => {
-    if (activeSpaceId !== resolvedActiveSpaceId) {
-      setActiveSpaceId(resolvedActiveSpaceId);
-    }
-  }, [activeSpaceId, resolvedActiveSpaceId]);
 
   const selectSpace = useCallback(
     (spaceId: string) => {
       if (hasAccessibleSpace(spaces, spaceId)) {
-        setActiveSpaceId(spaceId);
+        setSelectedSpaceId(spaceId);
       }
     },
     [spaces],

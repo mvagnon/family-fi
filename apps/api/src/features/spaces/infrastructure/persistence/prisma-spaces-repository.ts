@@ -41,8 +41,12 @@ export class PrismaSpacesRepository implements SpaceRepository {
         space: {
           include: {
             memberships: {
-              include: {
-                user: true,
+              select: {
+                user: {
+                  select: {
+                    email: true,
+                  },
+                },
               },
               orderBy: {
                 createdAt: "asc",
