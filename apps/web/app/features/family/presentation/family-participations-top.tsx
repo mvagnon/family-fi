@@ -44,12 +44,12 @@ export function FamilyParticipationsTop({
           bgcolor: "background.paper",
           display: "grid",
           justifyItems: "center",
-          justifySelf: "start",
+          justifySelf: { md: "start", xs: "stretch" },
           maxWidth: "100%",
           px: { md: 3, xs: 2.5 },
           py: { md: 2.5, xs: 2 },
           textAlign: "center",
-          width: "fit-content",
+          width: { md: "fit-content", xs: "100%" },
         }}
       >
         <Typography
