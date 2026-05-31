@@ -1,36 +1,26 @@
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import Box from "@mui/material/Box";
-import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
-import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { MetricSummaryCard } from "@repo/ui/metric-summary-card";
 import { useTranslation } from "react-i18next";
 
-import type { FamilyMember } from "../domain/family";
 import type { FamilyParticipationSummary } from "../domain/family-participations";
 import { useFamilyFormat } from "./use-family-format";
 
 interface FamilyParticipationsTopProps {
   currentYear: number;
-  members: FamilyMember[];
-  onMemberChange: (memberId: string) => void;
   onYearChange: (year: number) => void;
-  selectedMember: FamilyMember | null;
   summary: FamilyParticipationSummary;
   year: number;
 }
 
 export function FamilyParticipationsTop({
   currentYear,
-  members,
-  onMemberChange,
   onYearChange,
-  selectedMember,
   summary,
   year,
 }: FamilyParticipationsTopProps) {
@@ -103,44 +93,7 @@ export function FamilyParticipationsTop({
       </Paper>
 
       <MetricSummaryCard
-        action={
-          <TextField
-            disabled={members.length === 0}
-            fullWidth
-            helperText={
-              selectedMember && !selectedMember.isActive
-                ? t("participations.top.inactiveSelected")
-                : undefined
-            }
-            label={t("participations.top.memberLabel")}
-            onChange={(event) => onMemberChange(event.target.value)}
-            select
-            size="small"
-            value={selectedMember?.id ?? ""}
-          >
-            {members.map((member) => (
-              <MenuItem key={member.id} value={member.id}>
-                <Box
-                  sx={{
-                    alignItems: "center",
-                    display: "flex",
-                    gap: 1,
-                    minWidth: 0,
-                  }}
-                >
-                  <Typography noWrap>{member.name}</Typography>
-                  {!member.isActive ? (
-                    <Chip
-                      label={t("participations.top.inactive")}
-                      size="small"
-                      variant="outlined"
-                    />
-                  ) : null}
-                </Box>
-              </MenuItem>
-            ))}
-          </TextField>
-        }
+        label={t("participations.top.keyFigures")}
         metrics={[
           {
             label: t("participations.metrics.expenses"),

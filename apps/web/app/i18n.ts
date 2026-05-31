@@ -285,9 +285,7 @@ export const resources = {
           title: "Monthly participations",
         },
         top: {
-          inactive: "Inactive",
-          inactiveSelected: "Inactive member shown for consultation.",
-          memberLabel: "Member",
+          keyFigures: "Key figures",
           nextYear: "Next year",
           previousYear: "Previous year",
           selection: "Year",
@@ -588,9 +586,7 @@ export const resources = {
           title: "Participations mensuelles",
         },
         top: {
-          inactive: "Inactif",
-          inactiveSelected: "Membre inactif affiché en consultation.",
-          memberLabel: "Membre",
+          keyFigures: "Chiffres clés",
           nextYear: "Année suivante",
           previousYear: "Année précédente",
           selection: "Année",
@@ -883,9 +879,7 @@ export const resources = {
           title: "月次持分",
         },
         top: {
-          inactive: "無効",
-          inactiveSelected: "無効なメンバーを参照表示しています。",
-          memberLabel: "メンバー",
+          keyFigures: "主要指標",
           nextYear: "翌年",
           previousYear: "前年",
           selection: "年",

@@ -56,7 +56,6 @@ export function FamilyParticipationsDashboard({
   const currentMonthIndex = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
   const [year, setYear] = useState(currentYear);
-  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [memberPendingDeletion, setMemberPendingDeletion] =
@@ -68,14 +67,9 @@ export function FamilyParticipationsDashboard({
   const projection = getFamilyParticipationProjection(family, {
     currentMonthIndex,
     currentYear,
-    selectedMemberId,
     year,
   });
-  const selectedMember = projection.selectedMember;
-  const selectedParticipation = projection.selectedMemberParticipation;
-  const defaultCreationMember = selectedMember?.isActive
-    ? selectedMember
-    : projection.activeMembers[0];
+  const defaultCreationMember = projection.activeMembers[0];
 
   function handleYearChange(nextYear: number) {
     setYear(Math.min(nextYear, currentYear));
@@ -125,7 +119,6 @@ export function FamilyParticipationsDashboard({
       await onCreateParticipationLine(input);
       setLocalError(null);
       setIsCreateModalOpen(false);
-      setSelectedMemberId(resolution.member.id);
       setYear(input.year);
     } catch {
       return;
@@ -157,17 +150,8 @@ export function FamilyParticipationsDashboard({
       <AppShellTop>
         <FamilyParticipationsTop
           currentYear={currentYear}
-          members={projection.selectableMembers}
-          onMemberChange={setSelectedMemberId}
           onYearChange={handleYearChange}
-          selectedMember={selectedMember}
-          summary={
-            selectedParticipation?.summary ?? {
-              difference: 0,
-              expenses: 0,
-              income: 0,
-            }
-          }
+          summary={projection.summary}
           year={year}
         />
       </AppShellTop>

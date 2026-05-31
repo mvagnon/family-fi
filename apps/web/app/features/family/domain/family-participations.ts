@@ -30,20 +30,10 @@ export interface FamilyParticipationSummary {
   income: number;
 }
 
-export interface FamilyMemberParticipation {
-  lines: FamilyParticipationLine[];
-  member: FamilyMember;
-  monthGroups: FamilyParticipationMonthGroup[];
-  summary: FamilyParticipationSummary;
-}
-
 export interface FamilyParticipationProjection {
   activeMembers: FamilyMember[];
-  memberParticipations: FamilyMemberParticipation[];
   monthGroups: FamilyParticipationMonthGroup[];
-  selectableMembers: FamilyMember[];
-  selectedMember: FamilyMember | null;
-  selectedMemberParticipation: FamilyMemberParticipation | null;
+  summary: FamilyParticipationSummary;
 }
 
 export type ParticipationMemberResolution =
@@ -53,7 +43,6 @@ export type ParticipationMemberResolution =
 interface FamilyParticipationProjectionInput {
   currentMonthIndex: number;
   currentYear: number;
-  selectedMemberId?: string | null;
   year: number;
 }
 
@@ -65,40 +54,11 @@ export function getFamilyParticipationProjection(
     family.members.map((member) => [member.id, member]),
   );
   const participationLines = getParticipationLines(family, membersById, input);
-  const linesByMemberId = new Map<string, FamilyParticipationLine[]>();
-
-  for (const line of participationLines) {
-    const memberLines = linesByMemberId.get(line.member.id) ?? [];
-    memberLines.push(line);
-    linesByMemberId.set(line.member.id, memberLines);
-  }
-
-  const memberParticipations = family.members.map((member) => {
-    const lines = linesByMemberId.get(member.id) ?? [];
-
-    return {
-      lines,
-      member,
-      monthGroups: buildMonthGroups(lines, [member], input),
-      summary: getParticipationSummary(lines),
-    };
-  });
-  const selectedMember =
-    family.members.find((member) => member.id === input.selectedMemberId) ??
-    family.members[0] ??
-    null;
-  const selectedMemberParticipation =
-    memberParticipations.find(
-      (participation) => participation.member.id === selectedMember?.id,
-    ) ?? null;
 
   return {
     activeMembers: family.members.filter((member) => member.isActive),
-    memberParticipations,
     monthGroups: buildMonthGroups(participationLines, family.members, input),
-    selectableMembers: family.members,
-    selectedMember,
-    selectedMemberParticipation,
+    summary: getParticipationSummary(participationLines),
   };
 }
 
