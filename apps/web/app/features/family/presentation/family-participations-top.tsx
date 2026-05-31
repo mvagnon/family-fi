@@ -52,7 +52,10 @@ export function FamilyParticipationsTop({
         component="section"
         sx={{
           bgcolor: "background.paper",
+          display: "grid",
+          justifyItems: "center",
           p: { md: 2.5, xs: 2 },
+          textAlign: "center",
         }}
       >
         <Typography color="text.secondary" variant="overline">
@@ -61,6 +64,7 @@ export function FamilyParticipationsTop({
         <Stack
           spacing={1.5}
           sx={{
+            alignItems: "center",
             mt: 1,
           }}
         >
@@ -68,7 +72,7 @@ export function FamilyParticipationsTop({
             aria-label={t("participations.top.yearAriaLabel")}
             direction="row"
             spacing={0.5}
-            sx={{ alignItems: "center" }}
+            sx={{ alignItems: "center", justifyContent: "center" }}
           >
             <IconButton
               aria-label={t("participations.top.previousYear")}
@@ -137,7 +141,6 @@ export function FamilyParticipationsTop({
             ))}
           </TextField>
         }
-        label={t("participations.top.averageMetrics")}
         metrics={[
           {
             label: t("participations.metrics.expenses"),

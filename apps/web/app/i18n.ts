@@ -267,15 +267,14 @@ export const resources = {
           empty: {
             description:
               "{{name}} has no participation expenses for this year.",
+            memberLines: "No lines",
             noMember: "Add a family member to see participations.",
             title: "No participation expenses",
           },
           expandMonth: "Expand {{month}}",
-          subtitle: "All family members",
           title: "Monthly participations",
         },
         top: {
-          averageMetrics: "Selected member yearly averages",
           inactive: "Inactive",
           inactiveSelected: "Inactive member shown for consultation.",
           memberLabel: "Member",
@@ -560,16 +559,15 @@ export const resources = {
           empty: {
             description:
               "{{name}} n'a aucune dépense de participation pour cette année.",
+            memberLines: "Aucune ligne",
             noMember:
               "Ajoutez un membre du foyer pour afficher les participations.",
             title: "Aucune dépense de participation",
           },
           expandMonth: "Déplier {{month}}",
-          subtitle: "Tous les membres du foyer",
           title: "Participations mensuelles",
         },
         top: {
-          averageMetrics: "Moyennes de l'année du membre sélectionné",
           inactive: "Inactif",
           inactiveSelected: "Membre inactif affiché en consultation.",
           memberLabel: "Membre",
@@ -847,15 +845,14 @@ export const resources = {
           },
           empty: {
             description: "{{name}}のこの年の持分支出はありません。",
+            memberLines: "行はありません",
             noMember: "持分を表示するには家族メンバーを追加してください。",
             title: "持分支出はありません",
           },
           expandMonth: "{{month}}を展開",
-          subtitle: "家族メンバー全員",
           title: "月次持分",
         },
         top: {
-          averageMetrics: "選択メンバーの年平均",
           inactive: "無効",
           inactiveSelected: "無効なメンバーを参照表示しています。",
           memberLabel: "メンバー",

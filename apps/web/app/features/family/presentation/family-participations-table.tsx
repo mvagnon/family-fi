@@ -83,7 +83,6 @@ export function FamilyParticipationsTable({
         alignItems: { sm: "center", xs: "flex-start" },
         flexDirection: { sm: "row", xs: "column" },
       }}
-      subtitle={t("participations.table.subtitle")}
       title={t("participations.table.title")}
       titleId="family-participations-table-title"
     >
@@ -230,7 +229,6 @@ function ParticipationMemberGroup({
       <Box
         sx={(theme) => ({
           alignItems: "center",
-          bgcolor: alpha(theme.palette.action.hover, 0.7),
           borderTop: `1px solid ${theme.palette.divider}`,
           display: "grid",
           gridTemplateColumns: participationTableGridColumns,
@@ -252,9 +250,34 @@ function ParticipationMemberGroup({
           {familyFormat.formatCurrency(group.total)}
         </Box>
       </Box>
-      {group.lines.map((line) => (
-        <ParticipationLineRow key={line.line.id} line={line} />
-      ))}
+      {group.lines.length > 0 ? (
+        group.lines.map((line) => (
+          <ParticipationLineRow key={line.line.id} line={line} />
+        ))
+      ) : (
+        <ParticipationEmptyLine />
+      )}
+    </Box>
+  );
+}
+
+function ParticipationEmptyLine() {
+  const { t } = useTranslation();
+
+  return (
+    <Box
+      sx={(theme) => ({
+        borderTop: `1px solid ${theme.palette.divider}`,
+        display: "grid",
+        gridTemplateColumns: participationTableGridColumns,
+      })}
+    >
+      <Box sx={{ minWidth: 0, px: 2, py: 1.25, pl: { md: 4, xs: 3 } }}>
+        <Typography color="text.secondary" variant="body2">
+          {t("participations.table.empty.memberLines")}
+        </Typography>
+      </Box>
+      <Box />
     </Box>
   );
 }
