@@ -38,3 +38,17 @@ export function useSignInWithEmail(repository: AuthRepository) {
     },
   });
 }
+
+export function useSignOut(repository: AuthRepository) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => repository.signOut(),
+    onSuccess: () => {
+      queryClient.setQueryData(authQueryKeys.session(), null);
+      void queryClient.invalidateQueries({
+        queryKey: authQueryKeys.session(),
+      });
+    },
+  });
+}

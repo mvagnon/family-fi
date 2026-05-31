@@ -36,6 +36,11 @@ export const resources = {
         save: "Save",
       },
       auth: {
+        account: {
+          openMenu: "Open account menu",
+          signOut: "Sign out",
+          signOutError: "Sign out failed.",
+        },
         login: {
           createAccount: "Create account",
           email: "Email",
@@ -53,6 +58,17 @@ export const resources = {
         },
       },
       configuration: {
+        defaultSpace: {
+          description:
+            "Choose the workspace selected when Family-Fi opens on this account.",
+          empty: "No accessible spaces are available.",
+          error: "Default space settings could not be loaded.",
+          label: "Default space",
+          loading: "Loading default space",
+          placeholder: "Choose a space",
+          saveError: "Default space could not be saved.",
+          title: "Default space",
+        },
         language: {
           ariaLabel: "App language",
           browserDetected: "From this browser",
@@ -214,6 +230,18 @@ export const resources = {
           monthly: "Monthly",
         },
       },
+      spaces: {
+        roles: {
+          member: "Member",
+          owner: "Owner",
+        },
+        switcher: {
+          empty: "No spaces available.",
+          error: "Spaces could not be loaded.",
+          label: "Space",
+          loading: "Loading spaces",
+        },
+      },
     },
   },
   fr: {
@@ -242,6 +270,11 @@ export const resources = {
         save: "Enregistrer",
       },
       auth: {
+        account: {
+          openMenu: "Ouvrir le menu du compte",
+          signOut: "Déconnexion",
+          signOutError: "La déconnexion a échoué.",
+        },
         login: {
           createAccount: "Créer un compte",
           email: "Email",
@@ -259,6 +292,17 @@ export const resources = {
         },
       },
       configuration: {
+        defaultSpace: {
+          description:
+            "Choisissez l'espace sélectionné par défaut à l'ouverture de Family-Fi pour ce compte.",
+          empty: "Aucun espace accessible n'est disponible.",
+          error: "Les réglages d'espace par défaut n'ont pas pu être chargés.",
+          label: "Espace par défaut",
+          loading: "Chargement de l'espace par défaut",
+          placeholder: "Choisir un espace",
+          saveError: "L'espace par défaut n'a pas pu être enregistré.",
+          title: "Espace par défaut",
+        },
         language: {
           ariaLabel: "Langue de l'application",
           browserDetected: "Depuis ce navigateur",
@@ -421,6 +465,18 @@ export const resources = {
           monthly: "Mensuel",
         },
       },
+      spaces: {
+        roles: {
+          member: "Membre",
+          owner: "Propriétaire",
+        },
+        switcher: {
+          empty: "Aucun espace disponible.",
+          error: "Les espaces n'ont pas pu être chargés.",
+          label: "Espace",
+          loading: "Chargement des espaces",
+        },
+      },
     },
   },
   ja: {
@@ -449,6 +505,11 @@ export const resources = {
         save: "保存",
       },
       auth: {
+        account: {
+          openMenu: "アカウントメニューを開く",
+          signOut: "ログアウト",
+          signOutError: "ログアウトできませんでした。",
+        },
         login: {
           createAccount: "アカウント作成",
           email: "メール",
@@ -466,6 +527,17 @@ export const resources = {
         },
       },
       configuration: {
+        defaultSpace: {
+          description:
+            "このアカウントでFamily-Fiを開いたときに最初に選択するスペースを選びます。",
+          empty: "利用できるスペースはありません。",
+          error: "既定スペースの設定を読み込めませんでした。",
+          label: "既定スペース",
+          loading: "既定スペースを読み込み中",
+          placeholder: "スペースを選択",
+          saveError: "既定スペースを保存できませんでした。",
+          title: "既定スペース",
+        },
         language: {
           ariaLabel: "アプリの言語",
           browserDetected: "このブラウザから",
@@ -621,6 +693,18 @@ export const resources = {
           max: "最大",
           min: "最小",
           monthly: "月次",
+        },
+      },
+      spaces: {
+        roles: {
+          member: "メンバー",
+          owner: "オーナー",
+        },
+        switcher: {
+          empty: "利用できるスペースはありません。",
+          error: "スペースを読み込めませんでした。",
+          label: "スペース",
+          loading: "スペースを読み込み中",
         },
       },
     },
