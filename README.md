@@ -14,6 +14,8 @@ bun run dev
 
 The web app runs on `http://localhost:5173`.
 The API runs on `http://localhost:3000`.
+Set `BETTER_AUTH_SECRET` to a 32+ character value before starting the API
+outside Docker.
 
 Run only one side:
 
@@ -31,11 +33,13 @@ bind-mounted source files:
 docker compose up --build
 ```
 
-Then open `http://localhost:5173/family`.
+Then open `http://localhost:5173/login` and sign in with the development user
+`test@test.com` / `Test2026!`.
 Changes in `apps/web`, `apps/api`, and shared packages are mounted into the
 containers and reload without rebuilding the images.
 
-If dependencies change, recreate the Docker dependency volumes:
+If dependencies or the local Prisma migration history change, recreate the
+Docker volumes:
 
 ```bash
 docker compose down -v

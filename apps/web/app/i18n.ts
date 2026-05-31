@@ -35,6 +35,23 @@ export const resources = {
         retry: "Retry",
         save: "Save",
       },
+      auth: {
+        login: {
+          createAccount: "Create account",
+          email: "Email",
+          emailRequired: "Email is required.",
+          error: "Invalid email or password.",
+          password: "Password",
+          passwordRequired: "Password is required.",
+          submit: "Sign in",
+          subtitle: "Access your Family-Fi workspace.",
+          title: "Sign in",
+        },
+        meta: {
+          loginDescription: "Family-Fi sign in.",
+          loginTitle: "Family-Fi | Sign in",
+        },
+      },
       configuration: {
         language: {
           ariaLabel: "App language",
@@ -64,6 +81,15 @@ export const resources = {
         page: {
           subtitle: "Adjust app-level preferences for this browser.",
           title: "Configuration",
+        },
+      },
+      dashboard: {
+        meta: {
+          description: "Family-Fi dashboard.",
+          title: "Family-Fi | Dashboard",
+        },
+        page: {
+          title: "Dashboard",
         },
       },
       family: {
@@ -215,6 +241,23 @@ export const resources = {
         retry: "Réessayer",
         save: "Enregistrer",
       },
+      auth: {
+        login: {
+          createAccount: "Créer un compte",
+          email: "Email",
+          emailRequired: "L'email est obligatoire.",
+          error: "Email ou mot de passe invalide.",
+          password: "Mot de passe",
+          passwordRequired: "Le mot de passe est obligatoire.",
+          submit: "Se connecter",
+          subtitle: "Accédez à votre espace Family-Fi.",
+          title: "Connexion",
+        },
+        meta: {
+          loginDescription: "Connexion à Family-Fi.",
+          loginTitle: "Family-Fi | Connexion",
+        },
+      },
       configuration: {
         language: {
           ariaLabel: "Langue de l'application",
@@ -245,6 +288,15 @@ export const resources = {
           subtitle:
             "Ajustez les préférences de l'application pour ce navigateur.",
           title: "Configuration",
+        },
+      },
+      dashboard: {
+        meta: {
+          description: "Tableau de bord Family-Fi.",
+          title: "Family-Fi | Tableau de bord",
+        },
+        page: {
+          title: "Tableau de bord",
         },
       },
       family: {
@@ -396,6 +448,23 @@ export const resources = {
         retry: "再試行",
         save: "保存",
       },
+      auth: {
+        login: {
+          createAccount: "アカウント作成",
+          email: "メール",
+          emailRequired: "メールは必須です。",
+          error: "メールまたはパスワードが正しくありません。",
+          password: "パスワード",
+          passwordRequired: "パスワードは必須です。",
+          submit: "ログイン",
+          subtitle: "Family-Fiワークスペースにアクセスします。",
+          title: "ログイン",
+        },
+        meta: {
+          loginDescription: "Family-Fiのログイン。",
+          loginTitle: "Family-Fi | ログイン",
+        },
+      },
       configuration: {
         language: {
           ariaLabel: "アプリの言語",
@@ -425,6 +494,15 @@ export const resources = {
         page: {
           subtitle: "このブラウザで使うアプリ設定を調整します。",
           title: "設定",
+        },
+      },
+      dashboard: {
+        meta: {
+          description: "Family-Fiダッシュボード。",
+          title: "Family-Fi | ダッシュボード",
+        },
+        page: {
+          title: "ダッシュボード",
         },
       },
       family: {

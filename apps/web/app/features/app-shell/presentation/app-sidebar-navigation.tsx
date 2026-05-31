@@ -22,7 +22,7 @@ import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 
 const sidebarNavigationItems: SidebarNavigationItem[] = [
-  { icon: DashboardIcon, labelKey: "dashboard" },
+  { icon: DashboardIcon, labelKey: "dashboard", to: "/dashboard" },
   { icon: ReceiptLongIcon, labelKey: "recurringBudget", to: "/family" },
   { icon: AccountBalanceIcon, labelKey: "loans" },
   { icon: GroupsIcon, labelKey: "participations" },
@@ -108,7 +108,7 @@ function SidebarNavigationRow({ item }: { item: SidebarNavigationItem }) {
       <ListItem disablePadding sx={{ display: "block" }}>
         <ListItemButton
           component={NavLink}
-          end={item.to === "/family"}
+          end={item.to === "/dashboard" || item.to === "/family"}
           sx={navigationRowSx}
           to={item.to}
         >

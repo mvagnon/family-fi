@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 
 import {
-  DEV_USER_ID,
   DUPLICATE_FAMILY_CATEGORY_LABEL_MESSAGE,
   DUPLICATE_FAMILY_MEMBER_NAME_MESSAGE,
   FamilyCategoryNotFoundError,
@@ -25,27 +24,37 @@ import { createSeedFamily } from "../domain/seed-family.js";
 
 interface FamilyServiceOptions {
   createId?: (prefix: string, label: string) => string;
-  currentUserId?: string;
+}
+
+interface FamilyRequest {
+  spaceId: string;
+  userId: string;
+}
+
+interface SpaceAccessAuthorizer {
+  assertUserCanAccessSpace(userId: string, spaceId: string): Promise<void>;
 }
 
 export class FamilyService {
   private readonly createId: (prefix: string, label: string) => string;
-  private readonly currentUserId: string;
 
   constructor(
     private readonly repository: FamilyRepository,
+    private readonly spaceAccess: SpaceAccessAuthorizer,
     options: FamilyServiceOptions = {},
   ) {
     this.createId = options.createId ?? createDefaultId;
-    this.currentUserId = options.currentUserId ?? DEV_USER_ID;
   }
 
-  async getFamilyForCurrentUser(): Promise<FamilySnapshot> {
-    return this.getOrCreateFamily();
+  async getFamilyForSpace(request: FamilyRequest): Promise<FamilySnapshot> {
+    return this.getOrCreateFamily(request);
   }
 
-  async addMember(input: CreateFamilyMemberInput): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily();
+  async addMember(
+    request: FamilyRequest,
+    input: CreateFamilyMemberInput,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
     const name = requireText(input.name, "Member name is required.");
 
     assertUniqueMemberName(family.members, name);
@@ -82,8 +91,11 @@ export class FamilyService {
     });
   }
 
-  async addCategory(input: CreateFamilyCategoryInput): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily();
+  async addCategory(
+    request: FamilyRequest,
+    input: CreateFamilyCategoryInput,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
     const label = requireText(input.label, "Category label is required.");
 
     assertUniqueCategoryLabel(family.categories, label);
@@ -106,8 +118,11 @@ export class FamilyService {
     });
   }
 
-  async deleteMember(memberId: string): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily();
+  async deleteMember(
+    request: FamilyRequest,
+    memberId: string,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
     const hasMember = family.members.some((item) => item.id === memberId);
 
     if (!hasMember) {
@@ -126,8 +141,11 @@ export class FamilyService {
     return updatedFamily;
   }
 
-  async deleteCategory(categoryId: string): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily();
+  async deleteCategory(
+    request: FamilyRequest,
+    categoryId: string,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
     const category = family.categories.find((item) => item.id === categoryId);
 
     if (!category) {
@@ -151,9 +169,10 @@ export class FamilyService {
   }
 
   async createRecurringLine(
+    request: FamilyRequest,
     input: CreateRecurringLineInput,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily();
+    const family = await this.getOrCreateFamily(request);
     const line = normalizeRecurringLine({
       ...input,
       id: this.createUniqueId(
@@ -167,10 +186,11 @@ export class FamilyService {
   }
 
   async updateRecurringLine(
+    request: FamilyRequest,
     lineId: string,
     input: UpdateRecurringLineInput,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily();
+    const family = await this.getOrCreateFamily(request);
     const line = normalizeRecurringLine({ ...input, id: lineId });
     const updatedFamily = await this.repository.updateRecurringLine(
       family.id,
@@ -184,8 +204,11 @@ export class FamilyService {
     return updatedFamily;
   }
 
-  async deleteRecurringLine(lineId: string): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily();
+  async deleteRecurringLine(
+    request: FamilyRequest,
+    lineId: string,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
     const updatedFamily = await this.repository.deleteRecurringLine(
       family.id,
       lineId,
@@ -198,16 +221,24 @@ export class FamilyService {
     return updatedFamily;
   }
 
-  private async getOrCreateFamily(): Promise<FamilySnapshot> {
-    const existingFamily = await this.repository.findByUserId(
-      this.currentUserId,
+  private async getOrCreateFamily(
+    request: FamilyRequest,
+  ): Promise<FamilySnapshot> {
+    await this.spaceAccess.assertUserCanAccessSpace(
+      request.userId,
+      request.spaceId,
     );
+
+    const existingFamily = await this.repository.findBySpaceId(request.spaceId);
 
     if (existingFamily) {
       return existingFamily;
     }
 
-    return this.repository.createFamily(createSeedFamily(this.currentUserId));
+    return this.repository.createFamily(
+      request.spaceId,
+      createSeedFamily(createFamilyId(request.spaceId)),
+    );
   }
 
   private createUniqueId(
@@ -327,6 +358,12 @@ function createDefaultId(prefix: string, label: string): string {
   const suffix = randomUUID().slice(0, 8);
 
   return `${prefix}-${slug || "item"}-${suffix}`;
+}
+
+function createFamilyId(spaceId: string): string {
+  const slug = createSlug(spaceId);
+
+  return `family-${slug || "space"}`;
 }
 
 function createSlug(value: string): string {

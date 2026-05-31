@@ -1,9 +1,6 @@
-import { redirect } from "react-router";
-
-export function loader() {
-  return redirect("/family");
-}
+import { authClient } from "~/features/auth/infrastructure/auth-client";
+import { HomeRedirect } from "~/features/auth/presentation/auth-route-gates";
 
 export default function Home() {
-  return null;
+  return <HomeRedirect client={authClient} />;
 }

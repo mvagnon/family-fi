@@ -32,7 +32,6 @@ export interface RecurringLine {
 
 export interface Family {
   id: string;
-  userIds: string[];
   members: FamilyMember[];
   categories: FamilyCategory[];
   recurringLines: RecurringLine[];

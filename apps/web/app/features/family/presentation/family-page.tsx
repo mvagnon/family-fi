@@ -16,18 +16,19 @@ import { useTranslation } from "react-i18next";
 
 interface FamilyPageProps {
   repository: FamilyRepository;
+  spaceId: string;
 }
 
-export function FamilyPage({ repository }: FamilyPageProps) {
+export function FamilyPage({ repository, spaceId }: FamilyPageProps) {
   const { t } = useTranslation();
-  const familyQuery = useFamily(repository);
-  const addMemberMutation = useAddFamilyMember(repository);
-  const addCategoryMutation = useAddFamilyCategory(repository);
-  const createLineMutation = useCreateFamilyRecurringLine(repository);
-  const deleteCategoryMutation = useDeleteFamilyCategory(repository);
-  const deleteLineMutation = useDeleteFamilyRecurringLine(repository);
-  const deleteMemberMutation = useDeleteFamilyMember(repository);
-  const updateLineMutation = useUpdateFamilyRecurringLine(repository);
+  const familyQuery = useFamily(repository, spaceId);
+  const addMemberMutation = useAddFamilyMember(repository, spaceId);
+  const addCategoryMutation = useAddFamilyCategory(repository, spaceId);
+  const createLineMutation = useCreateFamilyRecurringLine(repository, spaceId);
+  const deleteCategoryMutation = useDeleteFamilyCategory(repository, spaceId);
+  const deleteLineMutation = useDeleteFamilyRecurringLine(repository, spaceId);
+  const deleteMemberMutation = useDeleteFamilyMember(repository, spaceId);
+  const updateLineMutation = useUpdateFamilyRecurringLine(repository, spaceId);
   const isSaving =
     addMemberMutation.isPending ||
     addCategoryMutation.isPending ||

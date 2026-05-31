@@ -3,11 +3,13 @@ import type { FamilyRepository } from "../../domain/family-repository.js";
 
 export function createInMemoryFamilyRepository(): FamilyRepository {
   const families = new Map<string, FamilySnapshot>();
+  const familyIdsBySpaceId = new Map<string, string>();
 
   return {
-    async createFamily(family) {
+    async createFamily(spaceId, family) {
       const snapshot = cloneFamily(family);
       families.set(snapshot.id, snapshot);
+      familyIdsBySpaceId.set(spaceId, snapshot.id);
 
       return cloneFamily(snapshot);
     },
@@ -91,10 +93,9 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
       return cloneFamily(updatedFamily);
     },
 
-    async findByUserId(userId) {
-      const family = Array.from(families.values()).find((item) =>
-        item.userIds.includes(userId),
-      );
+    async findBySpaceId(spaceId) {
+      const familyId = familyIdsBySpaceId.get(spaceId);
+      const family = familyId ? families.get(familyId) : null;
 
       return family ? cloneFamily(family) : null;
     },
@@ -146,7 +147,6 @@ function cloneFamily(family: FamilySnapshot): FamilySnapshot {
     categories: family.categories.map((category) => ({ ...category })),
     members: family.members.map((member) => ({ ...member })),
     recurringLines: family.recurringLines.map(cloneLine),
-    userIds: [...family.userIds],
   };
 }
 

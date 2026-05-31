@@ -23,7 +23,6 @@ export function parseFamilyResponse(value: unknown): Family {
     id: getString(family, "id"),
     members: getArray(family, "members").map(parseMember),
     recurringLines: getArray(family, "recurringLines").map(parseRecurringLine),
-    userIds: getArray(family, "userIds").map(parseStringItem),
   };
 }
 

@@ -40,9 +40,13 @@ services:
         "cd /app && bun install --frozen-lockfile && cd /app/apps/api && bun run prisma generate && bun --watch src/index.ts",
       ]
     environment:
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-development-only-better-auth-secret-32-chars}
+      BETTER_AUTH_URL: http://localhost:3000
       CHOKIDAR_USEPOLLING: "true"
       DATABASE_URL: postgresql://family_fi:family_fi@db:5432/family_fi
+      ENABLE_DEV_SEED: "true"
       PORT: "3000"
+      WEB_ORIGIN: http://localhost:5173
     ports:
       - "3000:3000"
     volumes:

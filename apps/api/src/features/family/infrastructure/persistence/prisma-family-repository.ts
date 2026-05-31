@@ -27,7 +27,10 @@ type RecurringLineRecord = FamilyRecord["recurringLines"][number];
 export class PrismaFamilyRepository implements FamilyRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async createFamily(family: FamilySnapshot): Promise<FamilySnapshot> {
+  async createFamily(
+    spaceId: string,
+    family: FamilySnapshot,
+  ): Promise<FamilySnapshot> {
     const createdFamily = await this.prisma.family.create({
       data: {
         categories: toJsonValue(family.categories),
@@ -36,7 +39,7 @@ export class PrismaFamilyRepository implements FamilyRepository {
         recurringLines: {
           create: family.recurringLines.map(toRecurringLineCreateInput),
         },
-        userIds: family.userIds,
+        spaceId,
       },
       include: familyInclude,
     });
@@ -177,13 +180,11 @@ export class PrismaFamilyRepository implements FamilyRepository {
     });
   }
 
-  async findByUserId(userId: string): Promise<FamilySnapshot | null> {
-    const family = await this.prisma.family.findFirst({
+  async findBySpaceId(spaceId: string): Promise<FamilySnapshot | null> {
+    const family = await this.prisma.family.findUnique({
       include: familyInclude,
       where: {
-        userIds: {
-          has: userId,
-        },
+        spaceId,
       },
     });
 
@@ -195,7 +196,6 @@ export class PrismaFamilyRepository implements FamilyRepository {
       data: {
         categories: toJsonValue(family.categories),
         members: toJsonValue(family.members),
-        userIds: family.userIds,
       },
       include: familyInclude,
       where: {
@@ -276,7 +276,6 @@ function toFamilySnapshot(family: FamilyRecord): FamilySnapshot {
     id: family.id,
     members: parseMembers(family.members),
     recurringLines: family.recurringLines.map(toRecurringLine),
-    userIds: family.userIds,
   };
 }
 
