@@ -5,6 +5,7 @@ import { HTTPException } from "hono/http-exception";
 import { UnauthenticatedError } from "./features/auth/domain/auth.js";
 import type { AuthHttpAdapter } from "./features/auth/infrastructure/better-auth-provider.js";
 import { FamilyService } from "./features/family/application/family-service.js";
+import type { FamilyServiceOptions } from "./features/family/application/family-service.js";
 import {
   FamilyEntityNotFoundError,
   InvalidFamilyInputError,
@@ -26,6 +27,7 @@ interface CreateApiAppOptions {
   authProvider: AuthHttpAdapter;
   corsOrigin?: string;
   familyRepository: FamilyRepository;
+  familyServiceOptions?: FamilyServiceOptions;
   spaceRepository: SpaceRepository;
 }
 
@@ -33,11 +35,16 @@ export function createApiApp({
   authProvider,
   corsOrigin = "http://localhost:5173",
   familyRepository,
+  familyServiceOptions,
   spaceRepository,
 }: CreateApiAppOptions) {
   const app = new Hono();
   const spacesService = new SpacesService(spaceRepository);
-  const familyService = new FamilyService(familyRepository, spacesService);
+  const familyService = new FamilyService(
+    familyRepository,
+    spacesService,
+    familyServiceOptions,
+  );
 
   app.use(
     "/api/*",

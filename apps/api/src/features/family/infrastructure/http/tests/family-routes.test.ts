@@ -131,7 +131,9 @@ test("family routes create members with active flags and defaults", async () => 
 
 test("family routes create participation lines for active members", async () => {
   const app = createTestApp();
-  const year = new Date().getFullYear();
+  const currentDate = new Date();
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth() + 1;
 
   await authenticatedRequest(app, familyPath);
 
@@ -142,7 +144,7 @@ test("family routes create participation lines for active members", async () => 
       body: JSON.stringify({
         amount: 42.5,
         memberId: "lea",
-        month: 5,
+        month,
         year,
       }),
       headers: { "Content-Type": "application/json" },
@@ -159,7 +161,7 @@ test("family routes create participation lines for active members", async () => 
   assert.equal(line.amount, 42.5);
   assert.equal(typeof line.createdAt, "string");
   assert.ok(!Number.isNaN(Date.parse(line.createdAt)));
-  assert.equal(line.month, 5);
+  assert.equal(line.month, month);
   assert.equal(line.year, year);
 
   const expenseResponse = await authenticatedRequest(
@@ -169,7 +171,7 @@ test("family routes create participation lines for active members", async () => 
       body: JSON.stringify({
         amount: -12.75,
         memberId: "lea",
-        month: 5,
+        month,
         year,
       }),
       headers: { "Content-Type": "application/json" },
@@ -274,6 +276,35 @@ test("family routes reject invalid participation line periods", async () => {
   });
 });
 
+test("family routes reject participation lines in future months", async () => {
+  const app = createTestApp({
+    now: () => new Date("2026-05-15T12:00:00.000Z"),
+  });
+
+  await authenticatedRequest(app, familyPath);
+
+  const response = await authenticatedRequest(
+    app,
+    `${familyPath}/participation-lines`,
+    {
+      body: JSON.stringify({
+        amount: 20,
+        memberId: "lea",
+        month: 6,
+        year: 2026,
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
+  const body = await response.json();
+
+  assert.equal(response.status, 400);
+  assert.deepEqual(body, {
+    message: "Participation month is invalid.",
+  });
+});
+
 test("family routes reject invalid participation line amounts", async () => {
   const app = createTestApp();
 
@@ -374,10 +405,15 @@ test("family routes reject spaces without membership", async () => {
   assert.deepEqual(body, { message: "Space is not accessible." });
 });
 
-function createTestApp() {
+function createTestApp(
+  familyServiceOptions?: Parameters<
+    typeof createApiApp
+  >[0]["familyServiceOptions"],
+) {
   return createApiApp({
     authProvider: createTestAuthProvider(),
     familyRepository: createInMemoryFamilyRepository(),
+    familyServiceOptions,
     spaceRepository: createInMemorySpacesRepository({
       memberships: [
         {

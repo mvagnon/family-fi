@@ -19,6 +19,7 @@ import { participationLineInputSchema } from "../domain/family";
 interface ParticipationLineFormValidationMessages {
   amountNonZero: string;
   amountRequired: string;
+  monthFuture: string;
   memberRequired: string;
   monthRequired: string;
   yearFuture: string;
@@ -27,6 +28,7 @@ interface ParticipationLineFormValidationMessages {
 
 function createParticipationLineFormSchema(
   messages: ParticipationLineFormValidationMessages,
+  currentMonthIndex: number,
   currentYear: number,
 ) {
   return z
@@ -45,6 +47,15 @@ function createParticipationLineFormSchema(
         .refine((value) => value <= currentYear, {
           message: messages.yearFuture,
         }),
+    })
+    .superRefine((values, context) => {
+      if (values.year === currentYear && values.month > currentMonthIndex + 1) {
+        context.addIssue({
+          code: "custom",
+          message: messages.monthFuture,
+          path: ["month"],
+        });
+      }
     })
     .transform((values, context) => {
       const result = participationLineInputSchema.safeParse(values);
@@ -74,6 +85,7 @@ type ParticipationLineFormValues = z.output<
 
 interface FamilyParticipationLineModalProps {
   activeMembers: FamilyMember[];
+  currentMonthIndex: number;
   currentYear: number;
   defaultMemberId: string;
   defaultYear: number;
@@ -85,6 +97,7 @@ interface FamilyParticipationLineModalProps {
 
 export function FamilyParticipationLineModal({
   activeMembers,
+  currentMonthIndex,
   currentYear,
   defaultMemberId,
   defaultYear,
@@ -98,21 +111,23 @@ export function FamilyParticipationLineModal({
     () =>
       createParticipationLineFormSchema(
         getParticipationLineFormValidationMessages(t),
+        currentMonthIndex,
         currentYear,
       ),
-    [currentYear, t],
+    [currentMonthIndex, currentYear, t],
   );
   const {
     control,
     formState: { errors },
     handleSubmit,
     register,
+    watch,
   } = useForm<ParticipationLineFormInput, unknown, ParticipationLineFormValues>(
     {
       defaultValues: {
         amount: "",
         memberId: defaultMemberId,
-        month: String(new Date().getMonth() + 1),
+        month: String(currentMonthIndex + 1),
         year: String(defaultYear),
       },
       resolver: zodResolver(formSchema),
@@ -122,6 +137,9 @@ export function FamilyParticipationLineModal({
   );
   const { ref: amountRef, ...amountField } = register("amount");
   const { ref: yearRef, ...yearField } = register("year");
+  const selectedYear = Number(watch("year"));
+  const monthOptionCount =
+    selectedYear === currentYear ? currentMonthIndex + 1 : 12;
   const monthFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat(i18n.resolvedLanguage ?? i18n.language, {
@@ -213,7 +231,7 @@ export function FamilyParticipationLineModal({
                 select
                 value={field.value ?? ""}
               >
-                {Array.from({ length: 12 }, (_, index) => {
+                {Array.from({ length: monthOptionCount }, (_, index) => {
                   const month = index + 1;
 
                   return (
@@ -251,6 +269,7 @@ function getParticipationLineFormValidationMessages(
   return {
     amountNonZero: t("participations.creation.validation.amountNonZero"),
     amountRequired: t("participations.creation.validation.amountRequired"),
+    monthFuture: t("participations.creation.validation.monthFuture"),
     memberRequired: t("participations.creation.validation.memberRequired"),
     monthRequired: t("participations.creation.validation.monthRequired"),
     yearFuture: t("participations.creation.validation.yearFuture"),

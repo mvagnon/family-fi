@@ -169,6 +169,7 @@ export function FamilyParticipationsDashboard({
         {defaultCreationMember ? (
           <FamilyParticipationLineModal
             activeMembers={projection.activeMembers}
+            currentMonthIndex={currentMonthIndex}
             currentYear={currentYear}
             defaultMemberId={defaultCreationMember.id}
             defaultYear={year}

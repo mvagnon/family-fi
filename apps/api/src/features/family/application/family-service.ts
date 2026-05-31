@@ -24,8 +24,9 @@ import type {
 import type { FamilyRepository } from "../domain/family-repository.js";
 import { createSeedFamily } from "../domain/seed-family.js";
 
-interface FamilyServiceOptions {
+export interface FamilyServiceOptions {
   createId?: (prefix: string, label: string) => string;
+  now?: () => Date;
 }
 
 interface FamilyRequest {
@@ -39,6 +40,7 @@ interface SpaceAccessAuthorizer {
 
 export class FamilyService {
   private readonly createId: (prefix: string, label: string) => string;
+  private readonly now: () => Date;
 
   constructor(
     private readonly repository: FamilyRepository,
@@ -46,6 +48,7 @@ export class FamilyService {
     options: FamilyServiceOptions = {},
   ) {
     this.createId = options.createId ?? createDefaultId;
+    this.now = options.now ?? (() => new Date());
   }
 
   async getFamilyForSpace(request: FamilyRequest): Promise<FamilySnapshot> {
@@ -216,14 +219,19 @@ export class FamilyService {
       input.month,
       "Participation month is invalid.",
     );
-    const createdAt = new Date();
+    const createdAt = this.now();
     const currentYear = createdAt.getFullYear();
+    const currentMonth = createdAt.getMonth() + 1;
 
     if (year > currentYear) {
       throw new InvalidFamilyInputError("Participation year is invalid.");
     }
 
-    if (month < 1 || month > 12) {
+    if (
+      month < 1 ||
+      month > 12 ||
+      (year === currentYear && month > currentMonth)
+    ) {
       throw new InvalidFamilyInputError("Participation month is invalid.");
     }
 
