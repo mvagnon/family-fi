@@ -48,7 +48,11 @@ export function FamilyParticipationsTop({
           textAlign: "center",
         }}
       >
-        <Typography color="text.secondary" variant="overline">
+        <Typography
+          color="text.secondary"
+          sx={{ justifySelf: "start", textAlign: "left" }}
+          variant="overline"
+        >
           {t("participations.top.selection")}
         </Typography>
         <Stack
