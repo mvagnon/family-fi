@@ -1,7 +1,6 @@
-import { DEV_USER_ID } from "./family.js";
 import type { FamilySnapshot } from "./family.js";
 
-export function createSeedFamily(userId = DEV_USER_ID): FamilySnapshot {
+export function createSeedFamily(familyId = "family-dev"): FamilySnapshot {
   return {
     categories: [
       { id: "budget", label: "Budget", kind: "shared" },
@@ -16,7 +15,7 @@ export function createSeedFamily(userId = DEV_USER_ID): FamilySnapshot {
         ownerId: "marc",
       },
     ],
-    id: "family-dev",
+    id: familyId,
     members: [
       { id: "lea", name: "Léa", role: "Parent" },
       { id: "marc", name: "Marc", role: "Parent" },
@@ -87,6 +86,5 @@ export function createSeedFamily(userId = DEV_USER_ID): FamilySnapshot {
         title: "Mission freelance Marc",
       },
     ],
-    userIds: [userId],
   };
 }

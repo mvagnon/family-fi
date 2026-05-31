@@ -2,24 +2,32 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { createApiApp } from "../../../../../app.js";
+import type { AuthProvider } from "../../../../auth/domain/auth.js";
+import { createInMemorySpacesRepository } from "../../../../spaces/infrastructure/persistence/in-memory-spaces-repository.js";
 import { createInMemoryFamilyRepository } from "../../persistence/in-memory-family-repository.js";
 
-test("family routes expose and mutate the current family snapshot", async () => {
-  const app = createApiApp({
-    familyRepository: createInMemoryFamilyRepository(),
-  });
+const TEST_USER_ID = "test-user";
+const TEST_SPACE_ID = "test-space";
+const familyPath = `/api/spaces/${TEST_SPACE_ID}/family`;
 
-  const initialResponse = await app.request("/api/family");
+test("family routes expose and mutate the current family snapshot", async () => {
+  const app = createTestApp();
+
+  const initialResponse = await authenticatedRequest(app, familyPath);
   const initialFamily = await initialResponse.json();
 
   assert.equal(initialResponse.status, 200);
   assert.equal(initialFamily.recurringLines.length, 6);
 
-  const categoryResponse = await app.request("/api/family/categories", {
-    body: JSON.stringify({ label: "Santé" }),
-    headers: { "Content-Type": "application/json" },
-    method: "POST",
-  });
+  const categoryResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/categories`,
+    {
+      body: JSON.stringify({ label: "Santé" }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
   const familyWithCategory = await categoryResponse.json();
 
   assert.equal(categoryResponse.status, 201);
@@ -30,19 +38,23 @@ test("family routes expose and mutate the current family snapshot", async () => 
     true,
   );
 
-  const lineResponse = await app.request("/api/family/recurring-lines", {
-    body: JSON.stringify({
-      amount: 120,
-      categoryId: "budget",
-      description: "Forfait familial",
-      isEstimate: false,
-      movement: "negative",
-      recurrenceMonths: 1,
-      title: "Internet",
-    }),
-    headers: { "Content-Type": "application/json" },
-    method: "POST",
-  });
+  const lineResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/recurring-lines`,
+    {
+      body: JSON.stringify({
+        amount: 120,
+        categoryId: "budget",
+        description: "Forfait familial",
+        isEstimate: false,
+        movement: "negative",
+        recurrenceMonths: 1,
+        title: "Internet",
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
   const familyWithLine = await lineResponse.json();
 
   assert.equal(lineResponse.status, 201);
@@ -55,15 +67,17 @@ test("family routes expose and mutate the current family snapshot", async () => 
 });
 
 test("family routes delete recurring lines", async () => {
-  const app = createApiApp({
-    familyRepository: createInMemoryFamilyRepository(),
-  });
+  const app = createTestApp();
 
-  await app.request("/api/family");
+  await authenticatedRequest(app, familyPath);
 
-  const response = await app.request("/api/family/recurring-lines/rent", {
-    method: "DELETE",
-  });
+  const response = await authenticatedRequest(
+    app,
+    `${familyPath}/recurring-lines/rent`,
+    {
+      method: "DELETE",
+    },
+  );
   const family = await response.json();
 
   assert.equal(response.status, 200);
@@ -74,11 +88,9 @@ test("family routes delete recurring lines", async () => {
 });
 
 test("family routes create members from names only", async () => {
-  const app = createApiApp({
-    familyRepository: createInMemoryFamilyRepository(),
-  });
+  const app = createTestApp();
 
-  const response = await app.request("/api/family/members", {
+  const response = await authenticatedRequest(app, `${familyPath}/members`, {
     body: JSON.stringify({ name: "Camille" }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
@@ -100,13 +112,11 @@ test("family routes create members from names only", async () => {
 });
 
 test("family routes reject duplicate member names", async () => {
-  const app = createApiApp({
-    familyRepository: createInMemoryFamilyRepository(),
-  });
+  const app = createTestApp();
 
-  await app.request("/api/family");
+  await authenticatedRequest(app, familyPath);
 
-  const response = await app.request("/api/family/members", {
+  const response = await authenticatedRequest(app, `${familyPath}/members`, {
     body: JSON.stringify({ name: " léa " }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
@@ -120,13 +130,11 @@ test("family routes reject duplicate member names", async () => {
 });
 
 test("family routes reject duplicate category labels", async () => {
-  const app = createApiApp({
-    familyRepository: createInMemoryFamilyRepository(),
-  });
+  const app = createTestApp();
 
-  await app.request("/api/family");
+  await authenticatedRequest(app, familyPath);
 
-  const response = await app.request("/api/family/categories", {
+  const response = await authenticatedRequest(app, `${familyPath}/categories`, {
     body: JSON.stringify({ label: " budget " }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
@@ -140,11 +148,9 @@ test("family routes reject duplicate category labels", async () => {
 });
 
 test("family routes reject malformed JSON request bodies", async () => {
-  const app = createApiApp({
-    familyRepository: createInMemoryFamilyRepository(),
-  });
+  const app = createTestApp();
 
-  const response = await app.request("/api/family/categories", {
+  const response = await authenticatedRequest(app, `${familyPath}/categories`, {
     body: "{",
     headers: { "Content-Type": "application/json" },
     method: "POST",
@@ -154,3 +160,84 @@ test("family routes reject malformed JSON request bodies", async () => {
   assert.equal(response.status, 400);
   assert.deepEqual(body, { message: "Request body must be a JSON object." });
 });
+
+test("family routes reject unauthenticated requests", async () => {
+  const app = createTestApp();
+
+  const response = await app.request(familyPath);
+  const body = await response.json();
+
+  assert.equal(response.status, 401);
+  assert.deepEqual(body, { message: "Authentication is required." });
+});
+
+test("family routes reject spaces without membership", async () => {
+  const app = createTestApp();
+
+  const response = await authenticatedRequest(
+    app,
+    "/api/spaces/other-space/family",
+  );
+  const body = await response.json();
+
+  assert.equal(response.status, 403);
+  assert.deepEqual(body, { message: "Space is not accessible." });
+});
+
+function createTestApp() {
+  return createApiApp({
+    authProvider: createTestAuthProvider(),
+    familyRepository: createInMemoryFamilyRepository(),
+    spaceRepository: createInMemorySpacesRepository({
+      memberships: [
+        {
+          role: "owner",
+          spaceId: TEST_SPACE_ID,
+          userId: TEST_USER_ID,
+        },
+      ],
+      settings: new Map([[TEST_USER_ID, TEST_SPACE_ID]]),
+      spaces: [
+        {
+          id: TEST_SPACE_ID,
+          name: "Test space",
+        },
+      ],
+    }),
+  });
+}
+
+function createTestAuthProvider(): AuthProvider {
+  return {
+    async getSession(request) {
+      const userId = request.headers.get("x-user-id");
+
+      if (!userId) {
+        return null;
+      }
+
+      return {
+        user: {
+          email: "test@test.com",
+          id: userId,
+          name: "Test User",
+        },
+      };
+    },
+    handleRequest: () => new Response(null, { status: 404 }),
+  };
+}
+
+function authenticatedRequest(
+  app: ReturnType<typeof createApiApp>,
+  path: string,
+  init: RequestInit = {},
+) {
+  const headers = new Headers(init.headers);
+  headers.set("x-user-id", TEST_USER_ID);
+
+  return app.request(path, {
+    ...init,
+    headers,
+  });
+}

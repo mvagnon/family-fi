@@ -10,46 +10,59 @@ import type {
 } from "../domain/family";
 
 export const familyQueryKeys = {
-  detail: () => ["family", "detail"] as const,
+  detail: (spaceId: string) => ["family", "detail", spaceId] as const,
 };
 
-export function useFamily(repository: FamilyRepository) {
+export function useFamily(repository: FamilyRepository, spaceId: string) {
   return useQuery({
-    queryFn: () => repository.getFamily(),
-    queryKey: familyQueryKeys.detail(),
+    queryFn: () => repository.getFamily(spaceId),
+    queryKey: familyQueryKeys.detail(spaceId),
   });
 }
 
-export function useAddFamilyMember(repository: FamilyRepository) {
+export function useAddFamilyMember(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: CreateFamilyMemberInput) => repository.addMember(input),
-    onSuccess: (family) => setFamilyCache(queryClient, family),
+    mutationFn: (input: CreateFamilyMemberInput) =>
+      repository.addMember(spaceId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
   });
 }
 
-export function useAddFamilyCategory(repository: FamilyRepository) {
+export function useAddFamilyCategory(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (input: CreateFamilyCategoryInput) =>
-      repository.addCategory(input),
-    onSuccess: (family) => setFamilyCache(queryClient, family),
+      repository.addCategory(spaceId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
   });
 }
 
-export function useCreateFamilyRecurringLine(repository: FamilyRepository) {
+export function useCreateFamilyRecurringLine(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (input: CreateRecurringLineInput) =>
-      repository.createRecurringLine(input),
-    onSuccess: (family) => setFamilyCache(queryClient, family),
+      repository.createRecurringLine(spaceId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
   });
 }
 
-export function useUpdateFamilyRecurringLine(repository: FamilyRepository) {
+export function useUpdateFamilyRecurringLine(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -59,41 +72,54 @@ export function useUpdateFamilyRecurringLine(repository: FamilyRepository) {
     }: {
       input: UpdateRecurringLineInput;
       lineId: string;
-    }) => repository.updateRecurringLine(lineId, input),
-    onSuccess: (family) => setFamilyCache(queryClient, family),
+    }) => repository.updateRecurringLine(spaceId, lineId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
   });
 }
 
-export function useDeleteFamilyRecurringLine(repository: FamilyRepository) {
+export function useDeleteFamilyRecurringLine(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (lineId: string) => repository.deleteRecurringLine(lineId),
-    onSuccess: (family) => setFamilyCache(queryClient, family),
+    mutationFn: (lineId: string) =>
+      repository.deleteRecurringLine(spaceId, lineId),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
   });
 }
 
-export function useDeleteFamilyMember(repository: FamilyRepository) {
+export function useDeleteFamilyMember(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (memberId: string) => repository.deleteMember(memberId),
-    onSuccess: (family) => setFamilyCache(queryClient, family),
+    mutationFn: (memberId: string) =>
+      repository.deleteMember(spaceId, memberId),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
   });
 }
 
-export function useDeleteFamilyCategory(repository: FamilyRepository) {
+export function useDeleteFamilyCategory(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (categoryId: string) => repository.deleteCategory(categoryId),
-    onSuccess: (family) => setFamilyCache(queryClient, family),
+    mutationFn: (categoryId: string) =>
+      repository.deleteCategory(spaceId, categoryId),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
   });
 }
 
 function setFamilyCache(
   queryClient: ReturnType<typeof useQueryClient>,
+  spaceId: string,
   family: Family,
 ) {
-  queryClient.setQueryData(familyQueryKeys.detail(), family);
+  queryClient.setQueryData(familyQueryKeys.detail(spaceId), family);
 }

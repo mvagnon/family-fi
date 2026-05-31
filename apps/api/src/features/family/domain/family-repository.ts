@@ -1,7 +1,10 @@
 import type { FamilySnapshot, RecurringLine } from "./family.js";
 
 export interface FamilyRepository {
-  createFamily(family: FamilySnapshot): Promise<FamilySnapshot>;
+  createFamily(
+    spaceId: string,
+    family: FamilySnapshot,
+  ): Promise<FamilySnapshot>;
   createRecurringLine(
     familyId: string,
     line: RecurringLine,
@@ -18,7 +21,7 @@ export interface FamilyRepository {
     familyId: string,
     lineId: string,
   ): Promise<FamilySnapshot | null>;
-  findByUserId(userId: string): Promise<FamilySnapshot | null>;
+  findBySpaceId(spaceId: string): Promise<FamilySnapshot | null>;
   saveFamily(family: FamilySnapshot): Promise<FamilySnapshot>;
   updateRecurringLine(
     familyId: string,

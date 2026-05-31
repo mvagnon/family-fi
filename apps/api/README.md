@@ -1,14 +1,24 @@
 ```bash
 bun install
 DATABASE_URL="postgresql://user:password@localhost:5432/family_fi" bun run prisma:migrate
-DATABASE_URL="postgresql://user:password@localhost:5432/family_fi" bun run dev
+DATABASE_URL="postgresql://user:password@localhost:5432/family_fi" \
+BETTER_AUTH_SECRET="replace-with-a-32-character-secret" \
+bun run dev
 ```
 
 ```bash
 open http://localhost:3000
 ```
 
-The API uses Prisma with PostgreSQL. `DATABASE_URL` is required at runtime.
+The API uses Prisma with PostgreSQL. `DATABASE_URL` and
+`BETTER_AUTH_SECRET` are required at runtime. Optional auth settings:
+
+- `BETTER_AUTH_URL`: API origin used by Better Auth, default `http://localhost:3000`.
+- `WEB_ORIGIN`: credentialed CORS/trusted web origin, default `http://localhost:5173`.
+- `ENABLE_DEV_SEED=true`: creates `test@test.com` / `Test2026!`, a personal
+  space, default-space settings, and the seed family budget.
+
+Family budget routes are scoped under `/api/spaces/:spaceId/family`.
 
 ## Architecture
 
@@ -37,6 +47,7 @@ docker build -f apps/api/Dockerfile -t family-fi-api .
 
 docker run --rm \
   -p 3000:3000 \
+  -e BETTER_AUTH_SECRET="replace-with-a-32-character-secret" \
   -e DATABASE_URL="postgresql://user:password@host.docker.internal:5432/family_fi" \
   family-fi-api
 ```

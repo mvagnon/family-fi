@@ -1,6 +1,9 @@
 import { Hono } from "hono";
+import type { Context } from "hono";
 import { validator } from "hono/validator";
 
+import type { AuthProvider } from "../../../auth/domain/auth.js";
+import { getAuthenticatedUser } from "../../../auth/infrastructure/http/current-user.js";
 import type { FamilyService } from "../../application/family-service.js";
 import {
   InvalidFamilyInputError,
@@ -13,19 +16,37 @@ import type {
   UpdateRecurringLineInput,
 } from "../../domain/family.js";
 
-export function createFamilyRouter(service: FamilyService) {
+interface FamilyRouteRequest {
+  spaceId: string;
+  userId: string;
+}
+
+export function createFamilyRouter(
+  service: FamilyService,
+  authProvider: AuthProvider,
+) {
   return new Hono()
     .get("/", async (context) => {
-      return context.json(await service.getFamilyForCurrentUser());
+      return context.json(
+        await service.getFamilyForSpace(
+          await getFamilyRouteRequest(context, authProvider),
+        ),
+      );
     })
     .post("/members", validateJson(parseCreateMemberInput), async (context) => {
-      const family = await service.addMember(context.req.valid("json"));
+      const family = await service.addMember(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.valid("json"),
+      );
 
       return context.json(family, 201);
     })
     .delete("/members/:id", async (context) => {
       const memberId = context.req.param("id");
-      const family = await service.deleteMember(memberId);
+      const family = await service.deleteMember(
+        await getFamilyRouteRequest(context, authProvider),
+        memberId,
+      );
 
       return context.json(family);
     })
@@ -33,14 +54,20 @@ export function createFamilyRouter(service: FamilyService) {
       "/categories",
       validateJson(parseCreateCategoryInput),
       async (context) => {
-        const family = await service.addCategory(context.req.valid("json"));
+        const family = await service.addCategory(
+          await getFamilyRouteRequest(context, authProvider),
+          context.req.valid("json"),
+        );
 
         return context.json(family, 201);
       },
     )
     .delete("/categories/:id", async (context) => {
       const categoryId = context.req.param("id");
-      const family = await service.deleteCategory(categoryId);
+      const family = await service.deleteCategory(
+        await getFamilyRouteRequest(context, authProvider),
+        categoryId,
+      );
 
       return context.json(family);
     })
@@ -49,6 +76,7 @@ export function createFamilyRouter(service: FamilyService) {
       validateJson(parseRecurringLineInput),
       async (context) => {
         const family = await service.createRecurringLine(
+          await getFamilyRouteRequest(context, authProvider),
           context.req.valid("json"),
         );
 
@@ -61,6 +89,7 @@ export function createFamilyRouter(service: FamilyService) {
       async (context) => {
         const lineId = context.req.param("id");
         const family = await service.updateRecurringLine(
+          await getFamilyRouteRequest(context, authProvider),
           lineId,
           context.req.valid("json"),
         );
@@ -70,10 +99,25 @@ export function createFamilyRouter(service: FamilyService) {
     )
     .delete("/recurring-lines/:id", async (context) => {
       const lineId = context.req.param("id");
-      const family = await service.deleteRecurringLine(lineId);
+      const family = await service.deleteRecurringLine(
+        await getFamilyRouteRequest(context, authProvider),
+        lineId,
+      );
 
       return context.json(family);
     });
+}
+
+async function getFamilyRouteRequest(
+  context: Context,
+  authProvider: AuthProvider,
+): Promise<FamilyRouteRequest> {
+  const user = await getAuthenticatedUser(context, authProvider);
+
+  return {
+    spaceId: context.req.param("spaceId") ?? "",
+    userId: user.id,
+  };
 }
 
 function validateJson<T>(parse: (value: Record<string, unknown>) => T) {

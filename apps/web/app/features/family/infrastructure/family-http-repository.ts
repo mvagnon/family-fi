@@ -1,6 +1,11 @@
 import type { ApiAppType } from "api/app";
 import { hc } from "hono/client";
 
+import {
+  fetchWithCredentials,
+  getConfiguredApiBaseUrl,
+  normalizeApiBaseUrl,
+} from "~/infrastructure/api-client";
 import type { Family } from "../domain/family";
 import type { FamilyRepository } from "../domain/family-repository";
 import { FamilyApiError, parseFamilyResponse } from "./family-dto";
@@ -20,7 +25,7 @@ export function createFamilyHttpRepository(
   const apiBaseUrl = normalizeApiBaseUrl(
     options.apiBaseUrl ?? getConfiguredApiBaseUrl(),
   );
-  const fetcher = options.fetcher ?? fetch;
+  const fetcher = options.fetcher ?? fetchWithCredentials;
   const client = hc<ApiAppType>(apiBaseUrl, { fetch: fetcher });
 
   async function readFamilyResponse(response: {
@@ -35,42 +40,60 @@ export function createFamilyHttpRepository(
   }
 
   return {
-    addCategory: async (input) =>
+    addCategory: async (spaceId, input) =>
       readFamilyResponse(
-        await client.api.family.categories.$post({ json: input }),
-      ),
-    addMember: async (input) =>
-      readFamilyResponse(
-        await client.api.family.members.$post({ json: input }),
-      ),
-    createRecurringLine: async (input) =>
-      readFamilyResponse(
-        await client.api.family["recurring-lines"].$post({ json: input }),
-      ),
-    deleteCategory: async (categoryId) =>
-      readFamilyResponse(
-        await client.api.family.categories[":id"].$delete({
-          param: { id: categoryId },
-        }),
-      ),
-    deleteMember: async (memberId) =>
-      readFamilyResponse(
-        await client.api.family.members[":id"].$delete({
-          param: { id: memberId },
-        }),
-      ),
-    deleteRecurringLine: async (lineId) =>
-      readFamilyResponse(
-        await client.api.family["recurring-lines"][":id"].$delete({
-          param: { id: lineId },
-        }),
-      ),
-    getFamily: async () => readFamilyResponse(await client.api.family.$get()),
-    updateRecurringLine: async (lineId, input) =>
-      readFamilyResponse(
-        await client.api.family["recurring-lines"][":id"].$put({
+        await client.api.spaces[":spaceId"].family.categories.$post({
           json: input,
-          param: { id: lineId },
+          param: { spaceId },
+        }),
+      ),
+    addMember: async (spaceId, input) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family.members.$post({
+          json: input,
+          param: { spaceId },
+        }),
+      ),
+    createRecurringLine: async (spaceId, input) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family["recurring-lines"].$post({
+          json: input,
+          param: { spaceId },
+        }),
+      ),
+    deleteCategory: async (spaceId, categoryId) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family.categories[":id"].$delete({
+          param: { id: categoryId, spaceId },
+        }),
+      ),
+    deleteMember: async (spaceId, memberId) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family.members[":id"].$delete({
+          param: { id: memberId, spaceId },
+        }),
+      ),
+    deleteRecurringLine: async (spaceId, lineId) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family["recurring-lines"][
+          ":id"
+        ].$delete({
+          param: { id: lineId, spaceId },
+        }),
+      ),
+    getFamily: async (spaceId) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family.$get({
+          param: { spaceId },
+        }),
+      ),
+    updateRecurringLine: async (spaceId, lineId, input) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family["recurring-lines"][
+          ":id"
+        ].$put({
+          json: input,
+          param: { id: lineId, spaceId },
         }),
       ),
   };
@@ -86,16 +109,6 @@ async function getErrorMessage(response: {
   }
 
   return "La famille n'a pas pu être chargée.";
-}
-
-function getConfiguredApiBaseUrl(): string {
-  const env = import.meta.env as { VITE_API_BASE_URL?: string } | undefined;
-
-  return env?.VITE_API_BASE_URL ?? "http://localhost:3000";
-}
-
-function normalizeApiBaseUrl(value: string): string {
-  return value.replace(/\/$/, "");
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

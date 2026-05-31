@@ -9,7 +9,7 @@ bun run --filter=web dev
 ```
 
 The app runs on `http://localhost:5173`.
-`/family` calls `http://localhost:3000` by default.
+`/login` and protected app routes call `http://localhost:3000` by default.
 
 Override the API URL at build time with `VITE_API_BASE_URL`.
 

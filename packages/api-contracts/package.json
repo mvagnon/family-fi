@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./family": "./src/family.ts"
+    "./family": "./src/family.ts",
+    "./spaces": "./src/spaces.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit"

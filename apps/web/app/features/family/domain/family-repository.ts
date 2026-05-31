@@ -7,14 +7,21 @@ import type {
 } from "./family";
 
 export interface FamilyRepository {
-  addCategory(input: CreateFamilyCategoryInput): Promise<Family>;
-  addMember(input: CreateFamilyMemberInput): Promise<Family>;
-  createRecurringLine(input: CreateRecurringLineInput): Promise<Family>;
-  deleteCategory(categoryId: string): Promise<Family>;
-  deleteMember(memberId: string): Promise<Family>;
-  deleteRecurringLine(lineId: string): Promise<Family>;
-  getFamily(): Promise<Family>;
+  addCategory(
+    spaceId: string,
+    input: CreateFamilyCategoryInput,
+  ): Promise<Family>;
+  addMember(spaceId: string, input: CreateFamilyMemberInput): Promise<Family>;
+  createRecurringLine(
+    spaceId: string,
+    input: CreateRecurringLineInput,
+  ): Promise<Family>;
+  deleteCategory(spaceId: string, categoryId: string): Promise<Family>;
+  deleteMember(spaceId: string, memberId: string): Promise<Family>;
+  deleteRecurringLine(spaceId: string, lineId: string): Promise<Family>;
+  getFamily(spaceId: string): Promise<Family>;
   updateRecurringLine(
+    spaceId: string,
     lineId: string,
     input: UpdateRecurringLineInput,
   ): Promise<Family>;
