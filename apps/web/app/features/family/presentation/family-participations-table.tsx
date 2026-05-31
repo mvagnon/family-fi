@@ -183,6 +183,7 @@ function ParticipationMonthGroup({
   onToggle: () => void;
 }) {
   const { t } = useTranslation();
+  const familyFormat = useFamilyFormat();
   const toggleLabel = collapsed
     ? t("participations.table.expandMonth", { month: monthLabel })
     : t("participations.table.collapseMonth", { month: monthLabel });
@@ -211,9 +212,42 @@ function ParticipationMonthGroup({
                 <KeyboardArrowDownIcon fontSize="small" />
               )}
             </IconButton>
-            <Typography sx={{ fontWeight: 700, textTransform: "capitalize" }}>
-              {monthLabel}
-            </Typography>
+            <Box
+              sx={{
+                alignItems: { sm: "center", xs: "flex-start" },
+                display: "flex",
+                flexDirection: { sm: "row", xs: "column" },
+                gap: { sm: 1.5, xs: 0.25 },
+                justifyContent: "space-between",
+                minWidth: 0,
+                px: { md: 2, xs: 1 },
+              }}
+            >
+              <Typography
+                noWrap
+                sx={{
+                  fontWeight: 700,
+                  minWidth: 0,
+                  textTransform: "capitalize",
+                }}
+              >
+                {monthLabel}
+              </Typography>
+              <Typography
+                color="text.secondary"
+                noWrap
+                sx={{
+                  flexShrink: 0,
+                  fontSize: { sm: "0.8125rem", xs: "0.75rem" },
+                  fontWeight: 600,
+                }}
+                variant="body2"
+              >
+                {t("participations.table.total", {
+                  value: familyFormat.formatCurrency(group.total),
+                })}
+              </Typography>
+            </Box>
             <ParticipationAmountCell
               value={getIncomeAmount(group.lines)}
               weight={700}
@@ -249,6 +283,9 @@ function ParticipationMemberGroup({
   createdAtFormatter: Intl.DateTimeFormat;
   group: FamilyParticipationMemberMonthGroup;
 }) {
+  const { t } = useTranslation();
+  const familyFormat = useFamilyFormat();
+
   return (
     <Box>
       <Box
@@ -260,9 +297,34 @@ function ParticipationMemberGroup({
         })}
       >
         <Box aria-hidden="true" />
-        <Box sx={{ minWidth: 0, px: { md: 2, xs: 1 }, py: 1.25 }}>
-          <Typography sx={{ fontWeight: 700 }} noWrap>
+        <Box
+          sx={{
+            alignItems: { sm: "center", xs: "flex-start" },
+            display: "flex",
+            flexDirection: { sm: "row", xs: "column" },
+            gap: { sm: 1.5, xs: 0.25 },
+            justifyContent: "space-between",
+            minWidth: 0,
+            px: { md: 2, xs: 1 },
+            py: 1.25,
+          }}
+        >
+          <Typography sx={{ fontWeight: 700, minWidth: 0 }} noWrap>
             {group.member.name}
+          </Typography>
+          <Typography
+            color="text.secondary"
+            noWrap
+            sx={{
+              flexShrink: 0,
+              fontSize: { sm: "0.8125rem", xs: "0.75rem" },
+              fontWeight: 600,
+            }}
+            variant="body2"
+          >
+            {t("participations.table.total", {
+              value: familyFormat.formatCurrency(group.total),
+            })}
           </Typography>
         </Box>
         <ParticipationAmountCell
