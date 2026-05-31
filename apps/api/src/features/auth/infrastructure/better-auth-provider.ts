@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 
 import type { PrismaClient } from "../../../generated/prisma/client.js";
-import type { AuthProvider } from "../domain/auth.js";
+import type { AuthSession } from "../domain/auth.js";
 
 interface BetterAuthProviderOptions {
   baseUrl: string;
@@ -10,10 +10,15 @@ interface BetterAuthProviderOptions {
   trustedOrigins: string[];
 }
 
+export interface AuthHttpAdapter {
+  getSession(request: Request): Promise<AuthSession | null>;
+  handleAuthRequest(request: Request): Promise<Response> | Response;
+}
+
 export function createBetterAuthProvider(
   prisma: PrismaClient,
   options: BetterAuthProviderOptions,
-): AuthProvider {
+): AuthHttpAdapter {
   const auth = betterAuth({
     baseURL: options.baseUrl,
     database: prismaAdapter(prisma, {
@@ -47,6 +52,6 @@ export function createBetterAuthProvider(
         },
       };
     },
-    handleRequest: (request) => auth.handler(request),
+    handleAuthRequest: (request) => auth.handler(request),
   };
 }

@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 
-import type { AuthProvider } from "./features/auth/domain/auth.js";
 import { UnauthenticatedError } from "./features/auth/domain/auth.js";
+import type { AuthHttpAdapter } from "./features/auth/infrastructure/better-auth-provider.js";
 import { FamilyService } from "./features/family/application/family-service.js";
 import {
   FamilyEntityNotFoundError,
@@ -23,7 +23,7 @@ import {
 } from "./features/spaces/infrastructure/http/spaces-routes.js";
 
 interface CreateApiAppOptions {
-  authProvider: AuthProvider;
+  authProvider: AuthHttpAdapter;
   corsOrigin?: string;
   familyRepository: FamilyRepository;
   spaceRepository: SpaceRepository;
@@ -54,7 +54,7 @@ export function createApiApp({
       return context.text("Family-Fi API");
     })
     .on(["GET", "POST"], "/api/auth/*", (context) => {
-      return authProvider.handleRequest(context.req.raw);
+      return authProvider.handleAuthRequest(context.req.raw);
     })
     .route("/api/spaces", createSpacesRouter(spacesService, authProvider))
     .route("/api/me", createMeRouter(spacesService, authProvider))

@@ -2,8 +2,10 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import { validator } from "hono/validator";
 
-import type { AuthProvider } from "../../../auth/domain/auth.js";
-import { getAuthenticatedUser } from "../../../auth/infrastructure/http/current-user.js";
+import {
+  getAuthenticatedUser,
+  type AuthSessionReader,
+} from "../../../auth/infrastructure/http/current-user.js";
 import type { FamilyService } from "../../application/family-service.js";
 import {
   InvalidFamilyInputError,
@@ -23,7 +25,7 @@ interface FamilyRouteRequest {
 
 export function createFamilyRouter(
   service: FamilyService,
-  authProvider: AuthProvider,
+  authProvider: AuthSessionReader,
 ) {
   return new Hono()
     .get("/", async (context) => {
@@ -110,7 +112,7 @@ export function createFamilyRouter(
 
 async function getFamilyRouteRequest(
   context: Context,
-  authProvider: AuthProvider,
+  authProvider: AuthSessionReader,
 ): Promise<FamilyRouteRequest> {
   const user = await getAuthenticatedUser(context, authProvider);
 

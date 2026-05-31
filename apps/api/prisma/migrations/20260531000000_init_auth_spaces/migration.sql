@@ -1,3 +1,16 @@
+CREATE SCHEMA IF NOT EXISTS "public";
+
+CREATE TABLE "family" (
+  "id" TEXT NOT NULL,
+  "space_id" TEXT NOT NULL,
+  "members" JSONB NOT NULL,
+  "categories" JSONB NOT NULL,
+  "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updated_at" TIMESTAMP(3) NOT NULL,
+
+  CONSTRAINT "family_pkey" PRIMARY KEY ("id")
+);
+
 CREATE TABLE "user" (
   "id" TEXT NOT NULL,
   "name" TEXT NOT NULL,
@@ -81,6 +94,25 @@ CREATE TABLE "user_settings" (
   CONSTRAINT "user_settings_pkey" PRIMARY KEY ("user_id")
 );
 
+CREATE TABLE "recurring_lines" (
+  "id" TEXT NOT NULL,
+  "family_id" TEXT NOT NULL,
+  "title" TEXT NOT NULL,
+  "description" TEXT NOT NULL,
+  "category_id" TEXT NOT NULL,
+  "movement" TEXT NOT NULL,
+  "amount_cents" INTEGER NOT NULL,
+  "is_estimate" BOOLEAN NOT NULL,
+  "min_amount_cents" INTEGER,
+  "max_amount_cents" INTEGER,
+  "recurrence_months" INTEGER NOT NULL,
+  "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updated_at" TIMESTAMP(3) NOT NULL,
+
+  CONSTRAINT "recurring_lines_pkey" PRIMARY KEY ("id")
+);
+
+CREATE UNIQUE INDEX "family_space_id_key" ON "family"("space_id");
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 CREATE UNIQUE INDEX "session_token_key" ON "session"("token");
 CREATE INDEX "session_user_id_idx" ON "session"("user_id");
@@ -89,29 +121,12 @@ CREATE INDEX "verification_identifier_idx" ON "verification"("identifier");
 CREATE INDEX "space_membership_user_id_idx" ON "space_membership"("user_id");
 CREATE UNIQUE INDEX "space_membership_space_id_user_id_key" ON "space_membership"("space_id", "user_id");
 CREATE INDEX "user_settings_default_space_id_idx" ON "user_settings"("default_space_id");
+CREATE INDEX "recurring_lines_family_id_idx" ON "recurring_lines"("family_id");
 
-INSERT INTO "space" ("id", "name", "created_at", "updated_at")
-SELECT
-  CASE WHEN "id" = 'family-dev' THEN 'dev-personal-space' ELSE 'space-' || "id" END,
-  CASE WHEN "id" = 'family-dev' THEN 'Personal space' ELSE 'Migrated family space' END,
-  CURRENT_TIMESTAMP,
-  CURRENT_TIMESTAMP
-FROM "family"
-ON CONFLICT ("id") DO NOTHING;
-
-ALTER TABLE "family" ADD COLUMN "space_id" TEXT;
-
-UPDATE "family"
-SET "space_id" = CASE
-  WHEN "id" = 'family-dev' THEN 'dev-personal-space'
-  ELSE 'space-' || "id"
-END
-WHERE "space_id" IS NULL;
-
-ALTER TABLE "family" ALTER COLUMN "space_id" SET NOT NULL;
-ALTER TABLE "family" DROP COLUMN "user_ids";
-
-CREATE UNIQUE INDEX "family_space_id_key" ON "family"("space_id");
+ALTER TABLE "family"
+  ADD CONSTRAINT "family_space_id_fkey"
+  FOREIGN KEY ("space_id") REFERENCES "space"("id")
+  ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "session"
   ADD CONSTRAINT "session_user_id_fkey"
@@ -143,7 +158,7 @@ ALTER TABLE "user_settings"
   FOREIGN KEY ("default_space_id") REFERENCES "space"("id")
   ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE "family"
-  ADD CONSTRAINT "family_space_id_fkey"
-  FOREIGN KEY ("space_id") REFERENCES "space"("id")
+ALTER TABLE "recurring_lines"
+  ADD CONSTRAINT "recurring_lines_family_id_fkey"
+  FOREIGN KEY ("family_id") REFERENCES "family"("id")
   ON DELETE CASCADE ON UPDATE CASCADE;

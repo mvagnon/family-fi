@@ -1,11 +1,15 @@
 import type { Context } from "hono";
 
-import type { AuthenticatedUser, AuthProvider } from "../../domain/auth.js";
+import type { AuthenticatedUser, AuthSession } from "../../domain/auth.js";
 import { UnauthenticatedError } from "../../domain/auth.js";
+
+export interface AuthSessionReader {
+  getSession(request: Request): Promise<AuthSession | null>;
+}
 
 export async function getAuthenticatedUser(
   context: Context,
-  authProvider: AuthProvider,
+  authProvider: AuthSessionReader,
 ): Promise<AuthenticatedUser> {
   const session = await authProvider.getSession(context.req.raw);
 

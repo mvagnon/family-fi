@@ -1,32 +1,40 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { SignInWithEmailInput } from "../domain/auth";
 import type { AuthRepository } from "../domain/auth-repository";
 
+export const authQueryKeys = {
+  session: () => ["auth", "session"] as const,
+};
+
 export function useAuthSession(repository: AuthRepository) {
-  const session = repository.useSession();
+  const session = useQuery({
+    queryFn: () => repository.getSession(),
+    queryKey: authQueryKeys.session(),
+    retry: false,
+  });
 
   return {
     error: session.error,
-    isAuthenticated: !!session.data?.user,
+    isAuthenticated: !!session.data,
     isPending: session.isPending,
     isRefetching: session.isRefetching,
     refetch: session.refetch,
-    user: session.data?.user ?? null,
+    user: session.data ?? null,
   };
 }
 
 export function useSignInWithEmail(repository: AuthRepository) {
-  return useMutation({
-    mutationFn: async (input: SignInWithEmailInput) => {
-      const result = await repository.signIn.email({
-        email: input.email,
-        password: input.password,
-      });
+  const queryClient = useQueryClient();
 
-      if (result.error) {
-        throw new Error("Invalid email or password.");
-      }
+  return useMutation({
+    mutationFn: (input: SignInWithEmailInput) => {
+      return repository.signInWithEmail(input);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: authQueryKeys.session(),
+      });
     },
   });
 }

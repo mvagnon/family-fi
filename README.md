@@ -38,7 +38,8 @@ Then open `http://localhost:5173/login` and sign in with the development user
 Changes in `apps/web`, `apps/api`, and shared packages are mounted into the
 containers and reload without rebuilding the images.
 
-If dependencies change, recreate the Docker dependency volumes:
+If dependencies or the local Prisma migration history change, recreate the
+Docker volumes:
 
 ```bash
 docker compose down -v

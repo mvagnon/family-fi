@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { createApiApp } from "../../../../../app.js";
-import type { AuthProvider } from "../../../../auth/domain/auth.js";
+import type { AuthHttpAdapter } from "../../../../auth/infrastructure/better-auth-provider.js";
 import { createInMemorySpacesRepository } from "../../../../spaces/infrastructure/persistence/in-memory-spaces-repository.js";
 import { createInMemoryFamilyRepository } from "../../persistence/in-memory-family-repository.js";
 
@@ -207,7 +207,7 @@ function createTestApp() {
   });
 }
 
-function createTestAuthProvider(): AuthProvider {
+function createTestAuthProvider(): AuthHttpAdapter {
   return {
     async getSession(request) {
       const userId = request.headers.get("x-user-id");
@@ -224,7 +224,7 @@ function createTestAuthProvider(): AuthProvider {
         },
       };
     },
-    handleRequest: () => new Response(null, { status: 404 }),
+    handleAuthRequest: () => new Response(null, { status: 404 }),
   };
 }
 

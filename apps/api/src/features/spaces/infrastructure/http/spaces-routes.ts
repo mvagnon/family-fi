@@ -1,8 +1,10 @@
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 
-import type { AuthProvider } from "../../../auth/domain/auth.js";
-import { getAuthenticatedUser } from "../../../auth/infrastructure/http/current-user.js";
+import {
+  getAuthenticatedUser,
+  type AuthSessionReader,
+} from "../../../auth/infrastructure/http/current-user.js";
 import type { SpacesService } from "../../application/spaces-service.js";
 import {
   InvalidSpaceInputError,
@@ -12,7 +14,7 @@ import type { UpdateDefaultSpaceInput } from "../../domain/spaces.js";
 
 export function createSpacesRouter(
   service: SpacesService,
-  authProvider: AuthProvider,
+  authProvider: AuthSessionReader,
 ) {
   return new Hono().get("/", async (context) => {
     const user = await getAuthenticatedUser(context, authProvider);
@@ -23,7 +25,7 @@ export function createSpacesRouter(
 
 export function createMeRouter(
   service: SpacesService,
-  authProvider: AuthProvider,
+  authProvider: AuthSessionReader,
 ) {
   return new Hono()
     .get("/settings", async (context) => {
