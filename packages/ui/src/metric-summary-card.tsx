@@ -11,6 +11,7 @@ export interface MetricSummaryItem {
 }
 
 interface MetricSummaryCardProps {
+  action?: ReactNode;
   component?: ElementType;
   label: ReactNode;
   metrics: MetricSummaryItem[];
@@ -18,6 +19,7 @@ interface MetricSummaryCardProps {
 }
 
 export function MetricSummaryCard({
+  action,
   component = "section",
   label,
   metrics,
@@ -34,9 +36,24 @@ export function MetricSummaryCard({
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Typography color="text.secondary" variant="overline">
-        {label}
-      </Typography>
+      <Box
+        sx={{
+          alignItems: { sm: "flex-start", xs: "stretch" },
+          display: "grid",
+          gap: 1.5,
+          gridTemplateColumns: {
+            sm: action
+              ? "minmax(0, 1fr) minmax(220px, 320px)"
+              : "minmax(0, 1fr)",
+            xs: "minmax(0, 1fr)",
+          },
+        }}
+      >
+        <Typography color="text.secondary" variant="overline">
+          {label}
+        </Typography>
+        {action ? <Box>{action}</Box> : null}
+      </Box>
       <Box
         sx={{
           display: "grid",

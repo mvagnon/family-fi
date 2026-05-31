@@ -116,9 +116,8 @@ export function FamilyParticipationsDashboard({
       <AppShellContent>
         <FamilyParticipationsTable
           disabled={isSaving}
-          monthGroups={selectedParticipation?.monthGroups ?? []}
+          monthGroups={projection.monthGroups}
           onAddLine={handleAddLine}
-          selectedMember={selectedMember}
         />
         <FeedbackSnackbar
           key={localError ? `local-${localError.revision}` : mutationErrorKey}

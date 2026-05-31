@@ -20,9 +20,9 @@ import { useTranslation } from "react-i18next";
 
 import type {
   FamilyParticipationLine,
+  FamilyParticipationMemberMonthGroup,
   FamilyParticipationMonthGroup,
 } from "../domain/family-participations";
-import type { FamilyMember } from "../domain/family";
 import { familyBudgetTableHeaderTextSx } from "./family-budget-table-layout";
 import { useFamilyFormat } from "./use-family-format";
 
@@ -32,20 +32,18 @@ interface FamilyParticipationsTableProps {
   disabled?: boolean;
   monthGroups: FamilyParticipationMonthGroup[];
   onAddLine: () => void;
-  selectedMember: FamilyMember | null;
 }
 
 export function FamilyParticipationsTable({
   disabled = false,
   monthGroups,
   onAddLine,
-  selectedMember,
 }: FamilyParticipationsTableProps) {
   const { t, i18n } = useTranslation();
   const [collapsedMonthIds, setCollapsedMonthIds] = useState<Set<string>>(
     () => new Set(),
   );
-  const hasLines = monthGroups.some((group) => group.lines.length > 0);
+  const hasMembers = monthGroups.some((group) => group.memberGroups.length > 0);
   const formatter = useMemo(
     () =>
       new Intl.DateTimeFormat(i18n.resolvedLanguage ?? i18n.language, {
@@ -85,20 +83,14 @@ export function FamilyParticipationsTable({
         alignItems: { sm: "center", xs: "flex-start" },
         flexDirection: { sm: "row", xs: "column" },
       }}
-      subtitle={
-        selectedMember
-          ? t("participations.table.subtitle", { name: selectedMember.name })
-          : undefined
-      }
+      subtitle={t("participations.table.subtitle")}
       title={t("participations.table.title")}
       titleId="family-participations-table-title"
     >
-      {!hasLines ? (
-        <ParticipationsEmptyState selectedMember={selectedMember} />
-      ) : null}
+      {!hasMembers ? <ParticipationsEmptyState /> : null}
       <TableContainer
         sx={{
-          display: hasLines ? "block" : "none",
+          display: hasMembers ? "block" : "none",
           maxWidth: "100%",
           overflowX: "auto",
         }}
@@ -213,13 +205,57 @@ function ParticipationMonthGroup({
       <TableRow>
         <TableCell colSpan={2} sx={{ borderBottom: 0, p: 0 }}>
           <Collapse in={!collapsed} timeout="auto" unmountOnExit>
-            {group.lines.map((line) => (
-              <ParticipationLineRow key={line.line.id} line={line} />
+            {group.memberGroups.map((memberGroup) => (
+              <ParticipationMemberGroup
+                group={memberGroup}
+                key={memberGroup.id}
+              />
             ))}
           </Collapse>
         </TableCell>
       </TableRow>
     </Fragment>
+  );
+}
+
+function ParticipationMemberGroup({
+  group,
+}: {
+  group: FamilyParticipationMemberMonthGroup;
+}) {
+  const familyFormat = useFamilyFormat();
+
+  return (
+    <Box>
+      <Box
+        sx={(theme) => ({
+          alignItems: "center",
+          bgcolor: alpha(theme.palette.action.hover, 0.7),
+          borderTop: `1px solid ${theme.palette.divider}`,
+          display: "grid",
+          gridTemplateColumns: participationTableGridColumns,
+        })}
+      >
+        <Box sx={{ minWidth: 0, px: 2, py: 1.25 }}>
+          <Typography sx={{ fontWeight: 700 }} noWrap>
+            {group.member.name}
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            alignSelf: "center",
+            fontWeight: 700,
+            px: 2,
+            py: 1.25,
+          }}
+        >
+          {familyFormat.formatCurrency(group.total)}
+        </Box>
+      </Box>
+      {group.lines.map((line) => (
+        <ParticipationLineRow key={line.line.id} line={line} />
+      ))}
+    </Box>
   );
 }
 
@@ -234,8 +270,10 @@ function ParticipationLineRow({ line }: { line: FamilyParticipationLine }) {
         gridTemplateColumns: participationTableGridColumns,
       })}
     >
-      <Box sx={{ minWidth: 0, px: 2, py: 1.5 }}>
-        <Typography sx={{ fontWeight: 600 }}>{line.member.name}</Typography>
+      <Box sx={{ minWidth: 0, px: 2, py: 1.5, pl: { md: 4, xs: 3 } }}>
+        <Typography color="text.secondary" sx={{ fontWeight: 600 }} noWrap>
+          {line.member.name}
+        </Typography>
       </Box>
       <Box sx={{ alignSelf: "center", px: 2, py: 1.5 }}>
         {familyFormat.formatCurrency(line.monthlyValue)}
@@ -244,11 +282,7 @@ function ParticipationLineRow({ line }: { line: FamilyParticipationLine }) {
   );
 }
 
-function ParticipationsEmptyState({
-  selectedMember,
-}: {
-  selectedMember: FamilyMember | null;
-}) {
+function ParticipationsEmptyState() {
   const { t } = useTranslation();
 
   return (
@@ -285,11 +319,7 @@ function ParticipationsEmptyState({
         sx={{ maxWidth: 280, mt: 0.5 }}
         variant="body2"
       >
-        {selectedMember
-          ? t("participations.table.empty.description", {
-              name: selectedMember.name,
-            })
-          : t("participations.table.empty.noMember")}
+        {t("participations.table.empty.noMember")}
       </Typography>
     </Box>
   );

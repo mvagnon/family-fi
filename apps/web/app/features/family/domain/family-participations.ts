@@ -8,9 +8,17 @@ export interface FamilyParticipationLine {
   monthlyValue: number;
 }
 
+export interface FamilyParticipationMemberMonthGroup {
+  id: string;
+  lines: FamilyParticipationLine[];
+  member: FamilyMember;
+  total: number;
+}
+
 export interface FamilyParticipationMonthGroup {
   id: string;
   lines: FamilyParticipationLine[];
+  memberGroups: FamilyParticipationMemberMonthGroup[];
   monthIndex: number;
   total: number;
   year: number;
@@ -32,6 +40,7 @@ export interface FamilyMemberParticipation {
 export interface FamilyParticipationProjection {
   activeMembers: FamilyMember[];
   memberParticipations: FamilyMemberParticipation[];
+  monthGroups: FamilyParticipationMonthGroup[];
   selectableMembers: FamilyMember[];
   selectedMember: FamilyMember | null;
   selectedMemberParticipation: FamilyMemberParticipation | null;
@@ -68,7 +77,7 @@ export function getFamilyParticipationProjection(
     return {
       lines,
       member,
-      monthGroups: buildMonthGroups(lines, input.year),
+      monthGroups: buildMonthGroups(lines, [member], input.year),
       summary: getParticipationSummary(lines),
     };
   });
@@ -84,6 +93,11 @@ export function getFamilyParticipationProjection(
   return {
     activeMembers: family.members.filter((member) => member.isActive),
     memberParticipations,
+    monthGroups: buildMonthGroups(
+      participationLines,
+      family.members,
+      input.year,
+    ),
     selectableMembers: family.members,
     selectedMember,
     selectedMemberParticipation,
@@ -131,15 +145,33 @@ function getParticipationLines(
 
 function buildMonthGroups(
   lines: FamilyParticipationLine[],
+  members: FamilyMember[],
   year: number,
 ): FamilyParticipationMonthGroup[] {
   return monthIndexes.map((monthIndex) => {
     const month = monthIndex + 1;
     const monthLines = lines.filter((line) => line.line.month === month);
+    const monthId = `${year}-${String(month).padStart(2, "0")}`;
+    const memberGroups = members.map((member) => {
+      const memberLines = monthLines.filter(
+        (line) => line.member.id === member.id,
+      );
+
+      return {
+        id: `${monthId}-${member.id}`,
+        lines: memberLines,
+        member,
+        total: memberLines.reduce(
+          (total, line) => total + line.monthlyValue,
+          0,
+        ),
+      };
+    });
 
     return {
-      id: `${year}-${String(month).padStart(2, "0")}`,
+      id: monthId,
       lines: monthLines,
+      memberGroups,
       monthIndex,
       total: monthLines.reduce((total, line) => total + line.monthlyValue, 0),
       year,
@@ -151,11 +183,10 @@ function getParticipationSummary(
   lines: FamilyParticipationLine[],
 ): FamilyParticipationSummary {
   const expenses = lines.reduce((total, line) => total + line.line.amount, 0);
-  const averageExpenses = expenses / 12;
 
   return {
-    difference: -averageExpenses,
-    expenses: averageExpenses,
+    difference: -expenses,
+    expenses,
     income: 0,
   };
 }

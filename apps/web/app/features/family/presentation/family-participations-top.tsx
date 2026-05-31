@@ -95,7 +95,11 @@ export function FamilyParticipationsTop({
               <KeyboardArrowRightIcon />
             </IconButton>
           </Stack>
+        </Stack>
+      </Paper>
 
+      <MetricSummaryCard
+        action={
           <TextField
             disabled={members.length === 0}
             fullWidth
@@ -107,6 +111,7 @@ export function FamilyParticipationsTop({
             label={t("participations.top.memberLabel")}
             onChange={(event) => onMemberChange(event.target.value)}
             select
+            size="small"
             value={selectedMember?.id ?? ""}
           >
             {members.map((member) => (
@@ -131,10 +136,7 @@ export function FamilyParticipationsTop({
               </MenuItem>
             ))}
           </TextField>
-        </Stack>
-      </Paper>
-
-      <MetricSummaryCard
+        }
         label={t("participations.top.averageMetrics")}
         metrics={[
           {
