@@ -9,10 +9,10 @@ import ListItemText from "@mui/material/ListItemText";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Skeleton from "@mui/material/Skeleton";
+import type { Theme } from "@mui/material/styles";
+import { alpha } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import { FeedbackSnackbar } from "@repo/ui/feedback-snackbar";
-import { alpha } from "@mui/material/styles";
-import type { Theme } from "@mui/material/styles";
 import { useState, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -71,7 +71,7 @@ export function AccountMenu({ repository }: AccountMenuProps) {
           <Avatar
             alt={userLabel}
             src={session.user.image ?? undefined}
-            sx={{ height: 34, width: 34 }}
+            sx={{ height: 34, width: 34, fontSize: 15 }}
           >
             {getUserInitials(session.user)}
           </Avatar>

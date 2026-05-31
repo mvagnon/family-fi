@@ -3,16 +3,14 @@ import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
-import ListItemText from "@mui/material/ListItemText";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import Skeleton from "@mui/material/Skeleton";
-import Typography from "@mui/material/Typography";
 import { LoadingButton } from "@repo/ui/loading-button";
 import { useTranslation } from "react-i18next";
 
-import type { SpaceSummary } from "../domain/spaces";
 import { useActiveSpace } from "./active-space-provider";
+import { SpaceSelectOptionLabel } from "./space-select-option-label";
 
 export function SpaceSwitcher() {
   const { t } = useTranslation();
@@ -62,6 +60,13 @@ export function SpaceSwitcher() {
     );
   }
 
+  if (spaces.length === 1) {
+    return null;
+  }
+
+  const selectedSpace =
+    spaces.find((space) => space.id === activeSpaceId) ?? null;
+
   return (
     <Box sx={{ pb: 1.25 }}>
       <FormControl fullWidth size="small">
@@ -69,39 +74,26 @@ export function SpaceSwitcher() {
           {t("spaces.switcher.label")}
         </InputLabel>
         <Select
-          disabled={spaces.length < 2 || isFetching}
           id="active-space-select"
           label={t("spaces.switcher.label")}
           labelId="active-space-select-label"
           onChange={(event) => selectSpace(event.target.value)}
+          renderValue={() =>
+            selectedSpace ? (
+              <SpaceSelectOptionLabel space={selectedSpace} />
+            ) : (
+              ""
+            )
+          }
           value={activeSpaceId ?? ""}
         >
           {spaces.map((space) => (
             <MenuItem key={space.id} value={space.id}>
-              <SpaceOptionLabel space={space} />
+              <SpaceSelectOptionLabel space={space} />
             </MenuItem>
           ))}
         </Select>
       </FormControl>
     </Box>
-  );
-}
-
-function SpaceOptionLabel({ space }: { space: SpaceSummary }) {
-  const { t } = useTranslation();
-
-  return (
-    <ListItemText
-      primary={
-        <Typography noWrap variant="body2">
-          {space.name}
-        </Typography>
-      }
-      secondary={
-        <Typography color="text.secondary" noWrap variant="caption">
-          {t(`spaces.roles.${space.role}`)}
-        </Typography>
-      }
-    />
   );
 }

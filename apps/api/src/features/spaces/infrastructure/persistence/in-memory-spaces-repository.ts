@@ -10,6 +10,7 @@ interface InMemoryMembership {
 interface InMemorySpace {
   id: string;
   name: string;
+  ownerEmail?: string;
 }
 
 interface InMemorySpacesRepositoryOptions {
@@ -46,10 +47,19 @@ export function createInMemorySpacesRepository(
         .filter((membership) => membership.userId === userId)
         .map((membership): SpaceSummary => {
           const space = spaces.get(membership.spaceId);
+          const ownerMembership = memberships.find(
+            (candidate) =>
+              candidate.spaceId === membership.spaceId &&
+              candidate.role === "owner",
+          );
 
           return {
             id: membership.spaceId,
             name: space?.name ?? membership.spaceId,
+            ownerEmail:
+              space?.ownerEmail ??
+              ownerMembership?.userId ??
+              membership.spaceId,
             role: membership.role,
           };
         });

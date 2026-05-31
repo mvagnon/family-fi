@@ -7,7 +7,6 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import Skeleton from "@mui/material/Skeleton";
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 import { FeedbackSnackbar } from "@repo/ui/feedback-snackbar";
 import { LoadingButton } from "@repo/ui/loading-button";
 import { SectionPanel } from "@repo/ui/section-panel";
@@ -16,8 +15,8 @@ import { useTranslation } from "react-i18next";
 
 import { useUpdateDefaultSpace } from "../application/space-queries";
 import type { SpaceRepository } from "../domain/space-repository";
-import type { SpaceSummary } from "../domain/spaces";
 import { useActiveSpace } from "./active-space-provider";
+import { SpaceSelectOptionLabel } from "./space-select-option-label";
 
 interface DefaultSpaceSettingsProps {
   repository: SpaceRepository;
@@ -27,14 +26,8 @@ export function DefaultSpaceSettings({
   repository,
 }: DefaultSpaceSettingsProps) {
   const { t } = useTranslation();
-  const {
-    defaultSpaceId,
-    error,
-    isFetching,
-    isPending,
-    refetch,
-    spaces,
-  } = useActiveSpace();
+  const { defaultSpaceId, error, isFetching, isPending, refetch, spaces } =
+    useActiveSpace();
   const updateDefaultSpace = useUpdateDefaultSpace(repository);
   const persistedDefaultSpaceId = useMemo(
     () =>
@@ -120,7 +113,7 @@ export function DefaultSpaceSettings({
                   </MenuItem>
                   {spaces.map((space) => (
                     <MenuItem key={space.id} value={space.id}>
-                      <DefaultSpaceOptionLabel space={space} />
+                      <SpaceSelectOptionLabel space={space} variant="body1" />
                     </MenuItem>
                   ))}
                 </Select>
@@ -148,20 +141,5 @@ export function DefaultSpaceSettings({
         }
       />
     </>
-  );
-}
-
-function DefaultSpaceOptionLabel({ space }: { space: SpaceSummary }) {
-  const { t } = useTranslation();
-
-  return (
-    <Box sx={{ minWidth: 0 }}>
-      <Typography noWrap variant="body1">
-        {space.name}
-      </Typography>
-      <Typography color="text.secondary" noWrap variant="body2">
-        {t(`spaces.roles.${space.role}`)}
-      </Typography>
-    </Box>
   );
 }

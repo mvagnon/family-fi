@@ -38,7 +38,22 @@ export class PrismaSpacesRepository implements SpaceRepository {
   async listSpacesForUser(userId: string): Promise<SpaceSummary[]> {
     const memberships = await this.prisma.spaceMembership.findMany({
       include: {
-        space: true,
+        space: {
+          include: {
+            memberships: {
+              include: {
+                user: true,
+              },
+              orderBy: {
+                createdAt: "asc",
+              },
+              take: 1,
+              where: {
+                role: "owner",
+              },
+            },
+          },
+        },
       },
       orderBy: {
         createdAt: "asc",
@@ -51,6 +66,8 @@ export class PrismaSpacesRepository implements SpaceRepository {
     return memberships.map((membership) => ({
       id: membership.space.id,
       name: membership.space.name,
+      ownerEmail:
+        membership.space.memberships[0]?.user.email ?? membership.space.name,
       role: toSpaceRole(membership.role),
     }));
   }
