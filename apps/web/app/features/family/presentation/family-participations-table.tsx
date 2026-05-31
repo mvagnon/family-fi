@@ -214,11 +214,10 @@ function ParticipationMonthGroup({
             </IconButton>
             <Box
               sx={{
-                alignItems: { sm: "center", xs: "flex-start" },
+                alignItems: "baseline",
                 display: "flex",
-                flexDirection: { sm: "row", xs: "column" },
-                gap: { sm: 1.5, xs: 0.25 },
-                justifyContent: "space-between",
+                gap: 1,
+                justifyContent: "flex-start",
                 minWidth: 0,
                 px: { md: 2, xs: 1 },
               }}
@@ -299,11 +298,10 @@ function ParticipationMemberGroup({
         <Box aria-hidden="true" />
         <Box
           sx={{
-            alignItems: { sm: "center", xs: "flex-start" },
+            alignItems: "baseline",
             display: "flex",
-            flexDirection: { sm: "row", xs: "column" },
-            gap: { sm: 1.5, xs: 0.25 },
-            justifyContent: "space-between",
+            gap: 1,
+            justifyContent: "flex-start",
             minWidth: 0,
             px: { md: 2, xs: 1 },
             py: 1.25,
@@ -318,7 +316,7 @@ function ParticipationMemberGroup({
             sx={{
               flexShrink: 0,
               fontSize: { sm: "0.8125rem", xs: "0.75rem" },
-              fontWeight: 600,
+              fontWeight: 700,
             }}
             variant="body2"
           >
@@ -329,11 +327,11 @@ function ParticipationMemberGroup({
         </Box>
         <ParticipationAmountCell
           value={getIncomeAmount(group.lines)}
-          weight={600}
+          weight={700}
         />
         <ParticipationAmountCell
           value={getExpenseAmount(group.lines)}
-          weight={600}
+          weight={700}
         />
       </Box>
       {group.lines.length > 0 ? (
