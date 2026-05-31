@@ -5,6 +5,7 @@ import { FormDialog } from "@repo/ui/form-dialog";
 import { useTranslation } from "react-i18next";
 
 import type { CreateFamilyMemberInput } from "../domain/family";
+import { getFormTextValue } from "./family-form-values";
 
 interface FamilyMemberModalProps {
   isSaving?: boolean;
@@ -27,11 +28,7 @@ export function FamilyMemberModal({
     const formData = new FormData(event.currentTarget);
 
     onSave({
-      name: getStringValue(
-        formData,
-        "name",
-        t("family.memberModal.defaultName"),
-      ),
+      name: getFormTextValue(formData, "name"),
     });
   }
 
@@ -48,7 +45,6 @@ export function FamilyMemberModal({
       <Stack spacing={2} sx={{ pt: 1 }}>
         <TextField
           autoFocus
-          defaultValue={t("family.memberModal.defaultName")}
           disabled={isSaving}
           fullWidth
           id="new-member-name"
@@ -58,18 +54,4 @@ export function FamilyMemberModal({
       </Stack>
     </FormDialog>
   );
-}
-
-function getStringValue(
-  formData: FormData,
-  name: string,
-  fallback: string,
-): string {
-  const value = formData.get(name);
-
-  if (typeof value !== "string") {
-    return fallback;
-  }
-
-  return value.trim() || fallback;
 }

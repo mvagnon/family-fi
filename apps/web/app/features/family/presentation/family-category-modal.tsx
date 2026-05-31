@@ -5,6 +5,7 @@ import { FormDialog } from "@repo/ui/form-dialog";
 import { useTranslation } from "react-i18next";
 
 import type { CreateFamilyCategoryInput } from "../domain/family";
+import { getFormTextValue } from "./family-form-values";
 
 interface FamilyCategoryModalProps {
   isSaving?: boolean;
@@ -27,11 +28,7 @@ export function FamilyCategoryModal({
     const formData = new FormData(event.currentTarget);
 
     onSave({
-      label: getStringValue(
-        formData,
-        "label",
-        t("family.categoryModal.defaultLabel"),
-      ),
+      label: getFormTextValue(formData, "label"),
     });
   }
 
@@ -48,7 +45,6 @@ export function FamilyCategoryModal({
       <Stack spacing={2} sx={{ pt: 1 }}>
         <TextField
           autoFocus
-          defaultValue={t("family.categoryModal.defaultLabel")}
           disabled={isSaving}
           fullWidth
           id="new-category-label"
@@ -58,18 +54,4 @@ export function FamilyCategoryModal({
       </Stack>
     </FormDialog>
   );
-}
-
-function getStringValue(
-  formData: FormData,
-  name: string,
-  fallback: string,
-): string {
-  const value = formData.get(name);
-
-  if (typeof value !== "string") {
-    return fallback;
-  }
-
-  return value.trim() || fallback;
 }

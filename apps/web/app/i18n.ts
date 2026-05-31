@@ -86,7 +86,6 @@ export const resources = {
           title: "Recurring budget",
         },
         categoryModal: {
-          defaultLabel: "New category",
           label: "Name",
           title: "Add category",
         },
@@ -159,7 +158,6 @@ export const resources = {
           duplicateMemberName: "A member with this name already exists.",
         },
         memberModal: {
-          defaultName: "Camille",
           label: "Name",
           title: "Add member",
         },
@@ -269,7 +267,6 @@ export const resources = {
           title: "Budget récurrent",
         },
         categoryModal: {
-          defaultLabel: "Nouvelle catégorie",
           label: "Nom",
           title: "Ajouter une catégorie",
         },
@@ -342,7 +339,6 @@ export const resources = {
           duplicateMemberName: "Un membre avec ce nom existe déjà.",
         },
         memberModal: {
-          defaultName: "Camille",
           label: "Nom",
           title: "Ajouter un membre",
         },
@@ -451,7 +447,6 @@ export const resources = {
           title: "定期予算",
         },
         categoryModal: {
-          defaultLabel: "新しいカテゴリ",
           label: "名前",
           title: "カテゴリを追加",
         },
@@ -521,7 +516,6 @@ export const resources = {
           duplicateMemberName: "同じ名前のメンバーがすでに存在します。",
         },
         memberModal: {
-          defaultName: "Camille",
           label: "名前",
           title: "メンバーを追加",
         },
