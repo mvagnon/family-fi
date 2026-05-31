@@ -33,7 +33,7 @@ export function FamilyParticipationsTop({
         display: "grid",
         gap: 1.5,
         gridTemplateColumns: {
-          md: "minmax(280px, 0.7fr) minmax(0, 1fr)",
+          md: "max-content minmax(0, 1fr)",
           xs: "minmax(0, 1fr)",
         },
       }}
@@ -44,8 +44,12 @@ export function FamilyParticipationsTop({
           bgcolor: "background.paper",
           display: "grid",
           justifyItems: "center",
-          p: { md: 2.5, xs: 2 },
+          justifySelf: "start",
+          maxWidth: "100%",
+          px: { md: 3, xs: 2.5 },
+          py: { md: 2.5, xs: 2 },
           textAlign: "center",
+          width: "fit-content",
         }}
       >
         <Typography
