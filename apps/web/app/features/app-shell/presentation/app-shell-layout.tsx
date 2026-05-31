@@ -110,8 +110,8 @@ const appShellLayoutGridSx = {
   columnGap: 2.5,
   display: "grid",
   gridTemplateAreas: {
-    lg: `"top top" "content navigation" "content widgets"`,
-    xl: `"top top top" "navigation content widgets"`,
+    lg: `"top navigation" "content navigation" "content widgets"`,
+    xl: `"navigation top top" "navigation content widgets"`,
     xs: `"navigation" "top" "content" "widgets"`,
   },
   gridTemplateColumns: {
