@@ -30,6 +30,9 @@ const participationTableGridColumns = {
   md: "44px minmax(180px, 1fr) minmax(112px, 140px) minmax(112px, 140px)",
   xs: "40px minmax(128px, 1fr) minmax(92px, 112px) minmax(92px, 112px)",
 };
+const participationTableRowPaddingSx = {
+  px: { md: 1, xs: 0.5 },
+};
 const participationHeaderTextSx = {
   ...familyBudgetTableHeaderTextSx,
   px: { md: 2, xs: 1 },
@@ -133,6 +136,7 @@ export function FamilyParticipationsTable({
                     display: "grid",
                     gridTemplateColumns: participationTableGridColumns,
                     pb: 1,
+                    ...participationTableRowPaddingSx,
                   }}
                 >
                   <Box aria-hidden="true" />
@@ -199,6 +203,7 @@ function ParticipationMonthGroup({
               display: "grid",
               gridTemplateColumns: participationTableGridColumns,
               py: 0.85,
+              ...participationTableRowPaddingSx,
             })}
           >
             <IconButton
@@ -293,6 +298,7 @@ function ParticipationMemberGroup({
           borderTop: `1px solid ${theme.palette.divider}`,
           display: "grid",
           gridTemplateColumns: participationTableGridColumns,
+          ...participationTableRowPaddingSx,
         })}
       >
         <Box aria-hidden="true" />
@@ -358,6 +364,7 @@ function ParticipationEmptyLine() {
         borderTop: `1px solid ${theme.palette.divider}`,
         display: "grid",
         gridTemplateColumns: participationTableGridColumns,
+        ...participationTableRowPaddingSx,
       })}
     >
       <Box aria-hidden="true" />
@@ -385,6 +392,7 @@ function ParticipationLineRow({
         borderTop: `1px solid ${theme.palette.divider}`,
         display: "grid",
         gridTemplateColumns: participationTableGridColumns,
+        ...participationTableRowPaddingSx,
       })}
     >
       <Box aria-hidden="true" />
