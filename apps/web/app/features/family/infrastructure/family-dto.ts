@@ -74,6 +74,7 @@ function parseParticipationLine(value: unknown): ParticipationLine {
 
   return {
     amount: getNonZeroNumber(line, "amount"),
+    createdAt: getDateString(line, "createdAt"),
     id: getString(line, "id"),
     memberId: getString(line, "memberId"),
     month: getMonth(line),
@@ -142,6 +143,16 @@ function getString(value: Record<string, unknown>, key: string): string {
   const item = value[key];
 
   if (typeof item === "string") {
+    return item;
+  }
+
+  throw new FamilyApiError(invalidFamilyMessage);
+}
+
+function getDateString(value: Record<string, unknown>, key: string): string {
+  const item = getString(value, key);
+
+  if (!Number.isNaN(Date.parse(item))) {
     return item;
   }
 

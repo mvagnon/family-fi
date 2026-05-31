@@ -317,6 +317,7 @@ function toFamilySnapshot(family: FamilyRecord): FamilySnapshot {
 function toParticipationLineCreateInput(line: ParticipationLine) {
   return {
     amountCents: toCents(line.amount),
+    createdAt: new Date(line.createdAt),
     id: line.id,
     memberId: line.memberId,
     month: line.month,
@@ -327,6 +328,7 @@ function toParticipationLineCreateInput(line: ParticipationLine) {
 function toParticipationLine(line: ParticipationLineRecord): ParticipationLine {
   return {
     amount: fromCents(line.amountCents),
+    createdAt: line.createdAt.toISOString(),
     id: line.id,
     memberId: line.memberId,
     month: line.month,

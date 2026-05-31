@@ -33,6 +33,7 @@ export interface RecurringLine {
 
 export interface ParticipationLine {
   id: string;
+  createdAt: string;
   memberId: string;
   amount: number;
   year: number;
@@ -62,7 +63,10 @@ export type CreateRecurringLineInput = Omit<RecurringLine, "id">;
 
 export type UpdateRecurringLineInput = Omit<RecurringLine, "id">;
 
-export type CreateParticipationLineInput = Omit<ParticipationLine, "id">;
+export type CreateParticipationLineInput = Omit<
+  ParticipationLine,
+  "createdAt" | "id"
+>;
 
 const recurringLineBaseInputSchema = z.object({
   categoryId: requiredTextSchema("Recurring line category is required."),

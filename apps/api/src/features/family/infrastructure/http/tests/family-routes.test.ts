@@ -155,9 +155,12 @@ test("family routes create participation lines for active members", async () => 
   );
 
   assert.equal(response.status, 201);
-  assert.equal(line?.amount, 42.5);
-  assert.equal(line?.month, 5);
-  assert.equal(line?.year, year);
+  assert.ok(line);
+  assert.equal(line.amount, 42.5);
+  assert.equal(typeof line.createdAt, "string");
+  assert.ok(!Number.isNaN(Date.parse(line.createdAt)));
+  assert.equal(line.month, 5);
+  assert.equal(line.year, year);
 
   const expenseResponse = await authenticatedRequest(
     app,

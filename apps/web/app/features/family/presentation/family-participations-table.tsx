@@ -26,10 +26,16 @@ import type {
 import { familyBudgetTableHeaderTextSx } from "./family-budget-table-layout";
 import { useFamilyFormat } from "./use-family-format";
 
-const participationTableGridColumns = "minmax(220px, 1fr) 160px 160px";
-const participationMonthGridColumns = "40px minmax(180px, 1fr) 160px 160px";
-const participationAmountHeaderTextSx = {
+const participationTableGridColumns = {
+  md: "44px minmax(180px, 1fr) minmax(112px, 140px) minmax(112px, 140px)",
+  xs: "40px minmax(128px, 1fr) minmax(92px, 112px) minmax(92px, 112px)",
+};
+const participationHeaderTextSx = {
   ...familyBudgetTableHeaderTextSx,
+  px: { md: 2, xs: 1 },
+};
+const participationAmountHeaderTextSx = {
+  ...participationHeaderTextSx,
   textAlign: "right",
 };
 
@@ -50,10 +56,18 @@ export function FamilyParticipationsTable({
   );
   const hasLines = monthGroups.some((group) => group.lines.length > 0);
   const hasMembers = monthGroups.some((group) => group.memberGroups.length > 0);
-  const formatter = useMemo(
+  const monthFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat(i18n.resolvedLanguage ?? i18n.language, {
         month: "long",
+      }),
+    [i18n.language, i18n.resolvedLanguage],
+  );
+  const createdAtFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(i18n.resolvedLanguage ?? i18n.language, {
+        dateStyle: "short",
+        timeStyle: "short",
       }),
     [i18n.language, i18n.resolvedLanguage],
   );
@@ -106,21 +120,23 @@ export function FamilyParticipationsTable({
           sx={{
             borderCollapse: "separate",
             borderSpacing: 0,
-            minWidth: 700,
+            minWidth: { sm: 560, xs: 520 },
+            width: "100%",
           }}
         >
           <TableHead>
             <TableRow>
-              <TableCell colSpan={3} sx={{ p: 0 }}>
+              <TableCell colSpan={4} sx={{ p: 0 }}>
                 <Box
                   sx={{
-                    backgroundColor: "Background",
+                    backgroundColor: "background.paper",
                     display: "grid",
                     gridTemplateColumns: participationTableGridColumns,
                     pb: 1,
                   }}
                 >
-                  <Typography sx={familyBudgetTableHeaderTextSx}>
+                  <Box aria-hidden="true" />
+                  <Typography sx={participationHeaderTextSx}>
                     {t("participations.table.columns.member")}
                   </Typography>
                   <Typography sx={participationAmountHeaderTextSx}>
@@ -137,9 +153,10 @@ export function FamilyParticipationsTable({
             {monthGroups.map((group) => (
               <ParticipationMonthGroup
                 collapsed={collapsedMonthIds.has(group.id)}
+                createdAtFormatter={createdAtFormatter}
                 group={group}
                 key={group.id}
-                monthLabel={formatter.format(
+                monthLabel={monthFormatter.format(
                   new Date(group.year, group.monthIndex, 1),
                 )}
                 onToggle={() => toggleMonth(group.id)}
@@ -154,11 +171,13 @@ export function FamilyParticipationsTable({
 
 function ParticipationMonthGroup({
   collapsed,
+  createdAtFormatter,
   group,
   monthLabel,
   onToggle,
 }: {
   collapsed: boolean;
+  createdAtFormatter: Intl.DateTimeFormat;
   group: FamilyParticipationMonthGroup;
   monthLabel: string;
   onToggle: () => void;
@@ -171,15 +190,13 @@ function ParticipationMonthGroup({
   return (
     <Fragment>
       <TableRow>
-        <TableCell colSpan={3} component="th" scope="rowgroup" sx={{ p: 0 }}>
+        <TableCell colSpan={4} component="th" scope="rowgroup" sx={{ p: 0 }}>
           <Box
             sx={(theme) => ({
               alignItems: "center",
               bgcolor: alpha(theme.palette.primary.main, 0.08),
               display: "grid",
-              gap: 1,
-              gridTemplateColumns: participationMonthGridColumns,
-              px: { md: 2, xs: 1.5 },
+              gridTemplateColumns: participationTableGridColumns,
               py: 0.85,
             })}
           >
@@ -209,10 +226,11 @@ function ParticipationMonthGroup({
         </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell colSpan={3} sx={{ borderBottom: 0, p: 0 }}>
+        <TableCell colSpan={4} sx={{ borderBottom: 0, p: 0 }}>
           <Collapse in={!collapsed} timeout="auto" unmountOnExit>
             {group.memberGroups.map((memberGroup) => (
               <ParticipationMemberGroup
+                createdAtFormatter={createdAtFormatter}
                 group={memberGroup}
                 key={memberGroup.id}
               />
@@ -225,8 +243,10 @@ function ParticipationMonthGroup({
 }
 
 function ParticipationMemberGroup({
+  createdAtFormatter,
   group,
 }: {
+  createdAtFormatter: Intl.DateTimeFormat;
   group: FamilyParticipationMemberMonthGroup;
 }) {
   return (
@@ -239,7 +259,8 @@ function ParticipationMemberGroup({
           gridTemplateColumns: participationTableGridColumns,
         })}
       >
-        <Box sx={{ minWidth: 0, px: 2, py: 1.25 }}>
+        <Box aria-hidden="true" />
+        <Box sx={{ minWidth: 0, px: { md: 2, xs: 1 }, py: 1.25 }}>
           <Typography sx={{ fontWeight: 700 }} noWrap>
             {group.member.name}
           </Typography>
@@ -249,7 +270,11 @@ function ParticipationMemberGroup({
       </Box>
       {group.lines.length > 0 ? (
         group.lines.map((line) => (
-          <ParticipationLineRow key={line.line.id} line={line} />
+          <ParticipationLineRow
+            createdAtFormatter={createdAtFormatter}
+            key={line.line.id}
+            line={line}
+          />
         ))
       ) : (
         <ParticipationEmptyLine />
@@ -269,7 +294,8 @@ function ParticipationEmptyLine() {
         gridTemplateColumns: participationTableGridColumns,
       })}
     >
-      <Box sx={{ minWidth: 0, px: 2, py: 1.25, pl: { md: 4, xs: 3 } }}>
+      <Box aria-hidden="true" />
+      <Box sx={{ minWidth: 0, px: { md: 2, xs: 1 }, py: 1.25 }}>
         <Typography color="text.secondary" variant="body2">
           {t("participations.table.empty.memberLines")}
         </Typography>
@@ -280,7 +306,13 @@ function ParticipationEmptyLine() {
   );
 }
 
-function ParticipationLineRow({ line }: { line: FamilyParticipationLine }) {
+function ParticipationLineRow({
+  createdAtFormatter,
+  line,
+}: {
+  createdAtFormatter: Intl.DateTimeFormat;
+  line: FamilyParticipationLine;
+}) {
   return (
     <Box
       sx={(theme) => ({
@@ -289,16 +321,17 @@ function ParticipationLineRow({ line }: { line: FamilyParticipationLine }) {
         gridTemplateColumns: participationTableGridColumns,
       })}
     >
-      <Box sx={{ minWidth: 0, px: 2, py: 1.5, pl: { md: 4, xs: 3 } }}>
+      <Box aria-hidden="true" />
+      <Box sx={{ minWidth: 0, px: { md: 2, xs: 1 }, py: 1.5 }}>
         <Typography color="text.secondary" sx={{ fontWeight: 600 }} noWrap>
-          {line.member.name}
+          {createdAtFormatter.format(new Date(line.line.createdAt))}
         </Typography>
       </Box>
       <ParticipationAmountCell
         value={line.line.amount > 0 ? line.line.amount : null}
       />
       <ParticipationAmountCell
-        value={line.line.amount < 0 ? line.line.amount : null}
+        value={line.line.amount < 0 ? Math.abs(line.line.amount) : null}
       />
     </Box>
   );
@@ -317,16 +350,15 @@ function ParticipationAmountCell({
     <Box
       sx={{
         alignSelf: "center",
+        fontSize: { sm: "0.875rem", xs: "0.8125rem" },
         fontWeight: weight,
-        px: 2,
+        px: { md: 2, xs: 1 },
         py: 1.25,
         textAlign: "right",
         whiteSpace: "nowrap",
       }}
     >
-      {value === null || value === 0
-        ? null
-        : familyFormat.formatCurrency(value)}
+      {value === null ? null : familyFormat.formatCurrency(value)}
     </Box>
   );
 }
@@ -340,7 +372,7 @@ function getIncomeAmount(lines: FamilyParticipationLine[]): number {
 
 function getExpenseAmount(lines: FamilyParticipationLine[]): number {
   return lines.reduce(
-    (total, line) => total + Math.min(line.line.amount, 0),
+    (total, line) => total + Math.abs(Math.min(line.line.amount, 0)),
     0,
   );
 }

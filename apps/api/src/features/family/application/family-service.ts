@@ -216,7 +216,8 @@ export class FamilyService {
       input.month,
       "Participation month is invalid.",
     );
-    const currentYear = new Date().getFullYear();
+    const createdAt = new Date();
+    const currentYear = createdAt.getFullYear();
 
     if (year > currentYear) {
       throw new InvalidFamilyInputError("Participation year is invalid.");
@@ -228,6 +229,7 @@ export class FamilyService {
 
     const line: ParticipationLine = {
       amount,
+      createdAt: createdAt.toISOString(),
       id: this.createUniqueId(
         "participation",
         `${member.name}-${year}-${month}`,
