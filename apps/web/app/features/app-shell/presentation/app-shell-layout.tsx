@@ -20,12 +20,23 @@ interface AppShellHeaderProps {
 
 interface AppShellLayoutProps {
   authRepository: AuthRepository;
+  showRouteContent?: boolean;
+  showSpaceSwitcher?: boolean;
 }
 
-export function AppShellLayout({ authRepository }: AppShellLayoutProps) {
+export function AppShellLayout({
+  authRepository,
+  showRouteContent = true,
+  showSpaceSwitcher = true,
+}: AppShellLayoutProps) {
   const navigation = useMemo(
-    () => <AppSidebarNavigation authRepository={authRepository} />,
-    [authRepository],
+    () => (
+      <AppSidebarNavigation
+        authRepository={authRepository}
+        showSpaceSwitcher={showSpaceSwitcher}
+      />
+    ),
+    [authRepository, showSpaceSwitcher],
   );
 
   return (
@@ -33,7 +44,7 @@ export function AppShellLayout({ authRepository }: AppShellLayoutProps) {
       <Stack spacing={{ md: 2.5, xs: 2 }}>
         <Box sx={appShellLayoutGridSx}>
           <Box sx={appShellNavigationAreaSx}>{navigation}</Box>
-          <Outlet />
+          {showRouteContent ? <Outlet /> : null}
         </Box>
       </Stack>
     </Box>

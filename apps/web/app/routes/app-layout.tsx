@@ -5,8 +5,20 @@ import { ActiveSpaceProvider } from "~/features/spaces/presentation/active-space
 import { spacesHttpRepository } from "~/features/spaces/infrastructure/spaces-http-repository";
 
 export default function AppLayoutRoute() {
+  const sessionFallback = (
+    <AppShellLayout
+      authRepository={authClient}
+      showRouteContent={false}
+      showSpaceSwitcher={false}
+    />
+  );
+
   return (
-    <AuthenticatedRoute client={authClient}>
+    <AuthenticatedRoute
+      client={authClient}
+      errorFallback={sessionFallback}
+      pendingFallback={sessionFallback}
+    >
       <ActiveSpaceProvider repository={spacesHttpRepository}>
         <AppShellLayout authRepository={authClient} />
       </ActiveSpaceProvider>

@@ -52,10 +52,12 @@ interface SidebarNavigationItem {
 
 interface AppSidebarNavigationProps {
   authRepository: AuthRepository;
+  showSpaceSwitcher?: boolean;
 }
 
 export const AppSidebarNavigation = memo(function AppSidebarNavigation({
   authRepository,
+  showSpaceSwitcher = true,
 }: AppSidebarNavigationProps) {
   const { t } = useTranslation();
 
@@ -69,7 +71,7 @@ export const AppSidebarNavigation = memo(function AppSidebarNavigation({
       titleId="app-navigation-title"
       titleVariant="h3"
     >
-      <SpaceSwitcher />
+      {showSpaceSwitcher ? <SpaceSwitcher /> : null}
       <List aria-label={t("appShell.navigation.ariaLabel")} disablePadding>
         {sidebarNavigationItems.map((item) => (
           <SidebarNavigationRow item={item} key={item.labelKey} />

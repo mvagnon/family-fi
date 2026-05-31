@@ -1,5 +1,7 @@
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import LogoutIcon from "@mui/icons-material/Logout";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import Alert from "@mui/material/Alert";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import ButtonBase from "@mui/material/ButtonBase";
@@ -13,6 +15,7 @@ import type { Theme } from "@mui/material/styles";
 import { alpha } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import { FeedbackSnackbar } from "@repo/ui/feedback-snackbar";
+import { LoadingButton } from "@repo/ui/loading-button";
 import { useState, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -35,6 +38,15 @@ export function AccountMenu({ repository }: AccountMenuProps) {
 
   if (session.isPending) {
     return <AccountMenuSkeleton />;
+  }
+
+  if (session.error) {
+    return (
+      <AccountMenuSessionError
+        isRetrying={session.isRefetching}
+        onRetry={() => void session.refetch()}
+      />
+    );
   }
 
   if (!session.user) {
@@ -136,6 +148,36 @@ function AccountMenuSkeleton() {
           <Skeleton height={16} width="90%" />
         </Box>
       </Box>
+    </Box>
+  );
+}
+
+interface AccountMenuSessionErrorProps {
+  isRetrying: boolean;
+  onRetry: () => void;
+}
+
+function AccountMenuSessionError({
+  isRetrying,
+  onRetry,
+}: AccountMenuSessionErrorProps) {
+  const { t } = useTranslation();
+
+  return (
+    <Box sx={accountMenuRootSx}>
+      <Alert severity="warning" sx={{ mb: 1 }} variant="outlined">
+        {t("auth.account.sessionError")}
+      </Alert>
+      <LoadingButton
+        fullWidth
+        isLoading={isRetrying}
+        onClick={onRetry}
+        size="small"
+        startIcon={<RefreshIcon />}
+        variant="outlined"
+      >
+        {t("common.retry")}
+      </LoadingButton>
     </Box>
   );
 }

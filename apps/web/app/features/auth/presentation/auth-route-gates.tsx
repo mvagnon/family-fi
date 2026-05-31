@@ -9,6 +9,8 @@ import type { AuthRepository } from "../domain/auth-repository";
 interface AuthenticatedRouteProps {
   children: ReactNode;
   client: AuthRepository;
+  errorFallback?: ReactNode;
+  pendingFallback?: ReactNode;
 }
 
 interface PublicOnlyRouteProps {
@@ -19,11 +21,17 @@ interface PublicOnlyRouteProps {
 export function AuthenticatedRoute({
   children,
   client,
+  errorFallback,
+  pendingFallback,
 }: AuthenticatedRouteProps) {
   const session = useAuthSession(client);
 
   if (session.isPending) {
-    return <AuthRouteLoading />;
+    return pendingFallback ?? <AuthRouteLoading />;
+  }
+
+  if (session.error && !session.isAuthenticated) {
+    return errorFallback ?? <AuthRouteLoading />;
   }
 
   if (!session.isAuthenticated) {
@@ -41,22 +49,14 @@ export function PublicOnlyRoute({ children, client }: PublicOnlyRouteProps) {
   }
 
   if (session.isAuthenticated) {
-    return <Navigate replace to="/dashboard" />;
+    return <Navigate replace to="/family" />;
   }
 
   return children;
 }
 
-export function HomeRedirect({ client }: { client: AuthRepository }) {
-  const session = useAuthSession(client);
-
-  if (session.isPending) {
-    return <AuthRouteLoading />;
-  }
-
-  return (
-    <Navigate replace to={session.isAuthenticated ? "/dashboard" : "/login"} />
-  );
+export function HomeRedirect() {
+  return <Navigate replace to="/family" />;
 }
 
 function AuthRouteLoading() {

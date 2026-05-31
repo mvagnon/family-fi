@@ -52,7 +52,7 @@ export function LoginPage({ client }: LoginPageProps) {
     }
 
     await session.refetch();
-    navigate("/dashboard", { replace: true });
+    navigate("/family", { replace: true });
   }
 
   return (

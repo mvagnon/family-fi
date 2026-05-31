@@ -38,6 +38,7 @@ export const resources = {
       auth: {
         account: {
           openMenu: "Open account menu",
+          sessionError: "Account connection could not be checked.",
           signOut: "Sign out",
           signOutError: "Sign out failed.",
         },
@@ -275,6 +276,7 @@ export const resources = {
       auth: {
         account: {
           openMenu: "Ouvrir le menu du compte",
+          sessionError: "La connexion au compte n'a pas pu être vérifiée.",
           signOut: "Déconnexion",
           signOutError: "La déconnexion a échoué.",
         },
@@ -513,6 +515,7 @@ export const resources = {
       auth: {
         account: {
           openMenu: "アカウントメニューを開く",
+          sessionError: "アカウント接続を確認できませんでした。",
           signOut: "ログアウト",
           signOutError: "ログアウトできませんでした。",
         },
