@@ -283,7 +283,6 @@ export const resources = {
           },
           expandMonth: "Expand {{month}}",
           title: "Monthly participations",
-          total: "Total {{value}}",
         },
         top: {
           keyFigures: "Key figures",
@@ -585,7 +584,6 @@ export const resources = {
           },
           expandMonth: "Déplier {{month}}",
           title: "Participations mensuelles",
-          total: "Total {{value}}",
         },
         top: {
           keyFigures: "Chiffres clés",
@@ -879,7 +877,6 @@ export const resources = {
           },
           expandMonth: "{{month}}を展開",
           title: "月次持分",
-          total: "合計 {{value}}",
         },
         top: {
           keyFigures: "主要指標",

@@ -243,13 +243,11 @@ function ParticipationMonthGroup({
                 sx={{
                   flexShrink: 0,
                   fontSize: { sm: "0.8125rem", xs: "0.75rem" },
-                  fontWeight: 600,
+                  fontWeight: 400,
                 }}
                 variant="body2"
               >
-                {t("participations.table.total", {
-                  value: familyFormat.formatCurrency(group.total),
-                })}
+                {familyFormat.formatCurrency(group.total)}
               </Typography>
             </Box>
             <ParticipationAmountCell
@@ -287,7 +285,6 @@ function ParticipationMemberGroup({
   createdAtFormatter: Intl.DateTimeFormat;
   group: FamilyParticipationMemberMonthGroup;
 }) {
-  const { t } = useTranslation();
   const familyFormat = useFamilyFormat();
 
   return (
@@ -322,13 +319,11 @@ function ParticipationMemberGroup({
             sx={{
               flexShrink: 0,
               fontSize: { sm: "0.8125rem", xs: "0.75rem" },
-              fontWeight: 700,
+              fontWeight: 400,
             }}
             variant="body2"
           >
-            {t("participations.table.total", {
-              value: familyFormat.formatCurrency(group.total),
-            })}
+            {familyFormat.formatCurrency(group.total)}
           </Typography>
         </Box>
         <ParticipationAmountCell
