@@ -265,8 +265,14 @@ function ParticipationMemberGroup({
             {group.member.name}
           </Typography>
         </Box>
-        <ParticipationAmountCell value={getIncomeAmount(group.lines)} />
-        <ParticipationAmountCell value={getExpenseAmount(group.lines)} />
+        <ParticipationAmountCell
+          value={getIncomeAmount(group.lines)}
+          weight={600}
+        />
+        <ParticipationAmountCell
+          value={getExpenseAmount(group.lines)}
+          weight={600}
+        />
       </Box>
       {group.lines.length > 0 ? (
         group.lines.map((line) => (
@@ -328,9 +334,11 @@ function ParticipationLineRow({
         </Typography>
       </Box>
       <ParticipationAmountCell
+        tone="positive"
         value={line.line.amount > 0 ? line.line.amount : null}
       />
       <ParticipationAmountCell
+        tone="negative"
         value={line.line.amount < 0 ? Math.abs(line.line.amount) : null}
       />
     </Box>
@@ -338,9 +346,11 @@ function ParticipationLineRow({
 }
 
 function ParticipationAmountCell({
+  tone,
   value,
   weight = 400,
 }: {
+  tone?: "negative" | "positive";
   value: number | null;
   weight?: number;
 }) {
@@ -350,6 +360,12 @@ function ParticipationAmountCell({
     <Box
       sx={{
         alignSelf: "center",
+        color:
+          tone === "positive"
+            ? "success.main"
+            : tone === "negative"
+              ? "error.main"
+              : "inherit",
         fontSize: { sm: "0.875rem", xs: "0.8125rem" },
         fontWeight: weight,
         px: { md: 2, xs: 1 },
