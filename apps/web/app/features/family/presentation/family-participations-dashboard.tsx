@@ -37,7 +37,9 @@ export function FamilyParticipationsDashboard({
   onCreateParticipationLine,
 }: FamilyParticipationsDashboardProps) {
   const { t } = useTranslation();
-  const currentYear = new Date().getFullYear();
+  const currentDate = new Date();
+  const currentMonthIndex = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
   const [year, setYear] = useState(currentYear);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -46,6 +48,8 @@ export function FamilyParticipationsDashboard({
     revision: number;
   } | null>(null);
   const projection = getFamilyParticipationProjection(family, {
+    currentMonthIndex,
+    currentYear,
     selectedMemberId,
     year,
   });
@@ -116,6 +120,7 @@ export function FamilyParticipationsDashboard({
       <AppShellContent>
         <FamilyParticipationsTable
           disabled={isSaving}
+          key={year}
           monthGroups={projection.monthGroups}
           onAddLine={handleAddLine}
         />

@@ -51,6 +51,8 @@ export type ParticipationMemberResolution =
   | { status: "inactive-member" | "missing-member" };
 
 interface FamilyParticipationProjectionInput {
+  currentMonthIndex: number;
+  currentYear: number;
   selectedMemberId?: string | null;
   year: number;
 }
@@ -77,7 +79,7 @@ export function getFamilyParticipationProjection(
     return {
       lines,
       member,
-      monthGroups: buildMonthGroups(lines, [member], input.year),
+      monthGroups: buildMonthGroups(lines, [member], input),
       summary: getParticipationSummary(lines),
     };
   });
@@ -93,11 +95,7 @@ export function getFamilyParticipationProjection(
   return {
     activeMembers: family.members.filter((member) => member.isActive),
     memberParticipations,
-    monthGroups: buildMonthGroups(
-      participationLines,
-      family.members,
-      input.year,
-    ),
+    monthGroups: buildMonthGroups(participationLines, family.members, input),
     selectableMembers: family.members,
     selectedMember,
     selectedMemberParticipation,
@@ -129,7 +127,11 @@ function getParticipationLines(
   return family.participationLines.flatMap((line) => {
     const member = membersById.get(line.memberId);
 
-    if (!member || line.year !== input.year) {
+    if (
+      !member ||
+      line.year !== input.year ||
+      !isVisibleParticipationMonth(line, input)
+    ) {
       return [];
     }
 
@@ -143,15 +145,30 @@ function getParticipationLines(
   });
 }
 
+function isVisibleParticipationMonth(
+  line: ParticipationLine,
+  input: FamilyParticipationProjectionInput,
+): boolean {
+  if (line.year < input.currentYear) {
+    return true;
+  }
+
+  if (line.year === input.currentYear) {
+    return line.month <= input.currentMonthIndex + 1;
+  }
+
+  return false;
+}
+
 function buildMonthGroups(
   lines: FamilyParticipationLine[],
   members: FamilyMember[],
-  year: number,
+  input: FamilyParticipationProjectionInput,
 ): FamilyParticipationMonthGroup[] {
-  return monthIndexes.map((monthIndex) => {
+  return getVisibleMonthIndexes(input).map((monthIndex) => {
     const month = monthIndex + 1;
     const monthLines = lines.filter((line) => line.line.month === month);
-    const monthId = `${year}-${String(month).padStart(2, "0")}`;
+    const monthId = `${input.year}-${String(month).padStart(2, "0")}`;
     const memberGroups = members.map((member) => {
       const memberLines = monthLines.filter(
         (line) => line.member.id === member.id,
@@ -174,9 +191,25 @@ function buildMonthGroups(
       memberGroups,
       monthIndex,
       total: monthLines.reduce((total, line) => total + line.monthlyValue, 0),
-      year,
+      year: input.year,
     };
   });
+}
+
+function getVisibleMonthIndexes(
+  input: FamilyParticipationProjectionInput,
+): number[] {
+  if (input.year > input.currentYear) {
+    return [];
+  }
+
+  if (input.year === input.currentYear) {
+    return monthIndexes.filter(
+      (monthIndex) => monthIndex <= input.currentMonthIndex,
+    );
+  }
+
+  return monthIndexes;
 }
 
 function getParticipationSummary(

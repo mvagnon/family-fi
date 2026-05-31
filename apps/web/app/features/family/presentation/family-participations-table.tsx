@@ -40,9 +40,10 @@ export function FamilyParticipationsTable({
   onAddLine,
 }: FamilyParticipationsTableProps) {
   const { t, i18n } = useTranslation();
-  const [collapsedMonthIds, setCollapsedMonthIds] = useState<Set<string>>(
-    () => new Set(),
+  const [collapsedMonthIds, setCollapsedMonthIds] = useState<Set<string>>(() =>
+    getDefaultCollapsedMonthIds(monthGroups),
   );
+  const hasLines = monthGroups.some((group) => group.lines.length > 0);
   const hasMembers = monthGroups.some((group) => group.memberGroups.length > 0);
   const formatter = useMemo(
     () =>
@@ -86,10 +87,10 @@ export function FamilyParticipationsTable({
       title={t("participations.table.title")}
       titleId="family-participations-table-title"
     >
-      {!hasMembers ? <ParticipationsEmptyState /> : null}
+      {!hasLines ? <ParticipationsEmptyState hasMembers={hasMembers} /> : null}
       <TableContainer
         sx={{
-          display: hasMembers ? "block" : "none",
+          display: hasLines ? "block" : "none",
           maxWidth: "100%",
           overflowX: "auto",
         }}
@@ -305,7 +306,7 @@ function ParticipationLineRow({ line }: { line: FamilyParticipationLine }) {
   );
 }
 
-function ParticipationsEmptyState() {
+function ParticipationsEmptyState({ hasMembers }: { hasMembers: boolean }) {
   const { t } = useTranslation();
 
   return (
@@ -342,8 +343,28 @@ function ParticipationsEmptyState() {
         sx={{ maxWidth: 280, mt: 0.5 }}
         variant="body2"
       >
-        {t("participations.table.empty.noMember")}
+        {hasMembers
+          ? t("participations.table.empty.noLinesInYear")
+          : t("participations.table.empty.noMember")}
       </Typography>
     </Box>
+  );
+}
+
+function getDefaultCollapsedMonthIds(
+  monthGroups: FamilyParticipationMonthGroup[],
+): Set<string> {
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonthIndex = currentDate.getMonth();
+
+  return new Set(
+    monthGroups
+      .filter(
+        (group) =>
+          group.year < currentYear ||
+          (group.year === currentYear && group.monthIndex < currentMonthIndex),
+      )
+      .map((group) => group.id),
   );
 }

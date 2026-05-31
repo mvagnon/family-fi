@@ -268,6 +268,7 @@ export const resources = {
             description:
               "{{name}} has no participation expenses for this year.",
             memberLines: "No lines",
+            noLinesInYear: "No participation line for this year.",
             noMember: "Add a family member to see participations.",
             title: "No participation expenses",
           },
@@ -560,6 +561,7 @@ export const resources = {
             description:
               "{{name}} n'a aucune dépense de participation pour cette année.",
             memberLines: "Aucune ligne",
+            noLinesInYear: "Aucune ligne de participation pour cette année.",
             noMember:
               "Ajoutez un membre du foyer pour afficher les participations.",
             title: "Aucune dépense de participation",
@@ -846,6 +848,7 @@ export const resources = {
           empty: {
             description: "{{name}}のこの年の持分支出はありません。",
             memberLines: "行はありません",
+            noLinesInYear: "この年の持分明細はありません。",
             noMember: "持分を表示するには家族メンバーを追加してください。",
             title: "持分支出はありません",
           },
