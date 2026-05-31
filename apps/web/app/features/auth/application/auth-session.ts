@@ -45,10 +45,7 @@ export function useSignOut(repository: AuthRepository) {
   return useMutation({
     mutationFn: () => repository.signOut(),
     onSuccess: () => {
-      queryClient.setQueryData(authQueryKeys.session(), null);
-      void queryClient.invalidateQueries({
-        queryKey: authQueryKeys.session(),
-      });
+      queryClient.clear();
     },
   });
 }
