@@ -1,5 +1,7 @@
 import { Fragment, useMemo, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
@@ -14,6 +16,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
+import { ActionIconButton } from "@repo/ui/action-icon-button";
 import { LoadingButton } from "@repo/ui/loading-button";
 import { SectionPanel } from "@repo/ui/section-panel";
 import { useTranslation } from "react-i18next";
@@ -27,8 +30,8 @@ import { familyBudgetTableHeaderTextSx } from "./family-budget-table-layout";
 import { useFamilyFormat } from "./use-family-format";
 
 const participationTableGridColumns = {
-  md: "44px minmax(180px, 1fr) minmax(112px, 140px) minmax(112px, 140px)",
-  xs: "40px minmax(128px, 1fr) minmax(92px, 112px) minmax(92px, 112px)",
+  md: "44px minmax(180px, 1fr) minmax(112px, 140px) minmax(112px, 140px) 96px",
+  xs: "40px minmax(128px, 1fr) minmax(92px, 112px) minmax(92px, 112px) 88px",
 };
 const participationTableRowPaddingSx = {
   px: { md: 1, xs: 0.5 },
@@ -46,12 +49,16 @@ interface FamilyParticipationsTableProps {
   disabled?: boolean;
   monthGroups: FamilyParticipationMonthGroup[];
   onAddLine: () => void;
+  onDeleteLine: (line: FamilyParticipationLine) => void;
+  onEditLine: (line: FamilyParticipationLine) => void;
 }
 
 export function FamilyParticipationsTable({
   disabled = false,
   monthGroups,
   onAddLine,
+  onDeleteLine,
+  onEditLine,
 }: FamilyParticipationsTableProps) {
   const { t, i18n } = useTranslation();
   const [collapsedMonthIds, setCollapsedMonthIds] = useState<Set<string>>(() =>
@@ -123,13 +130,13 @@ export function FamilyParticipationsTable({
           sx={{
             borderCollapse: "separate",
             borderSpacing: 0,
-            minWidth: { sm: 560, xs: 520 },
+            minWidth: { sm: 660, xs: 608 },
             width: "100%",
           }}
         >
           <TableHead>
             <TableRow>
-              <TableCell colSpan={4} sx={{ p: 0 }}>
+              <TableCell colSpan={5} sx={{ p: 0 }}>
                 <Box
                   sx={{
                     backgroundColor: "background.paper",
@@ -149,6 +156,9 @@ export function FamilyParticipationsTable({
                   <Typography sx={participationAmountHeaderTextSx}>
                     {t("participations.table.columns.expense")}
                   </Typography>
+                  <Typography sx={participationAmountHeaderTextSx}>
+                    {t("common.actions")}
+                  </Typography>
                 </Box>
               </TableCell>
             </TableRow>
@@ -158,11 +168,14 @@ export function FamilyParticipationsTable({
               <ParticipationMonthGroup
                 collapsed={collapsedMonthIds.has(group.id)}
                 createdAtFormatter={createdAtFormatter}
+                disabled={disabled}
                 group={group}
                 key={group.id}
                 monthLabel={monthFormatter.format(
                   new Date(group.year, group.monthIndex, 1),
                 )}
+                onDeleteLine={onDeleteLine}
+                onEditLine={onEditLine}
                 onToggle={() => toggleMonth(group.id)}
               />
             ))}
@@ -176,14 +189,20 @@ export function FamilyParticipationsTable({
 function ParticipationMonthGroup({
   collapsed,
   createdAtFormatter,
+  disabled,
   group,
   monthLabel,
+  onDeleteLine,
+  onEditLine,
   onToggle,
 }: {
   collapsed: boolean;
   createdAtFormatter: Intl.DateTimeFormat;
+  disabled: boolean;
   group: FamilyParticipationMonthGroup;
   monthLabel: string;
+  onDeleteLine: (line: FamilyParticipationLine) => void;
+  onEditLine: (line: FamilyParticipationLine) => void;
   onToggle: () => void;
 }) {
   const { t } = useTranslation();
@@ -195,7 +214,7 @@ function ParticipationMonthGroup({
   return (
     <Fragment>
       <TableRow>
-        <TableCell colSpan={4} component="th" scope="rowgroup" sx={{ p: 0 }}>
+        <TableCell colSpan={5} component="th" scope="rowgroup" sx={{ p: 0 }}>
           <Box
             sx={(theme) => ({
               alignItems: "center",
@@ -258,17 +277,21 @@ function ParticipationMonthGroup({
               value={getExpenseAmount(group.lines)}
               weight={700}
             />
+            <Box aria-hidden="true" />
           </Box>
         </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell colSpan={4} sx={{ borderBottom: 0, p: 0 }}>
+        <TableCell colSpan={5} sx={{ borderBottom: 0, p: 0 }}>
           <Collapse in={!collapsed} timeout="auto" unmountOnExit>
             {group.memberGroups.map((memberGroup) => (
               <ParticipationMemberGroup
                 createdAtFormatter={createdAtFormatter}
+                disabled={disabled}
                 group={memberGroup}
                 key={memberGroup.id}
+                onDeleteLine={onDeleteLine}
+                onEditLine={onEditLine}
               />
             ))}
           </Collapse>
@@ -280,10 +303,16 @@ function ParticipationMonthGroup({
 
 function ParticipationMemberGroup({
   createdAtFormatter,
+  disabled,
   group,
+  onDeleteLine,
+  onEditLine,
 }: {
   createdAtFormatter: Intl.DateTimeFormat;
+  disabled: boolean;
   group: FamilyParticipationMemberMonthGroup;
+  onDeleteLine: (line: FamilyParticipationLine) => void;
+  onEditLine: (line: FamilyParticipationLine) => void;
 }) {
   const familyFormat = useFamilyFormat();
 
@@ -334,13 +363,17 @@ function ParticipationMemberGroup({
           value={getExpenseAmount(group.lines)}
           weight={700}
         />
+        <Box aria-hidden="true" />
       </Box>
       {group.lines.length > 0 ? (
         group.lines.map((line) => (
           <ParticipationLineRow
             createdAtFormatter={createdAtFormatter}
+            disabled={disabled}
             key={line.line.id}
             line={line}
+            onDeleteLine={onDeleteLine}
+            onEditLine={onEditLine}
           />
         ))
       ) : (
@@ -370,17 +403,29 @@ function ParticipationEmptyLine() {
       </Box>
       <Box />
       <Box />
+      <Box />
     </Box>
   );
 }
 
 function ParticipationLineRow({
   createdAtFormatter,
+  disabled,
   line,
+  onDeleteLine,
+  onEditLine,
 }: {
   createdAtFormatter: Intl.DateTimeFormat;
+  disabled: boolean;
   line: FamilyParticipationLine;
+  onDeleteLine: (line: FamilyParticipationLine) => void;
+  onEditLine: (line: FamilyParticipationLine) => void;
 }) {
+  const { t } = useTranslation();
+  const lineLabel = `${line.member.name} ${createdAtFormatter.format(
+    new Date(line.line.createdAt),
+  )}`;
+
   return (
     <Box
       sx={(theme) => ({
@@ -404,6 +449,35 @@ function ParticipationLineRow({
         tone="negative"
         value={line.line.amount < 0 ? Math.abs(line.line.amount) : null}
       />
+      <Box
+        sx={{
+          alignItems: "center",
+          display: "flex",
+          gap: 0.5,
+          justifyContent: "flex-end",
+          px: { md: 2, xs: 1 },
+          py: 1,
+        }}
+      >
+        <ActionIconButton
+          disabled={disabled}
+          icon={<EditIcon fontSize="small" />}
+          label={t("participations.line.editLabel", { label: lineLabel })}
+          onClick={() => onEditLine(line)}
+          size="small"
+          stopPropagation
+          tooltip={t("participations.line.editTooltip")}
+        />
+        <ActionIconButton
+          disabled={disabled}
+          icon={<DeleteIcon fontSize="small" />}
+          label={t("participations.line.deleteLabel", { label: lineLabel })}
+          onClick={() => onDeleteLine(line)}
+          size="small"
+          stopPropagation
+          tooltip={t("participations.line.deleteTooltip")}
+        />
+      </Box>
     </Box>
   );
 }

@@ -29,6 +29,7 @@ export type {
   Movement,
   ParticipationLine,
   RecurringLine,
+  UpdateParticipationLineInput,
   UpdateRecurringLineInput,
 } from "@repo/api-contracts/family";
 
@@ -64,5 +65,12 @@ export class RecurringLineNotFoundError extends FamilyEntityNotFoundError {
   constructor(lineId: string) {
     super(`Recurring line ${lineId} was not found.`);
     this.name = "RecurringLineNotFoundError";
+  }
+}
+
+export class ParticipationLineNotFoundError extends FamilyEntityNotFoundError {
+  constructor(lineId: string) {
+    super(`Participation line ${lineId} was not found.`);
+    this.name = "ParticipationLineNotFoundError";
   }
 }

@@ -85,6 +85,8 @@ export type CreateParticipationLineInput = Omit<
   "createdAt" | "id"
 >;
 
+export type UpdateParticipationLineInput = CreateParticipationLineInput;
+
 export const createFamilyMemberInputSchema = z
   .object({
     isActive: z

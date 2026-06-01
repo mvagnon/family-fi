@@ -188,6 +188,28 @@ const createParticipationLineRoute = createRoute({
   },
 });
 
+const updateParticipationLineRoute = createRoute({
+  method: "put",
+  path: "/participation-lines/{id}",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: participationLineInputSchema,
+        },
+      },
+    },
+    params: familyEntityRouteParamsSchema,
+  },
+  responses: {
+    200: familyJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+    404: notFoundResponse,
+  },
+});
+
 const updateRecurringLineRoute = createRoute({
   method: "put",
   path: "/recurring-lines/{id}",
@@ -213,6 +235,20 @@ const updateRecurringLineRoute = createRoute({
 const deleteRecurringLineRoute = createRoute({
   method: "delete",
   path: "/recurring-lines/{id}",
+  request: {
+    params: familyEntityRouteParamsSchema,
+  },
+  responses: {
+    200: familyJsonResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+    404: notFoundResponse,
+  },
+});
+
+const deleteParticipationLineRoute = createRoute({
+  method: "delete",
+  path: "/participation-lines/{id}",
   request: {
     params: familyEntityRouteParamsSchema,
   },
@@ -284,6 +320,23 @@ export function createFamilyRouter(
       );
 
       return context.json(family, 201);
+    })
+    .openapi(updateParticipationLineRoute, async (context) => {
+      const family = await service.updateParticipationLine(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.param("id"),
+        context.req.valid("json"),
+      );
+
+      return context.json(family, 200);
+    })
+    .openapi(deleteParticipationLineRoute, async (context) => {
+      const family = await service.deleteParticipationLine(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.param("id"),
+      );
+
+      return context.json(family, 200);
     })
     .openapi(updateRecurringLineRoute, async (context) => {
       const family = await service.updateRecurringLine(

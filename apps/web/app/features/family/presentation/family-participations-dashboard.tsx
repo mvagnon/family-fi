@@ -18,8 +18,11 @@ import type {
   CreateParticipationLineInput,
   Family,
   FamilyMember,
+  ParticipationLine,
+  UpdateParticipationLineInput,
 } from "../domain/family";
 import {
+  type FamilyParticipationLine,
   getFamilyParticipationProjection,
   resolveParticipationLineMember,
   type ParticipationMemberResolution,
@@ -39,7 +42,12 @@ interface FamilyParticipationsDashboardProps {
   onCreateParticipationLine: (
     input: CreateParticipationLineInput,
   ) => Promise<void> | void;
+  onDeleteParticipationLine: (lineId: string) => Promise<void> | void;
   onDeleteMember: (memberId: string) => Promise<void> | void;
+  onUpdateParticipationLine: (
+    lineId: string,
+    input: UpdateParticipationLineInput,
+  ) => Promise<void> | void;
 }
 
 export function FamilyParticipationsDashboard({
@@ -49,17 +57,27 @@ export function FamilyParticipationsDashboard({
   mutationErrorKey,
   onAddMember,
   onCreateParticipationLine,
+  onDeleteParticipationLine,
   onDeleteMember,
+  onUpdateParticipationLine,
 }: FamilyParticipationsDashboardProps) {
   const { t } = useTranslation();
   const currentDate = new Date();
   const currentMonthIndex = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
   const [year, setYear] = useState(currentYear);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isLineModalOpen, setIsLineModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
+  const [lineDialogMode, setLineDialogMode] = useState<"create" | "edit">(
+    "create",
+  );
+  const [linePendingDeletion, setLinePendingDeletion] =
+    useState<ParticipationLine | null>(null);
   const [memberPendingDeletion, setMemberPendingDeletion] =
     useState<FamilyMember | null>(null);
+  const [selectedLine, setSelectedLine] = useState<ParticipationLine | null>(
+    null,
+  );
   const [localError, setLocalError] = useState<{
     message: string;
     revision: number;
@@ -70,6 +88,13 @@ export function FamilyParticipationsDashboard({
     year,
   });
   const defaultCreationMember = projection.activeMembers[0];
+  const lineModalDefaultMemberId =
+    selectedLine?.memberId ?? defaultCreationMember?.id;
+  const lineModalMembers = getParticipationLineModalMembers(
+    projection.activeMembers,
+    family.members,
+    selectedLine?.memberId,
+  );
 
   function handleYearChange(nextYear: number) {
     setYear(Math.min(nextYear, currentYear));
@@ -81,7 +106,19 @@ export function FamilyParticipationsDashboard({
       return;
     }
 
-    setIsCreateModalOpen(true);
+    setLineDialogMode("create");
+    setSelectedLine(null);
+    setIsLineModalOpen(true);
+  }
+
+  function handleEditLine(line: FamilyParticipationLine) {
+    setLineDialogMode("edit");
+    setSelectedLine(line.line);
+    setIsLineModalOpen(true);
+  }
+
+  function handleRequestDeleteLine(line: FamilyParticipationLine) {
+    setLinePendingDeletion(line.line);
   }
 
   async function handleSaveMember(input: CreateFamilyMemberInput) {
@@ -108,6 +145,10 @@ export function FamilyParticipationsDashboard({
   }
 
   async function handleSaveLine(input: CreateParticipationLineInput) {
+    if (lineDialogMode === "edit" && !selectedLine) {
+      return;
+    }
+
     const resolution = resolveParticipationLineMember(family, input.memberId);
 
     if (resolution.status !== "available") {
@@ -116,10 +157,29 @@ export function FamilyParticipationsDashboard({
     }
 
     try {
-      await onCreateParticipationLine(input);
+      if (lineDialogMode === "create") {
+        await onCreateParticipationLine(input);
+      } else if (selectedLine) {
+        await onUpdateParticipationLine(selectedLine.id, input);
+      }
+
       setLocalError(null);
-      setIsCreateModalOpen(false);
+      setIsLineModalOpen(false);
+      setSelectedLine(null);
       setYear(input.year);
+    } catch {
+      return;
+    }
+  }
+
+  async function handleConfirmDeleteLine() {
+    if (!linePendingDeletion) {
+      return;
+    }
+
+    try {
+      await onDeleteParticipationLine(linePendingDeletion.id);
+      setLinePendingDeletion(null);
     } catch {
       return;
     }
@@ -161,23 +221,33 @@ export function FamilyParticipationsDashboard({
           key={year}
           monthGroups={projection.monthGroups}
           onAddLine={handleAddLine}
+          onDeleteLine={handleRequestDeleteLine}
+          onEditLine={handleEditLine}
         />
         <FeedbackSnackbar
           key={localError ? `local-${localError.revision}` : mutationErrorKey}
           message={localError?.message ?? mutationError}
         />
-        {defaultCreationMember ? (
+        {lineModalDefaultMemberId ? (
           <FamilyParticipationLineModal
-            activeMembers={projection.activeMembers}
             currentMonthIndex={currentMonthIndex}
             currentYear={currentYear}
-            defaultMemberId={defaultCreationMember.id}
+            defaultMemberId={lineModalDefaultMemberId}
             defaultYear={year}
+            initialLine={
+              selectedLine ? toParticipationLineInput(selectedLine) : undefined
+            }
             isSaving={isSaving}
-            key={`${defaultCreationMember.id}-${year}`}
-            onClose={() => setIsCreateModalOpen(false)}
+            key={
+              selectedLine
+                ? `${lineDialogMode}-${selectedLine.id}`
+                : `${lineDialogMode}-${lineModalDefaultMemberId}-${year}`
+            }
+            members={lineModalMembers}
+            mode={lineDialogMode}
+            onClose={() => setIsLineModalOpen(false)}
             onSave={handleSaveLine}
-            open={isCreateModalOpen}
+            open={isLineModalOpen}
           />
         ) : null}
         <FamilyMemberModal
@@ -197,6 +267,18 @@ export function FamilyParticipationsDashboard({
           onConfirm={handleConfirmDeleteMember}
           open={memberPendingDeletion !== null}
           title={t("family.deletion.memberTitle")}
+        />
+        <ConfirmationDialog
+          confirmColor="error"
+          confirmFirst
+          cancelLabel={t("common.cancel")}
+          confirmLabel={t("family.deletion.confirm")}
+          description={t("participations.deletion.lineDescription")}
+          isPending={isSaving}
+          onCancel={() => setLinePendingDeletion(null)}
+          onConfirm={handleConfirmDeleteLine}
+          open={linePendingDeletion !== null}
+          title={t("participations.deletion.lineTitle")}
         />
       </AppShellContent>
       <AppShellWidgets>
@@ -220,4 +302,38 @@ function getParticipationMemberResolutionMessage(
   }
 
   return t("participations.creation.errors.missingMember");
+}
+
+function getParticipationLineModalMembers(
+  activeMembers: FamilyMember[],
+  members: FamilyMember[],
+  selectedMemberId: string | undefined,
+): FamilyMember[] {
+  if (!selectedMemberId) {
+    return activeMembers;
+  }
+
+  const selectedMember = members.find(
+    (member) => member.id === selectedMemberId,
+  );
+
+  if (
+    !selectedMember ||
+    activeMembers.some((member) => member.id === selectedMember.id)
+  ) {
+    return activeMembers;
+  }
+
+  return [...activeMembers, selectedMember];
+}
+
+function toParticipationLineInput(
+  line: ParticipationLine,
+): CreateParticipationLineInput {
+  return {
+    amount: line.amount,
+    memberId: line.memberId,
+    month: line.month,
+    year: line.year,
+  };
 }

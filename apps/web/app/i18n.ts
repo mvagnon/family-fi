@@ -244,6 +244,7 @@ export const resources = {
           },
           memberField: "Member",
           month: "Month",
+          editTitle: "Edit participation line",
           title: "Add participation line",
           validation: {
             amountNonZero: "Amount must be different from 0.",
@@ -255,6 +256,17 @@ export const resources = {
             yearRequired: "Year is required.",
           },
           year: "Year",
+        },
+        deletion: {
+          lineDescription:
+            "The participation line will be permanently deleted.",
+          lineTitle: "Delete this participation line?",
+        },
+        line: {
+          deleteLabel: "Delete {{label}}",
+          deleteTooltip: "Delete participation",
+          editLabel: "Edit {{label}}",
+          editTooltip: "Edit participation",
         },
         meta: {
           description: "Family member participation tracking.",
@@ -545,6 +557,7 @@ export const resources = {
           },
           memberField: "Membre",
           month: "Mois",
+          editTitle: "Modifier une ligne de participation",
           title: "Ajouter une ligne de participation",
           validation: {
             amountNonZero: "Le montant doit être différent de 0.",
@@ -556,6 +569,17 @@ export const resources = {
             yearRequired: "L'année est obligatoire.",
           },
           year: "Année",
+        },
+        deletion: {
+          lineDescription:
+            "La ligne de participation sera définitivement supprimée.",
+          lineTitle: "Supprimer cette ligne de participation ?",
+        },
+        line: {
+          deleteLabel: "Supprimer {{label}}",
+          deleteTooltip: "Supprimer la participation",
+          editLabel: "Modifier {{label}}",
+          editTooltip: "Modifier la participation",
         },
         meta: {
           description: "Suivi des participations par membre du foyer.",
@@ -841,6 +865,7 @@ export const resources = {
           },
           memberField: "メンバー",
           month: "月",
+          editTitle: "持分明細を編集",
           title: "持分明細を追加",
           validation: {
             amountNonZero: "金額は0以外にしてください。",
@@ -852,6 +877,16 @@ export const resources = {
             yearRequired: "年は必須です。",
           },
           year: "年",
+        },
+        deletion: {
+          lineDescription: "持分明細は完全に削除されます。",
+          lineTitle: "この持分明細を削除しますか？",
+        },
+        line: {
+          deleteLabel: "{{label}}を削除",
+          deleteTooltip: "持分を削除",
+          editLabel: "{{label}}を編集",
+          editTooltip: "持分を編集",
         },
         meta: {
           description: "家族メンバー別の持分追跡。",

@@ -88,6 +88,24 @@ export class PrismaFamilyRepository implements FamilyRepository {
     return this.getFamilyById(familyId);
   }
 
+  async deleteParticipationLine(
+    familyId: string,
+    lineId: string,
+  ): Promise<FamilySnapshot | null> {
+    const result = await this.prisma.participationLine.deleteMany({
+      where: {
+        familyId,
+        id: lineId,
+      },
+    });
+
+    if (result.count === 0) {
+      return null;
+    }
+
+    return this.getFamilyById(familyId);
+  }
+
   async deleteRecurringLine(
     familyId: string,
     lineId: string,
@@ -259,6 +277,25 @@ export class PrismaFamilyRepository implements FamilyRepository {
     return this.getFamilyById(familyId);
   }
 
+  async updateParticipationLine(
+    familyId: string,
+    line: ParticipationLine,
+  ): Promise<FamilySnapshot | null> {
+    const result = await this.prisma.participationLine.updateMany({
+      data: toParticipationLineUpdateInput(line),
+      where: {
+        familyId,
+        id: line.id,
+      },
+    });
+
+    if (result.count === 0) {
+      return null;
+    }
+
+    return this.getFamilyById(familyId);
+  }
+
   private async getFamilyById(familyId: string): Promise<FamilySnapshot> {
     const family = await this.prisma.family.findUniqueOrThrow({
       include: familyInclude,
@@ -319,6 +356,15 @@ function toParticipationLineCreateInput(line: ParticipationLine) {
     amountCents: toCents(line.amount),
     createdAt: new Date(line.createdAt),
     id: line.id,
+    memberId: line.memberId,
+    month: line.month,
+    year: line.year,
+  };
+}
+
+function toParticipationLineUpdateInput(line: ParticipationLine) {
+  return {
+    amountCents: toCents(line.amount),
     memberId: line.memberId,
     month: line.month,
     year: line.year,
