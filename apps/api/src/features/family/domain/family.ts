@@ -6,8 +6,16 @@ export const LINKED_FAMILY_CATEGORY_DELETE_MESSAGE =
   "La catégorie liée à un membre doit être supprimée avec ce membre.";
 
 export {
+  createFamilyCategoryInputSchema,
+  createFamilyMemberInputSchema,
+  familyCategoryKindSchema,
+  familyCategorySchema,
+  familyMemberSchema,
+  familySchema,
   participationLineInputSchema,
+  participationLineSchema,
   recurringLineInputSchema,
+  recurringLineSchema,
 } from "@repo/api-contracts/family";
 
 export type {

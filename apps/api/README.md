@@ -10,11 +10,19 @@ bun run dev
 open http://localhost:3000
 ```
 
+OpenAPI documentation:
+
+- JSON spec: `http://localhost:3000/api/openapi.json`.
+- Swagger UI: `http://localhost:3000/api/docs` when `NODE_ENV` is not
+  `production`.
+
 The API uses Prisma with PostgreSQL. `DATABASE_URL` and
 `BETTER_AUTH_SECRET` are required at runtime. Optional auth settings:
 
 - `BETTER_AUTH_URL`: API origin used by Better Auth, default `http://localhost:3000`.
 - `WEB_ORIGIN`: credentialed CORS/trusted web origin, default `http://localhost:5173`.
+- `OPENAPI_SERVER_URL`: server URL advertised in the generated OpenAPI spec,
+  default request origin.
 - `ENABLE_DEV_SEED=true`: creates `test@test.com` / `Test2026!`, a personal
   space, default-space settings, and the seed family budget.
 

@@ -9,6 +9,7 @@ import { prisma } from "./infrastructure/prisma.js";
 
 const port = Number.parseInt(process.env.PORT ?? "3000", 10);
 const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:5173";
+const openApiServerUrl = process.env.OPENAPI_SERVER_URL;
 const authProvider = createBetterAuthProvider(prisma, {
   baseUrl: process.env.BETTER_AUTH_URL ?? `http://localhost:${port}`,
   secret: getBetterAuthSecret(),
@@ -23,6 +24,7 @@ const app = createApiApp({
   authProvider,
   corsOrigin: webOrigin,
   familyRepository: new PrismaFamilyRepository(prisma),
+  openApiServerUrl,
   spaceRepository: new PrismaSpacesRepository(prisma),
 });
 

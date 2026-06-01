@@ -1,23 +1,22 @@
-import { Hono } from "hono";
+import { createRoute, z } from "@hono/zod-openapi";
 import type { Context } from "hono";
-import { validator } from "hono/validator";
 
 import {
   getAuthenticatedUser,
   type AuthSessionReader,
 } from "../../../auth/infrastructure/http/current-user.js";
+import {
+  createOpenApiRouter,
+  errorResponseSchema,
+  jsonResponse,
+} from "../../../../infrastructure/http/openapi.js";
 import type { FamilyService } from "../../application/family-service.js";
 import {
-  InvalidFamilyInputError,
+  createFamilyCategoryInputSchema,
+  createFamilyMemberInputSchema,
+  familySchema,
   participationLineInputSchema,
   recurringLineInputSchema,
-} from "../../domain/family.js";
-import type {
-  CreateFamilyCategoryInput,
-  CreateFamilyMemberInput,
-  CreateParticipationLineInput,
-  CreateRecurringLineInput,
-  UpdateRecurringLineInput,
 } from "../../domain/family.js";
 
 interface FamilyRouteRequest {
@@ -25,19 +24,220 @@ interface FamilyRouteRequest {
   userId: string;
 }
 
+const pathIdSchema = (name: string, example: string) =>
+  z
+    .string()
+    .min(1)
+    .openapi({
+      example,
+      param: {
+        in: "path",
+        name,
+      },
+    });
+
+const familyRouteParamsSchema = z.object({
+  spaceId: pathIdSchema("spaceId", "test-space"),
+});
+
+const familyEntityRouteParamsSchema = familyRouteParamsSchema.extend({
+  id: pathIdSchema("id", "rent"),
+});
+
+const familyJsonResponse = jsonResponse("Family snapshot.", familySchema);
+const validationErrorResponse = jsonResponse(
+  "Request validation failed.",
+  errorResponseSchema,
+);
+const unauthenticatedResponse = jsonResponse(
+  "Authentication is required.",
+  errorResponseSchema,
+);
+const accessDeniedResponse = jsonResponse(
+  "Space is not accessible.",
+  errorResponseSchema,
+);
+const notFoundResponse = jsonResponse(
+  "Entity was not found.",
+  errorResponseSchema,
+);
+
+const getFamilyRoute = createRoute({
+  method: "get",
+  path: "/",
+  request: {
+    params: familyRouteParamsSchema,
+  },
+  responses: {
+    200: familyJsonResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+  },
+});
+
+const createMemberRoute = createRoute({
+  method: "post",
+  path: "/members",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: createFamilyMemberInputSchema,
+        },
+      },
+    },
+    params: familyRouteParamsSchema,
+  },
+  responses: {
+    201: familyJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+  },
+});
+
+const deleteMemberRoute = createRoute({
+  method: "delete",
+  path: "/members/{id}",
+  request: {
+    params: familyEntityRouteParamsSchema,
+  },
+  responses: {
+    200: familyJsonResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+    404: notFoundResponse,
+  },
+});
+
+const createCategoryRoute = createRoute({
+  method: "post",
+  path: "/categories",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: createFamilyCategoryInputSchema,
+        },
+      },
+    },
+    params: familyRouteParamsSchema,
+  },
+  responses: {
+    201: familyJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+  },
+});
+
+const deleteCategoryRoute = createRoute({
+  method: "delete",
+  path: "/categories/{id}",
+  request: {
+    params: familyEntityRouteParamsSchema,
+  },
+  responses: {
+    200: familyJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+    404: notFoundResponse,
+  },
+});
+
+const createRecurringLineRoute = createRoute({
+  method: "post",
+  path: "/recurring-lines",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: recurringLineInputSchema,
+        },
+      },
+    },
+    params: familyRouteParamsSchema,
+  },
+  responses: {
+    201: familyJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+  },
+});
+
+const createParticipationLineRoute = createRoute({
+  method: "post",
+  path: "/participation-lines",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: participationLineInputSchema,
+        },
+      },
+    },
+    params: familyRouteParamsSchema,
+  },
+  responses: {
+    201: familyJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+  },
+});
+
+const updateRecurringLineRoute = createRoute({
+  method: "put",
+  path: "/recurring-lines/{id}",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: recurringLineInputSchema,
+        },
+      },
+    },
+    params: familyEntityRouteParamsSchema,
+  },
+  responses: {
+    200: familyJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+    404: notFoundResponse,
+  },
+});
+
+const deleteRecurringLineRoute = createRoute({
+  method: "delete",
+  path: "/recurring-lines/{id}",
+  request: {
+    params: familyEntityRouteParamsSchema,
+  },
+  responses: {
+    200: familyJsonResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+    404: notFoundResponse,
+  },
+});
+
 export function createFamilyRouter(
   service: FamilyService,
   authProvider: AuthSessionReader,
 ) {
-  return new Hono()
-    .get("/", async (context) => {
+  return createOpenApiRouter()
+    .openapi(getFamilyRoute, async (context) => {
       return context.json(
         await service.getFamilyForSpace(
           await getFamilyRouteRequest(context, authProvider),
         ),
+        200,
       );
     })
-    .post("/members", validateJson(parseCreateMemberInput), async (context) => {
+    .openapi(createMemberRoute, async (context) => {
       const family = await service.addMember(
         await getFamilyRouteRequest(context, authProvider),
         context.req.valid("json"),
@@ -45,82 +245,62 @@ export function createFamilyRouter(
 
       return context.json(family, 201);
     })
-    .delete("/members/:id", async (context) => {
-      const memberId = context.req.param("id");
+    .openapi(deleteMemberRoute, async (context) => {
       const family = await service.deleteMember(
         await getFamilyRouteRequest(context, authProvider),
-        memberId,
+        context.req.param("id"),
       );
 
-      return context.json(family);
+      return context.json(family, 200);
     })
-    .post(
-      "/categories",
-      validateJson(parseCreateCategoryInput),
-      async (context) => {
-        const family = await service.addCategory(
-          await getFamilyRouteRequest(context, authProvider),
-          context.req.valid("json"),
-        );
+    .openapi(createCategoryRoute, async (context) => {
+      const family = await service.addCategory(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.valid("json"),
+      );
 
-        return context.json(family, 201);
-      },
-    )
-    .delete("/categories/:id", async (context) => {
-      const categoryId = context.req.param("id");
+      return context.json(family, 201);
+    })
+    .openapi(deleteCategoryRoute, async (context) => {
       const family = await service.deleteCategory(
         await getFamilyRouteRequest(context, authProvider),
-        categoryId,
+        context.req.param("id"),
       );
 
-      return context.json(family);
+      return context.json(family, 200);
     })
-    .post(
-      "/recurring-lines",
-      validateJson(parseRecurringLineInput),
-      async (context) => {
-        const family = await service.createRecurringLine(
-          await getFamilyRouteRequest(context, authProvider),
-          context.req.valid("json"),
-        );
+    .openapi(createRecurringLineRoute, async (context) => {
+      const family = await service.createRecurringLine(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.valid("json"),
+      );
 
-        return context.json(family, 201);
-      },
-    )
-    .post(
-      "/participation-lines",
-      validateJson(parseParticipationLineInput),
-      async (context) => {
-        const family = await service.createParticipationLine(
-          await getFamilyRouteRequest(context, authProvider),
-          context.req.valid("json"),
-        );
+      return context.json(family, 201);
+    })
+    .openapi(createParticipationLineRoute, async (context) => {
+      const family = await service.createParticipationLine(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.valid("json"),
+      );
 
-        return context.json(family, 201);
-      },
-    )
-    .put(
-      "/recurring-lines/:id",
-      validateJson(parseRecurringLineInput),
-      async (context) => {
-        const lineId = context.req.param("id");
-        const family = await service.updateRecurringLine(
-          await getFamilyRouteRequest(context, authProvider),
-          lineId,
-          context.req.valid("json"),
-        );
+      return context.json(family, 201);
+    })
+    .openapi(updateRecurringLineRoute, async (context) => {
+      const family = await service.updateRecurringLine(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.param("id"),
+        context.req.valid("json"),
+      );
 
-        return context.json(family);
-      },
-    )
-    .delete("/recurring-lines/:id", async (context) => {
-      const lineId = context.req.param("id");
+      return context.json(family, 200);
+    })
+    .openapi(deleteRecurringLineRoute, async (context) => {
       const family = await service.deleteRecurringLine(
         await getFamilyRouteRequest(context, authProvider),
-        lineId,
+        context.req.param("id"),
       );
 
-      return context.json(family);
+      return context.json(family, 200);
     });
 }
 
@@ -134,120 +314,4 @@ async function getFamilyRouteRequest(
     spaceId: context.req.param("spaceId") ?? "",
     userId: user.id,
   };
-}
-
-function validateJson<T>(parse: (value: Record<string, unknown>) => T) {
-  return validator("json", (value) => parse(readJsonObject(value)));
-}
-
-function readJsonObject(value: unknown): Record<string, unknown> {
-  if (!isRecord(value)) {
-    throw new InvalidFamilyInputError("Request body must be a JSON object.");
-  }
-
-  return value;
-}
-
-function parseCreateMemberInput(
-  value: Record<string, unknown>,
-): CreateFamilyMemberInput {
-  return {
-    isActive: getOptionalBoolean(value, "isActive") ?? true,
-    name: getString(value, "name"),
-  };
-}
-
-function parseCreateCategoryInput(
-  value: Record<string, unknown>,
-): CreateFamilyCategoryInput {
-  const kind = getOptionalString(value, "kind");
-  let categoryKind: CreateFamilyCategoryInput["kind"];
-
-  if (kind === "shared" || kind === "professional") {
-    categoryKind = kind;
-  } else if (kind) {
-    throw new InvalidFamilyInputError("Category kind is invalid.");
-  }
-
-  return {
-    kind: categoryKind,
-    label: getString(value, "label"),
-    ownerId: getOptionalString(value, "ownerId"),
-  };
-}
-
-function parseRecurringLineInput(
-  value: Record<string, unknown>,
-): CreateRecurringLineInput | UpdateRecurringLineInput {
-  const result = recurringLineInputSchema.safeParse(value);
-
-  if (!result.success) {
-    throw new InvalidFamilyInputError(
-      result.error.issues[0]?.message ?? "Recurring line input is invalid.",
-    );
-  }
-
-  return result.data;
-}
-
-function parseParticipationLineInput(
-  value: Record<string, unknown>,
-): CreateParticipationLineInput {
-  const result = participationLineInputSchema.safeParse(value);
-
-  if (!result.success) {
-    throw new InvalidFamilyInputError(
-      result.error.issues[0]?.message ?? "Participation input is invalid.",
-    );
-  }
-
-  return result.data;
-}
-
-function getString(value: Record<string, unknown>, key: string): string {
-  const item = value[key];
-
-  if (typeof item !== "string") {
-    throw new InvalidFamilyInputError(`${key} must be a string.`);
-  }
-
-  return item;
-}
-
-function getOptionalString(
-  value: Record<string, unknown>,
-  key: string,
-): string | undefined {
-  const item = value[key];
-
-  if (item === undefined || item === null) {
-    return undefined;
-  }
-
-  if (typeof item !== "string") {
-    throw new InvalidFamilyInputError(`${key} must be a string.`);
-  }
-
-  return item;
-}
-
-function getOptionalBoolean(
-  value: Record<string, unknown>,
-  key: string,
-): boolean | undefined {
-  const item = value[key];
-
-  if (item === undefined || item === null) {
-    return undefined;
-  }
-
-  if (typeof item !== "boolean") {
-    throw new InvalidFamilyInputError(`${key} must be a boolean.`);
-  }
-
-  return item;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

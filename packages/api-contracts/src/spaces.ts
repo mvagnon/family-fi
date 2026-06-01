@@ -2,22 +2,20 @@ import { z } from "zod";
 
 export const spaceRoleSchema = z.enum(["owner", "member"]);
 
-export type SpaceRole = z.infer<typeof spaceRoleSchema>;
+export const spaceSummarySchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    ownerEmail: z.string(),
+    role: spaceRoleSchema,
+  })
+  .meta({ id: "SpaceSummary" });
 
-export interface SpaceSummary {
-  id: string;
-  name: string;
-  ownerEmail: string;
-  role: SpaceRole;
-}
-
-export interface UserSettings {
-  defaultSpaceId: string | null;
-}
-
-export interface UpdateDefaultSpaceInput {
-  defaultSpaceId: string;
-}
+export const userSettingsSchema = z
+  .object({
+    defaultSpaceId: z.string().nullable(),
+  })
+  .meta({ id: "UserSettings" });
 
 export const updateDefaultSpaceInputSchema = z.object({
   defaultSpaceId: z
@@ -27,3 +25,10 @@ export const updateDefaultSpaceInputSchema = z.object({
       message: "Default space is required.",
     }),
 });
+
+export type SpaceRole = z.infer<typeof spaceRoleSchema>;
+export type SpaceSummary = z.infer<typeof spaceSummarySchema>;
+export type UserSettings = z.infer<typeof userSettingsSchema>;
+export type UpdateDefaultSpaceInput = z.infer<
+  typeof updateDefaultSpaceInputSchema
+>;

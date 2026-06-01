@@ -2,51 +2,68 @@ import { z } from "zod";
 
 export const movementSchema = z.enum(["positive", "negative"]);
 
+export const familyCategoryKindSchema = z.enum(["shared", "professional"]);
+
+export const familyMemberSchema = z
+  .object({
+    id: z.string(),
+    isActive: z.boolean(),
+    name: z.string(),
+    role: z.string(),
+  })
+  .meta({ id: "FamilyMember" });
+
+export const familyCategorySchema = z
+  .object({
+    id: z.string(),
+    kind: familyCategoryKindSchema,
+    label: z.string(),
+    ownerId: z.string().optional(),
+  })
+  .meta({ id: "FamilyCategory" });
+
+export const recurringLineSchema = z
+  .object({
+    amount: z.number(),
+    categoryId: z.string(),
+    description: z.string(),
+    id: z.string(),
+    isEstimate: z.boolean(),
+    maxAmount: z.number().optional(),
+    minAmount: z.number().optional(),
+    movement: movementSchema,
+    recurrenceMonths: z.number().positive(),
+    title: z.string(),
+  })
+  .meta({ id: "RecurringLine" });
+
+export const participationLineSchema = z
+  .object({
+    amount: z.number().refine((value) => value !== 0),
+    createdAt: z.string(),
+    id: z.string(),
+    memberId: z.string(),
+    month: z.number().int().min(1).max(12),
+    year: z.number().int().positive(),
+  })
+  .meta({ id: "ParticipationLine" });
+
+export const familySchema = z
+  .object({
+    categories: z.array(familyCategorySchema),
+    id: z.string(),
+    members: z.array(familyMemberSchema),
+    participationLines: z.array(participationLineSchema),
+    recurringLines: z.array(recurringLineSchema),
+  })
+  .meta({ id: "Family" });
+
 export type Movement = z.infer<typeof movementSchema>;
-
-export interface FamilyMember {
-  id: string;
-  isActive: boolean;
-  name: string;
-  role: string;
-}
-
-export interface FamilyCategory {
-  id: string;
-  label: string;
-  kind: "shared" | "professional";
-  ownerId?: string;
-}
-
-export interface RecurringLine {
-  id: string;
-  title: string;
-  description: string;
-  categoryId: string;
-  movement: Movement;
-  amount: number;
-  isEstimate: boolean;
-  recurrenceMonths: number;
-  minAmount?: number;
-  maxAmount?: number;
-}
-
-export interface ParticipationLine {
-  id: string;
-  createdAt: string;
-  memberId: string;
-  amount: number;
-  year: number;
-  month: number;
-}
-
-export interface Family {
-  id: string;
-  members: FamilyMember[];
-  categories: FamilyCategory[];
-  recurringLines: RecurringLine[];
-  participationLines: ParticipationLine[];
-}
+export type FamilyMember = z.infer<typeof familyMemberSchema>;
+export type FamilyCategory = z.infer<typeof familyCategorySchema>;
+export type RecurringLine = z.infer<typeof recurringLineSchema>;
+export type ParticipationLine = z.infer<typeof participationLineSchema>;
+export type Family = z.infer<typeof familySchema>;
 
 export interface CreateFamilyMemberInput {
   isActive: boolean;
@@ -61,12 +78,40 @@ export interface CreateFamilyCategoryInput {
 
 export type CreateRecurringLineInput = Omit<RecurringLine, "id">;
 
-export type UpdateRecurringLineInput = Omit<RecurringLine, "id">;
+export type UpdateRecurringLineInput = CreateRecurringLineInput;
 
 export type CreateParticipationLineInput = Omit<
   ParticipationLine,
   "createdAt" | "id"
 >;
+
+export const createFamilyMemberInputSchema = z
+  .object({
+    isActive: z
+      .boolean({ error: "isActive must be a boolean." })
+      .optional()
+      .default(true),
+    name: z.string({ error: "name must be a string." }),
+  })
+  .meta({ id: "CreateFamilyMemberInput" });
+
+export const createFamilyCategoryInputSchema = z
+  .object({
+    kind: z
+      .union([familyCategoryKindSchema, z.literal("")], {
+        error: "Category kind is invalid.",
+      })
+      .nullish()
+      .transform((value) => {
+        return value ? value : undefined;
+      }),
+    label: z.string({ error: "label must be a string." }),
+    ownerId: z
+      .string({ error: "ownerId must be a string." })
+      .nullish()
+      .transform((value) => value ?? undefined),
+  })
+  .meta({ id: "CreateFamilyCategoryInput" });
 
 const recurringLineBaseInputSchema = z.object({
   categoryId: requiredTextSchema("Recurring line category is required."),
@@ -127,7 +172,7 @@ export const recurringLineInputSchema = recurringLineRawInputSchema.transform(
       title: line.title,
     };
   },
-);
+) as z.ZodType<CreateRecurringLineInput, CreateRecurringLineInput>;
 
 export const participationLineInputSchema = z.object({
   amount: nonZeroNumberSchema(

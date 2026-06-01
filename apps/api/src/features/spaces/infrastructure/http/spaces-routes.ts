@@ -1,25 +1,88 @@
-import { Hono } from "hono";
-import { validator } from "hono/validator";
+import { createRoute, z } from "@hono/zod-openapi";
 
 import {
   getAuthenticatedUser,
   type AuthSessionReader,
 } from "../../../auth/infrastructure/http/current-user.js";
+import {
+  createOpenApiRouter,
+  errorResponseSchema,
+  jsonResponse,
+} from "../../../../infrastructure/http/openapi.js";
 import type { SpacesService } from "../../application/spaces-service.js";
 import {
-  InvalidSpaceInputError,
+  spaceSummarySchema,
   updateDefaultSpaceInputSchema,
+  userSettingsSchema,
 } from "../../domain/spaces.js";
-import type { UpdateDefaultSpaceInput } from "../../domain/spaces.js";
+
+const spacesJsonResponse = jsonResponse(
+  "Spaces accessible to the current user.",
+  z.array(spaceSummarySchema),
+);
+const userSettingsJsonResponse = jsonResponse(
+  "Current user settings.",
+  userSettingsSchema,
+);
+const validationErrorResponse = jsonResponse(
+  "Request validation failed.",
+  errorResponseSchema,
+);
+const unauthenticatedResponse = jsonResponse(
+  "Authentication is required.",
+  errorResponseSchema,
+);
+const accessDeniedResponse = jsonResponse(
+  "Space is not accessible.",
+  errorResponseSchema,
+);
+
+const listSpacesRoute = createRoute({
+  method: "get",
+  path: "/",
+  responses: {
+    200: spacesJsonResponse,
+    401: unauthenticatedResponse,
+  },
+});
+
+const getUserSettingsRoute = createRoute({
+  method: "get",
+  path: "/settings",
+  responses: {
+    200: userSettingsJsonResponse,
+    401: unauthenticatedResponse,
+  },
+});
+
+const updateDefaultSpaceRoute = createRoute({
+  method: "put",
+  path: "/settings/default-space",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: updateDefaultSpaceInputSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: userSettingsJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+  },
+});
 
 export function createSpacesRouter(
   service: SpacesService,
   authProvider: AuthSessionReader,
 ) {
-  return new Hono().get("/", async (context) => {
+  return createOpenApiRouter().openapi(listSpacesRoute, async (context) => {
     const user = await getAuthenticatedUser(context, authProvider);
 
-    return context.json(await service.listSpacesForUser(user.id));
+    return context.json(await service.listSpacesForUser(user.id), 200);
   });
 }
 
@@ -27,53 +90,19 @@ export function createMeRouter(
   service: SpacesService,
   authProvider: AuthSessionReader,
 ) {
-  return new Hono()
-    .get("/settings", async (context) => {
+  return createOpenApiRouter()
+    .openapi(getUserSettingsRoute, async (context) => {
       const user = await getAuthenticatedUser(context, authProvider);
 
-      return context.json(await service.getUserSettings(user.id));
+      return context.json(await service.getUserSettings(user.id), 200);
     })
-    .put(
-      "/settings/default-space",
-      validateJson(parseUpdateDefaultSpaceInput),
-      async (context) => {
-        const user = await getAuthenticatedUser(context, authProvider);
-        const settings = await service.updateDefaultSpace(
-          user.id,
-          context.req.valid("json"),
-        );
+    .openapi(updateDefaultSpaceRoute, async (context) => {
+      const user = await getAuthenticatedUser(context, authProvider);
+      const settings = await service.updateDefaultSpace(
+        user.id,
+        context.req.valid("json"),
+      );
 
-        return context.json(settings);
-      },
-    );
-}
-
-function validateJson<T>(parse: (value: Record<string, unknown>) => T) {
-  return validator("json", (value) => parse(readJsonObject(value)));
-}
-
-function parseUpdateDefaultSpaceInput(
-  value: Record<string, unknown>,
-): UpdateDefaultSpaceInput {
-  const result = updateDefaultSpaceInputSchema.safeParse(value);
-
-  if (!result.success) {
-    throw new InvalidSpaceInputError(
-      result.error.issues[0]?.message ?? "Default space input is invalid.",
-    );
-  }
-
-  return result.data;
-}
-
-function readJsonObject(value: unknown): Record<string, unknown> {
-  if (!isRecord(value)) {
-    throw new InvalidSpaceInputError("Request body must be a JSON object.");
-  }
-
-  return value;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+      return context.json(settings, 200);
+    });
 }

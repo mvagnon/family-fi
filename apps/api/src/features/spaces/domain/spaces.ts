@@ -1,6 +1,8 @@
 export {
   spaceRoleSchema,
+  spaceSummarySchema,
   updateDefaultSpaceInputSchema,
+  userSettingsSchema,
 } from "@repo/api-contracts/spaces";
 
 export type {

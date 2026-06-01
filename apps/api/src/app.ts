@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { swaggerUI } from "@hono/swagger-ui";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 
@@ -22,23 +22,32 @@ import {
   createMeRouter,
   createSpacesRouter,
 } from "./features/spaces/infrastructure/http/spaces-routes.js";
+import {
+  createOpenApiRouter,
+  OPENAPI_JSON_PATH,
+  SWAGGER_UI_PATH,
+} from "./infrastructure/http/openapi.js";
 
 interface CreateApiAppOptions {
   authProvider: AuthHttpAdapter;
   corsOrigin?: string;
+  enableSwaggerUi?: boolean;
   familyRepository: FamilyRepository;
   familyServiceOptions?: FamilyServiceOptions;
+  openApiServerUrl?: string;
   spaceRepository: SpaceRepository;
 }
 
 export function createApiApp({
   authProvider,
   corsOrigin = "http://localhost:5173",
+  enableSwaggerUi = process.env.NODE_ENV !== "production",
   familyRepository,
   familyServiceOptions,
+  openApiServerUrl,
   spaceRepository,
 }: CreateApiAppOptions) {
-  const app = new Hono();
+  const app = createOpenApiRouter();
   const spacesService = new SpacesService(spaceRepository);
   const familyService = new FamilyService(
     familyRepository,
@@ -57,6 +66,18 @@ export function createApiApp({
   );
 
   const routes = app
+    .doc(OPENAPI_JSON_PATH, (context) => ({
+      info: {
+        title: "Family-Fi API",
+        version: "1.0.0",
+      },
+      openapi: "3.0.0",
+      servers: [
+        {
+          url: openApiServerUrl ?? new URL(context.req.url).origin,
+        },
+      ],
+    }))
     .get("/", (context) => {
       return context.text("Family-Fi API");
     })
@@ -69,6 +90,17 @@ export function createApiApp({
       "/api/spaces/:spaceId/family",
       createFamilyRouter(familyService, authProvider),
     );
+
+  if (enableSwaggerUi) {
+    routes.get(
+      SWAGGER_UI_PATH,
+      swaggerUI({
+        title: "Family-Fi API Docs",
+        url: OPENAPI_JSON_PATH,
+        withCredentials: true,
+      }),
+    );
+  }
 
   routes.notFound((context) => {
     return context.json({ message: "Not Found" }, 404);
