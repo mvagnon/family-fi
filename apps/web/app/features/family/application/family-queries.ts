@@ -7,6 +7,7 @@ import type {
   CreateParticipationLineInput,
   CreateRecurringLineInput,
   Family,
+  UpdateParticipationLineInput,
   UpdateRecurringLineInput,
 } from "../domain/family";
 
@@ -69,6 +70,37 @@ export function useCreateFamilyParticipationLine(
   return useMutation({
     mutationFn: (input: CreateParticipationLineInput) =>
       repository.createParticipationLine(spaceId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
+  });
+}
+
+export function useUpdateFamilyParticipationLine(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      input,
+      lineId,
+    }: {
+      input: UpdateParticipationLineInput;
+      lineId: string;
+    }) => repository.updateParticipationLine(spaceId, lineId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
+  });
+}
+
+export function useDeleteFamilyParticipationLine(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (lineId: string) =>
+      repository.deleteParticipationLine(spaceId, lineId),
     onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
   });
 }

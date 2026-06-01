@@ -17,6 +17,10 @@ export interface FamilyRepository {
     familyId: string,
     line: ParticipationLine,
   ): Promise<FamilySnapshot>;
+  deleteParticipationLine(
+    familyId: string,
+    lineId: string,
+  ): Promise<FamilySnapshot | null>;
   deleteCategory(
     familyId: string,
     categoryId: string,
@@ -34,5 +38,9 @@ export interface FamilyRepository {
   updateRecurringLine(
     familyId: string,
     line: RecurringLine,
+  ): Promise<FamilySnapshot | null>;
+  updateParticipationLine(
+    familyId: string,
+    line: ParticipationLine,
   ): Promise<FamilySnapshot | null>;
 }

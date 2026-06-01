@@ -43,6 +43,22 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
       return cloneFamily(updatedFamily);
     },
 
+    async deleteParticipationLine(familyId, lineId) {
+      const family = getFamily(families, familyId);
+      const participationLines = family.participationLines.filter(
+        (line) => line.id !== lineId,
+      );
+
+      if (participationLines.length === family.participationLines.length) {
+        return null;
+      }
+
+      const updatedFamily = { ...family, participationLines };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
+
     async deleteRecurringLine(familyId, lineId) {
       const family = getFamily(families, familyId);
       const recurringLines = family.recurringLines.filter(
@@ -142,6 +158,25 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
       recurringLines[lineIndex] = cloneLine(line);
 
       const updatedFamily = { ...family, recurringLines };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
+
+    async updateParticipationLine(familyId, line) {
+      const family = getFamily(families, familyId);
+      const lineIndex = family.participationLines.findIndex(
+        (item) => item.id === line.id,
+      );
+
+      if (lineIndex === -1) {
+        return null;
+      }
+
+      const participationLines = [...family.participationLines];
+      participationLines[lineIndex] = cloneParticipationLine(line);
+
+      const updatedFamily = { ...family, participationLines };
       families.set(familyId, updatedFamily);
 
       return cloneFamily(updatedFamily);

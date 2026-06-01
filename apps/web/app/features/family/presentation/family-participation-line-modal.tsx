@@ -84,24 +84,28 @@ type ParticipationLineFormValues = z.output<
 >;
 
 interface FamilyParticipationLineModalProps {
-  activeMembers: FamilyMember[];
   currentMonthIndex: number;
   currentYear: number;
   defaultMemberId: string;
   defaultYear: number;
+  initialLine?: CreateParticipationLineInput;
   isSaving?: boolean;
+  members: FamilyMember[];
+  mode?: "create" | "edit";
   onClose: () => void;
   onSave: (line: CreateParticipationLineInput) => Promise<void> | void;
   open: boolean;
 }
 
 export function FamilyParticipationLineModal({
-  activeMembers,
   currentMonthIndex,
   currentYear,
   defaultMemberId,
   defaultYear,
+  initialLine,
   isSaving = false,
+  members,
+  mode = "create",
   onClose,
   onSave,
   open,
@@ -125,10 +129,10 @@ export function FamilyParticipationLineModal({
   } = useForm<ParticipationLineFormInput, unknown, ParticipationLineFormValues>(
     {
       defaultValues: {
-        amount: "",
-        memberId: defaultMemberId,
-        month: String(currentMonthIndex + 1),
-        year: String(defaultYear),
+        amount: initialLine ? String(initialLine.amount) : "",
+        memberId: initialLine?.memberId ?? defaultMemberId,
+        month: String(initialLine?.month ?? currentMonthIndex + 1),
+        year: String(initialLine?.year ?? defaultYear),
       },
       resolver: zodResolver(formSchema),
       shouldFocusError: true,
@@ -138,6 +142,9 @@ export function FamilyParticipationLineModal({
   const { ref: amountRef, ...amountField } = register("amount");
   const { ref: yearRef, ...yearField } = register("year");
   const selectedYear = Number(watch("year"));
+  const monthLabelYear = Number.isFinite(selectedYear)
+    ? selectedYear
+    : currentYear;
   const monthOptionCount =
     selectedYear === currentYear ? currentMonthIndex + 1 : 12;
   const monthFormatter = useMemo(
@@ -160,8 +167,12 @@ export function FamilyParticipationLineModal({
       onClose={onClose}
       onSubmit={handleSubmit(handleValidSubmit)}
       open={open}
-      submitLabel={t("common.add")}
-      title={t("participations.creation.title")}
+      submitLabel={mode === "create" ? t("common.add") : t("common.save")}
+      title={
+        mode === "create"
+          ? t("participations.creation.title")
+          : t("participations.creation.editTitle")
+      }
     >
       <Stack spacing={2} sx={{ pt: 1 }}>
         <Controller
@@ -183,8 +194,12 @@ export function FamilyParticipationLineModal({
               select
               value={field.value ?? ""}
             >
-              {activeMembers.map((member) => (
-                <MenuItem key={member.id} value={member.id}>
+              {members.map((member) => (
+                <MenuItem
+                  disabled={!member.isActive}
+                  key={member.id}
+                  value={member.id}
+                >
                   {member.name}
                 </MenuItem>
               ))}
@@ -236,7 +251,9 @@ export function FamilyParticipationLineModal({
 
                   return (
                     <MenuItem key={month} value={String(month)}>
-                      {monthFormatter.format(new Date(defaultYear, index, 1))}
+                      {monthFormatter.format(
+                        new Date(monthLabelYear, index, 1),
+                      )}
                     </MenuItem>
                   );
                 })}

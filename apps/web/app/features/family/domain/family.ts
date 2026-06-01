@@ -14,5 +14,6 @@ export type {
   Movement,
   ParticipationLine,
   RecurringLine,
+  UpdateParticipationLineInput,
   UpdateRecurringLineInput,
 } from "@repo/api-contracts/family";

@@ -70,6 +70,14 @@ export function createFamilyHttpRepository(
           },
         ),
       ),
+    deleteParticipationLine: async (spaceId, lineId) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family["participation-lines"][
+          ":id"
+        ].$delete({
+          param: { id: lineId, spaceId },
+        }),
+      ),
     deleteCategory: async (spaceId, categoryId) =>
       readFamilyResponse(
         await client.api.spaces[":spaceId"].family.categories[":id"].$delete({
@@ -99,6 +107,15 @@ export function createFamilyHttpRepository(
     updateRecurringLine: async (spaceId, lineId, input) =>
       readFamilyResponse(
         await client.api.spaces[":spaceId"].family["recurring-lines"][
+          ":id"
+        ].$put({
+          json: input,
+          param: { id: lineId, spaceId },
+        }),
+      ),
+    updateParticipationLine: async (spaceId, lineId, input) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family["participation-lines"][
           ":id"
         ].$put({
           json: input,
