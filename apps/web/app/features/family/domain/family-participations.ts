@@ -132,20 +132,26 @@ function buildMonthGroups(
     const month = monthIndex + 1;
     const monthLines = lines.filter((line) => line.line.month === month);
     const monthId = `${input.year}-${String(month).padStart(2, "0")}`;
-    const memberGroups = members.map((member) => {
+    const memberGroups = members.flatMap((member) => {
       const memberLines = monthLines.filter(
         (line) => line.member.id === member.id,
       );
 
-      return {
-        id: `${monthId}-${member.id}`,
-        lines: memberLines,
-        member,
-        total: memberLines.reduce(
-          (total, line) => total + line.monthlyValue,
-          0,
-        ),
-      };
+      if (!member.isActive && memberLines.length === 0) {
+        return [];
+      }
+
+      return [
+        {
+          id: `${monthId}-${member.id}`,
+          lines: memberLines,
+          member,
+          total: memberLines.reduce(
+            (total, line) => total + line.monthlyValue,
+            0,
+          ),
+        },
+      ];
     });
 
     return {
