@@ -191,7 +191,6 @@ export function FamilyDashboard({
 
       setLocalError(null);
       setIsMemberModalOpen(false);
-      setSelectedMember(null);
     } catch {
       return;
     }

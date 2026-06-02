@@ -183,7 +183,6 @@ export function FamilyParticipationsDashboard({
 
       setLocalError(null);
       setIsMemberModalOpen(false);
-      setSelectedMember(null);
     } catch {
       return;
     }
