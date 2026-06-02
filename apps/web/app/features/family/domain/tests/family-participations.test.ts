@@ -133,8 +133,8 @@ function createFamily(): Family {
     categories: [],
     id: "family",
     members: [
-      { id: "lea", isActive: true, name: "Lea", role: "Parent" },
-      { id: "marc", isActive: false, name: "Marc", role: "Parent" },
+      { id: "lea", isActive: true, name: "Lea" },
+      { id: "marc", isActive: false, name: "Marc" },
     ],
     participationLines: [
       {

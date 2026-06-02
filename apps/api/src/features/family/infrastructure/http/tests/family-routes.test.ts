@@ -119,7 +119,6 @@ test("family routes create members with active flags and defaults", async () => 
 
   assert.equal(response.status, 201);
   assert.equal(member?.isActive, false);
-  assert.equal(member?.role, "");
   assert.equal(
     family.categories.some(
       (category: { label: string; ownerId?: string }) =>
@@ -154,7 +153,6 @@ test("family routes update members and linked professional categories", async ()
   assert.equal(response.status, 200);
   assert.equal(member?.name, "Lina");
   assert.equal(member?.isActive, false);
-  assert.equal(member?.role, "Parent");
   assert.equal(category?.label, "Lina");
   assert.equal(category?.ownerId, "lea");
 });

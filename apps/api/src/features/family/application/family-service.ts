@@ -77,7 +77,6 @@ export class FamilyService {
       id: memberId,
       isActive: input.isActive,
       name,
-      role: "",
     };
     const categories = [
       ...family.categories,

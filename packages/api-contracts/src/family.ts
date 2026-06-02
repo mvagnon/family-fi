@@ -9,7 +9,6 @@ export const familyMemberSchema = z
     id: z.string(),
     isActive: z.boolean(),
     name: z.string(),
-    role: z.string(),
   })
   .meta({ id: "FamilyMember" });
 
