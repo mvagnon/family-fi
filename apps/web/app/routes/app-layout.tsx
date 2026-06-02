@@ -1,6 +1,7 @@
 import { authClient } from "~/features/auth/infrastructure/auth-client";
 import { AuthenticatedRoute } from "~/features/auth/presentation/auth-route-gates";
 import { AppShellLayout } from "~/features/app-shell/presentation/app-shell-layout";
+import { FamilyMemberVisibilityProvider } from "~/features/family/presentation/family-member-visibility-provider";
 import { ActiveSpaceProvider } from "~/features/spaces/presentation/active-space-provider";
 import { spacesHttpRepository } from "~/features/spaces/infrastructure/spaces-http-repository";
 
@@ -20,7 +21,9 @@ export default function AppLayoutRoute() {
       pendingFallback={sessionFallback}
     >
       <ActiveSpaceProvider repository={spacesHttpRepository}>
-        <AppShellLayout authRepository={authClient} />
+        <FamilyMemberVisibilityProvider>
+          <AppShellLayout authRepository={authClient} />
+        </FamilyMemberVisibilityProvider>
       </ActiveSpaceProvider>
     </AuthenticatedRoute>
   );

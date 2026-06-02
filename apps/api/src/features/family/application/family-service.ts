@@ -20,6 +20,7 @@ import type {
   FamilySnapshot,
   ParticipationLine,
   RecurringLine,
+  UpdateFamilyMemberInput,
   UpdateParticipationLineInput,
   UpdateRecurringLineInput,
 } from "../domain/family.js";
@@ -76,7 +77,6 @@ export class FamilyService {
       id: memberId,
       isActive: input.isActive,
       name,
-      role: "",
     };
     const categories = [
       ...family.categories,
@@ -96,6 +96,43 @@ export class FamilyService {
       ...family,
       categories,
       members: [...family.members, member],
+    });
+  }
+
+  async updateMember(
+    request: FamilyRequest,
+    memberId: string,
+    input: UpdateFamilyMemberInput,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
+    const existingMember = family.members.find(
+      (member) => member.id === memberId,
+    );
+
+    if (!existingMember) {
+      throw new FamilyMemberNotFoundError(memberId);
+    }
+
+    const name = requireText(input.name, "Member name is required.");
+    const linkedCategoryIds = family.categories.flatMap((category) =>
+      category.ownerId === memberId ? [category.id] : [],
+    );
+
+    assertUniqueMemberName(family.members, name, memberId);
+    assertUniqueCategoryLabel(family.categories, name, linkedCategoryIds);
+
+    return this.repository.saveFamily({
+      ...family,
+      categories: family.categories.map((category) =>
+        category.kind === "professional" && category.ownerId === memberId
+          ? { ...category, label: name }
+          : category,
+      ),
+      members: family.members.map((member) =>
+        member.id === memberId
+          ? { ...member, isActive: input.isActive, name }
+          : member,
+      ),
     });
   }
 
@@ -357,10 +394,14 @@ export class FamilyService {
 function assertUniqueCategoryLabel(
   categories: FamilyCategory[],
   label: string,
+  ignoredCategoryIds: string[] = [],
 ) {
   const normalizedLabel = normalizeCategoryLabel(label);
+  const ignoredCategoryIdSet = new Set(ignoredCategoryIds);
   const hasDuplicate = categories.some(
-    (category) => normalizeCategoryLabel(category.label) === normalizedLabel,
+    (category) =>
+      !ignoredCategoryIdSet.has(category.id) &&
+      normalizeCategoryLabel(category.label) === normalizedLabel,
   );
 
   if (hasDuplicate) {
@@ -368,10 +409,16 @@ function assertUniqueCategoryLabel(
   }
 }
 
-function assertUniqueMemberName(members: FamilyMember[], name: string) {
+function assertUniqueMemberName(
+  members: FamilyMember[],
+  name: string,
+  ignoredMemberId?: string,
+) {
   const normalizedName = normalizeMemberName(name);
   const hasDuplicate = members.some(
-    (member) => normalizeMemberName(member.name) === normalizedName,
+    (member) =>
+      member.id !== ignoredMemberId &&
+      normalizeMemberName(member.name) === normalizedName,
   );
 
   if (hasDuplicate) {

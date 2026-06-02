@@ -12,6 +12,7 @@ import {
 import {
   getDuplicateFamilyCategoryLabelError,
   getDuplicateFamilyMemberNameError,
+  getFamilyMemberLinkedCategoryIds,
 } from "../application/family-local-commands";
 import type {
   CreateFamilyMemberInput,
@@ -19,6 +20,7 @@ import type {
   Family,
   FamilyMember,
   ParticipationLine,
+  UpdateFamilyMemberInput,
   UpdateParticipationLineInput,
 } from "../domain/family";
 import {
@@ -29,6 +31,7 @@ import {
 } from "../domain/family-participations";
 import { FamilyParticipationLineModal } from "./family-participation-line-modal";
 import { FamilyMemberModal } from "./family-member-modal";
+import { useFamilyMemberVisibility } from "./family-member-visibility-provider";
 import { FamilySidebarMembers } from "./family-sidebar-members";
 import { FamilyParticipationsTable } from "./family-participations-table";
 import { FamilyParticipationsTop } from "./family-participations-top";
@@ -44,6 +47,10 @@ interface FamilyParticipationsDashboardProps {
   ) => Promise<void> | void;
   onDeleteParticipationLine: (lineId: string) => Promise<void> | void;
   onDeleteMember: (memberId: string) => Promise<void> | void;
+  onUpdateMember: (
+    memberId: string,
+    input: UpdateFamilyMemberInput,
+  ) => Promise<void> | void;
   onUpdateParticipationLine: (
     lineId: string,
     input: UpdateParticipationLineInput,
@@ -59,9 +66,12 @@ export function FamilyParticipationsDashboard({
   onCreateParticipationLine,
   onDeleteParticipationLine,
   onDeleteMember,
+  onUpdateMember,
   onUpdateParticipationLine,
 }: FamilyParticipationsDashboardProps) {
   const { t } = useTranslation();
+  const { isMemberVisible, toggleMemberVisibility } =
+    useFamilyMemberVisibility();
   const currentDate = new Date();
   const currentMonthIndex = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
@@ -75,6 +85,9 @@ export function FamilyParticipationsDashboard({
     useState<ParticipationLine | null>(null);
   const [memberPendingDeletion, setMemberPendingDeletion] =
     useState<FamilyMember | null>(null);
+  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(
+    null,
+  );
   const [selectedLine, setSelectedLine] = useState<ParticipationLine | null>(
     null,
   );
@@ -82,9 +95,14 @@ export function FamilyParticipationsDashboard({
     message: string;
     revision: number;
   } | null>(null);
+  const visibleMembers = family.members.filter((member) =>
+    isMemberVisible(member.id),
+  );
+  const visibleMemberIds = new Set(visibleMembers.map((member) => member.id));
   const projection = getFamilyParticipationProjection(family, {
     currentMonthIndex,
     currentYear,
+    visibleMemberIds,
     year,
   });
   const defaultCreationMember = projection.activeMembers[0];
@@ -92,7 +110,7 @@ export function FamilyParticipationsDashboard({
     selectedLine?.memberId ?? defaultCreationMember?.id;
   const lineModalMembers = getParticipationLineModalMembers(
     projection.activeMembers,
-    family.members,
+    visibleMembers,
     selectedLine?.memberId,
   );
 
@@ -121,10 +139,31 @@ export function FamilyParticipationsDashboard({
     setLinePendingDeletion(line.line);
   }
 
-  async function handleSaveMember(input: CreateFamilyMemberInput) {
+  function handleRequestAddMember() {
+    setSelectedMember(null);
+    setIsMemberModalOpen(true);
+  }
+
+  function handleRequestEditMember(member: FamilyMember) {
+    setSelectedMember(member);
+    setIsMemberModalOpen(true);
+  }
+
+  async function handleSaveMember(input: UpdateFamilyMemberInput) {
+    const ignoredCategoryIds = selectedMember
+      ? getFamilyMemberLinkedCategoryIds(family.categories, selectedMember.id)
+      : [];
     const duplicateError =
-      getDuplicateFamilyMemberNameError(family.members, input.name) ??
-      getDuplicateFamilyCategoryLabelError(family.categories, input.name);
+      getDuplicateFamilyMemberNameError(
+        family.members,
+        input.name,
+        selectedMember?.id,
+      ) ??
+      getDuplicateFamilyCategoryLabelError(
+        family.categories,
+        input.name,
+        ignoredCategoryIds,
+      );
 
     if (duplicateError) {
       showLocalError(
@@ -136,7 +175,12 @@ export function FamilyParticipationsDashboard({
     }
 
     try {
-      await onAddMember(input);
+      if (selectedMember) {
+        await onUpdateMember(selectedMember.id, input);
+      } else {
+        await onAddMember(input);
+      }
+
       setLocalError(null);
       setIsMemberModalOpen(false);
     } catch {
@@ -251,8 +295,11 @@ export function FamilyParticipationsDashboard({
           />
         ) : null}
         <FamilyMemberModal
+          initialMember={selectedMember}
           isSaving={isSaving}
+          mode={selectedMember ? "edit" : "create"}
           onClose={() => setIsMemberModalOpen(false)}
+          onExited={() => setSelectedMember(null)}
           onSave={handleSaveMember}
           open={isMemberModalOpen}
         />
@@ -284,9 +331,14 @@ export function FamilyParticipationsDashboard({
       <AppShellWidgets>
         <FamilySidebarMembers
           disabled={isSaving}
+          isMemberVisible={isMemberVisible}
           members={family.members}
-          onAddMember={() => setIsMemberModalOpen(true)}
+          onAddMember={handleRequestAddMember}
           onDeleteMember={setMemberPendingDeletion}
+          onEditMember={handleRequestEditMember}
+          onToggleMemberVisibility={(member) =>
+            toggleMemberVisibility(member.id)
+          }
         />
       </AppShellWidgets>
     </>

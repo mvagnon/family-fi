@@ -16,6 +16,7 @@ export {
   participationLineSchema,
   recurringLineInputSchema,
   recurringLineSchema,
+  updateFamilyMemberInputSchema,
 } from "@repo/api-contracts/family";
 
 export type {
@@ -30,6 +31,7 @@ export type {
   ParticipationLine,
   RecurringLine,
   UpdateParticipationLineInput,
+  UpdateFamilyMemberInput,
   UpdateRecurringLineInput,
 } from "@repo/api-contracts/family";
 

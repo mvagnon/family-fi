@@ -32,20 +32,35 @@ test("family participation projection summarizes visible current-year lines", ()
   );
 });
 
-test("family participation projection groups every member under each month", () => {
+test("family participation projection groups active members and inactive members with month lines", () => {
   const projection = getFamilyParticipationProjection(createFamily(), {
     currentMonthIndex: 4,
     currentYear: 2026,
     year: 2026,
   });
+  const aprilGroup = projection.monthGroups.find(
+    (group) => group.id === "2026-04",
+  );
   const mayGroup = projection.monthGroups.find(
     (group) => group.id === "2026-05",
   );
 
+  assert.ok(aprilGroup);
+  assert.deepEqual(
+    aprilGroup.memberGroups.map((group) => ({
+      lineIds: group.lines.map((item) => item.line.id),
+      memberId: group.member.id,
+      total: group.total,
+    })),
+    [
+      { lineIds: [], memberId: "lea", total: 0 },
+      { lineIds: ["marc-expense"], memberId: "marc", total: -10 },
+    ],
+  );
   assert.ok(mayGroup);
   assert.deepEqual(
     mayGroup.memberGroups.map((group) => group.member.id),
-    ["lea", "marc"],
+    ["lea"],
   );
   assert.equal(mayGroup.total, 70);
   assert.deepEqual(
@@ -54,10 +69,36 @@ test("family participation projection groups every member under each month", () 
       memberId: group.member.id,
       total: group.total,
     })),
-    [
-      { lineIds: ["lea-income", "lea-expense"], memberId: "lea", total: 70 },
-      { lineIds: [], memberId: "marc", total: 0 },
-    ],
+    [{ lineIds: ["lea-income", "lea-expense"], memberId: "lea", total: 70 }],
+  );
+});
+
+test("family participation projection excludes hidden members before totals", () => {
+  const projection = getFamilyParticipationProjection(createFamily(), {
+    currentMonthIndex: 4,
+    currentYear: 2026,
+    visibleMemberIds: new Set(["lea"]),
+    year: 2026,
+  });
+  const mayGroup = projection.monthGroups.find(
+    (group) => group.id === "2026-05",
+  );
+
+  assert.deepEqual(projection.summary, {
+    difference: 70,
+    expenses: 30,
+    income: 100,
+  });
+  assert.ok(mayGroup);
+  assert.deepEqual(
+    mayGroup.memberGroups.map((group) => group.member.id),
+    ["lea"],
+  );
+  assert.equal(
+    projection.monthGroups.some((group) =>
+      group.lines.some((item) => item.line.id === "marc-expense"),
+    ),
+    false,
   );
 });
 
@@ -104,8 +145,8 @@ function createFamily(): Family {
     categories: [],
     id: "family",
     members: [
-      { id: "lea", isActive: true, name: "Lea", role: "Parent" },
-      { id: "marc", isActive: false, name: "Marc", role: "Parent" },
+      { id: "lea", isActive: true, name: "Lea" },
+      { id: "marc", isActive: false, name: "Marc" },
     ],
     participationLines: [
       {

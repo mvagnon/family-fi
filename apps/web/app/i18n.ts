@@ -6,8 +6,8 @@ import {
   supportedLanguages,
 } from "./features/configuration/domain/supported-language";
 
-export { defaultLanguage, supportedLanguages };
 export type { SupportedLanguage } from "./features/configuration/domain/supported-language";
+export { defaultLanguage, supportedLanguages };
 
 export const resources = {
   en: {
@@ -201,7 +201,10 @@ export const resources = {
           duplicateMemberName: "A member with this name already exists.",
         },
         memberModal: {
+          editTitle: "Edit member",
           isActive: "Active member",
+          isActiveHelper:
+            "Active members can participate financially and be selected in participations.",
           label: "Name",
           title: "Add member",
         },
@@ -215,10 +218,17 @@ export const resources = {
             title: "Categories",
           },
           members: {
+            activeLabel: "Active member",
+            activeTooltip: "Can participate financially",
             addLabel: "Add member",
             deleteLabel: "Delete {{name}}",
             deleteTooltip: "Delete member",
-            inactive: "Inactive",
+            editLabel: "Edit {{name}}",
+            editTooltip: "Edit member",
+            hideLabel: "Hide {{name}}",
+            hideTooltip: "Hide member",
+            showLabel: "Show {{name}}",
+            showTooltip: "Show member",
             subtitle_one: "{{count}} person",
             subtitle_other: "{{count}} people",
             title: "Members",
@@ -514,7 +524,10 @@ export const resources = {
           duplicateMemberName: "Un membre avec ce nom existe déjà.",
         },
         memberModal: {
+          editTitle: "Modifier un membre",
           isActive: "Membre actif",
+          isActiveHelper:
+            "Un membre actif peut participer financièrement et être sélectionné dans les participations.",
           label: "Nom",
           title: "Ajouter un membre",
         },
@@ -528,10 +541,17 @@ export const resources = {
             title: "Catégories",
           },
           members: {
+            activeLabel: "Membre actif",
+            activeTooltip: "Peut participer financièrement",
             addLabel: "Ajouter un membre",
             deleteLabel: "Supprimer {{name}}",
             deleteTooltip: "Supprimer le membre",
-            inactive: "Inactif",
+            editLabel: "Modifier {{name}}",
+            editTooltip: "Modifier le membre",
+            hideLabel: "Masquer {{name}}",
+            hideTooltip: "Masquer le membre",
+            showLabel: "Afficher {{name}}",
+            showTooltip: "Afficher le membre",
             subtitle_one: "{{count}} personne",
             subtitle_other: "{{count}} personnes",
             title: "Membres",
@@ -824,7 +844,10 @@ export const resources = {
           duplicateMemberName: "同じ名前のメンバーがすでに存在します。",
         },
         memberModal: {
+          editTitle: "メンバーを編集",
           isActive: "有効なメンバー",
+          isActiveHelper:
+            "有効なメンバーは家計に参加でき、持分で選択できます。",
           label: "名前",
           title: "メンバーを追加",
         },
@@ -838,10 +861,17 @@ export const resources = {
             title: "カテゴリ",
           },
           members: {
+            activeLabel: "有効なメンバー",
+            activeTooltip: "家計に参加できます",
             addLabel: "メンバーを追加",
             deleteLabel: "{{name}}を削除",
             deleteTooltip: "メンバーを削除",
-            inactive: "無効",
+            editLabel: "{{name}}を編集",
+            editTooltip: "メンバーを編集",
+            hideLabel: "{{name}}を非表示",
+            hideTooltip: "メンバーを非表示",
+            showLabel: "{{name}}を表示",
+            showTooltip: "メンバーを表示",
             subtitle_other: "{{count}}人",
             title: "メンバー",
           },

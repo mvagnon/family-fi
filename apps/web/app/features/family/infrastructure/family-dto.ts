@@ -37,7 +37,6 @@ function parseMember(value: unknown): FamilyMember {
     id: getString(member, "id"),
     isActive: getOptionalBoolean(member, "isActive") ?? true,
     name: getString(member, "name"),
-    role: getString(member, "role"),
   };
 }
 

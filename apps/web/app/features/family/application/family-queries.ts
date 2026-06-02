@@ -7,6 +7,7 @@ import type {
   CreateParticipationLineInput,
   CreateRecurringLineInput,
   Family,
+  UpdateFamilyMemberInput,
   UpdateParticipationLineInput,
   UpdateRecurringLineInput,
 } from "../domain/family";
@@ -44,6 +45,24 @@ export function useAddFamilyCategory(
   return useMutation({
     mutationFn: (input: CreateFamilyCategoryInput) =>
       repository.addCategory(spaceId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
+  });
+}
+
+export function useUpdateFamilyMember(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      input,
+      memberId,
+    }: {
+      input: UpdateFamilyMemberInput;
+      memberId: string;
+    }) => repository.updateMember(spaceId, memberId, input),
     onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
   });
 }

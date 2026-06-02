@@ -412,14 +412,9 @@ function parseMembers(value: unknown): FamilyMember[] {
     const member = item as Record<string, unknown>;
     const id = member.id;
     const name = member.name;
-    const role = member.role;
     const isActive = member.isActive;
 
-    if (
-      typeof id !== "string" ||
-      typeof name !== "string" ||
-      typeof role !== "string"
-    ) {
+    if (typeof id !== "string" || typeof name !== "string") {
       return [];
     }
 
@@ -428,7 +423,6 @@ function parseMembers(value: unknown): FamilyMember[] {
         id,
         isActive: typeof isActive === "boolean" ? isActive : true,
         name,
-        role,
       },
     ];
   });

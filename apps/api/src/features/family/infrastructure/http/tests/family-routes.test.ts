@@ -119,7 +119,6 @@ test("family routes create members with active flags and defaults", async () => 
 
   assert.equal(response.status, 201);
   assert.equal(member?.isActive, false);
-  assert.equal(member?.role, "");
   assert.equal(
     family.categories.some(
       (category: { label: string; ownerId?: string }) =>
@@ -127,6 +126,35 @@ test("family routes create members with active flags and defaults", async () => 
     ),
     true,
   );
+});
+
+test("family routes update members and linked professional categories", async () => {
+  const app = createTestApp();
+
+  await authenticatedRequest(app, familyPath);
+
+  const response = await authenticatedRequest(
+    app,
+    `${familyPath}/members/lea`,
+    {
+      body: JSON.stringify({ isActive: false, name: "Lina" }),
+      headers: { "Content-Type": "application/json" },
+      method: "PUT",
+    },
+  );
+  const family = await response.json();
+  const member = family.members.find(
+    (item: { id: string }) => item.id === "lea",
+  );
+  const category = family.categories.find(
+    (item: { id: string }) => item.id === "pro-lea",
+  );
+
+  assert.equal(response.status, 200);
+  assert.equal(member?.name, "Lina");
+  assert.equal(member?.isActive, false);
+  assert.equal(category?.label, "Lina");
+  assert.equal(category?.ownerId, "lea");
 });
 
 test("family routes create participation lines for active members", async () => {
@@ -342,6 +370,28 @@ test("family routes reject duplicate member names", async () => {
     headers: { "Content-Type": "application/json" },
     method: "POST",
   });
+  const body = await response.json();
+
+  assert.equal(response.status, 400);
+  assert.deepEqual(body, {
+    message: "Un membre avec ce nom existe déjà.",
+  });
+});
+
+test("family routes reject duplicate member update names", async () => {
+  const app = createTestApp();
+
+  await authenticatedRequest(app, familyPath);
+
+  const response = await authenticatedRequest(
+    app,
+    `${familyPath}/members/lea`,
+    {
+      body: JSON.stringify({ isActive: true, name: " marc " }),
+      headers: { "Content-Type": "application/json" },
+      method: "PUT",
+    },
+  );
   const body = await response.json();
 
   assert.equal(response.status, 400);

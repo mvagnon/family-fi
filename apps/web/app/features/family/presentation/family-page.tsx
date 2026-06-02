@@ -6,6 +6,7 @@ import {
   useDeleteFamilyMember,
   useDeleteFamilyRecurringLine,
   useFamily,
+  useUpdateFamilyMember,
   useUpdateFamilyRecurringLine,
 } from "../application/family-queries";
 import type { FamilyRepository } from "../domain/family-repository";
@@ -29,6 +30,7 @@ export function FamilyPage({ repository, spaceId }: FamilyPageProps) {
   const deleteCategoryMutation = useDeleteFamilyCategory(repository, spaceId);
   const deleteLineMutation = useDeleteFamilyRecurringLine(repository, spaceId);
   const deleteMemberMutation = useDeleteFamilyMember(repository, spaceId);
+  const updateMemberMutation = useUpdateFamilyMember(repository, spaceId);
   const updateLineMutation = useUpdateFamilyRecurringLine(repository, spaceId);
   const isSaving =
     addMemberMutation.isPending ||
@@ -37,6 +39,7 @@ export function FamilyPage({ repository, spaceId }: FamilyPageProps) {
     deleteCategoryMutation.isPending ||
     deleteLineMutation.isPending ||
     deleteMemberMutation.isPending ||
+    updateMemberMutation.isPending ||
     updateLineMutation.isPending;
   const mutationError = getFamilyMutationError([
     addMemberMutation,
@@ -45,6 +48,7 @@ export function FamilyPage({ repository, spaceId }: FamilyPageProps) {
     deleteCategoryMutation,
     deleteLineMutation,
     deleteMemberMutation,
+    updateMemberMutation,
     updateLineMutation,
   ]);
 
@@ -88,6 +92,9 @@ export function FamilyPage({ repository, spaceId }: FamilyPageProps) {
       }}
       onDeleteRecurringLine={async (lineId) => {
         await deleteLineMutation.mutateAsync(lineId);
+      }}
+      onUpdateMember={async (memberId, input) => {
+        await updateMemberMutation.mutateAsync({ input, memberId });
       }}
       onUpdateRecurringLine={async (lineId, input) => {
         await updateLineMutation.mutateAsync({ input, lineId });

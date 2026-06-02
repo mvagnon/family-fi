@@ -43,6 +43,7 @@ export type ParticipationMemberResolution =
 interface FamilyParticipationProjectionInput {
   currentMonthIndex: number;
   currentYear: number;
+  visibleMemberIds?: ReadonlySet<string>;
   year: number;
 }
 
@@ -50,14 +51,16 @@ export function getFamilyParticipationProjection(
   family: Family,
   input: FamilyParticipationProjectionInput,
 ): FamilyParticipationProjection {
-  const membersById = new Map(
-    family.members.map((member) => [member.id, member]),
-  );
+  const visibleMemberIds = input.visibleMemberIds;
+  const members = visibleMemberIds
+    ? family.members.filter((member) => visibleMemberIds.has(member.id))
+    : family.members;
+  const membersById = new Map(members.map((member) => [member.id, member]));
   const participationLines = getParticipationLines(family, membersById, input);
 
   return {
-    activeMembers: family.members.filter((member) => member.isActive),
-    monthGroups: buildMonthGroups(participationLines, family.members, input),
+    activeMembers: members.filter((member) => member.isActive),
+    monthGroups: buildMonthGroups(participationLines, members, input),
     summary: getParticipationSummary(participationLines),
   };
 }
@@ -129,20 +132,26 @@ function buildMonthGroups(
     const month = monthIndex + 1;
     const monthLines = lines.filter((line) => line.line.month === month);
     const monthId = `${input.year}-${String(month).padStart(2, "0")}`;
-    const memberGroups = members.map((member) => {
+    const memberGroups = members.flatMap((member) => {
       const memberLines = monthLines.filter(
         (line) => line.member.id === member.id,
       );
 
-      return {
-        id: `${monthId}-${member.id}`,
-        lines: memberLines,
-        member,
-        total: memberLines.reduce(
-          (total, line) => total + line.monthlyValue,
-          0,
-        ),
-      };
+      if (!member.isActive && memberLines.length === 0) {
+        return [];
+      }
+
+      return [
+        {
+          id: `${monthId}-${member.id}`,
+          lines: memberLines,
+          member,
+          total: memberLines.reduce(
+            (total, line) => total + line.monthlyValue,
+            0,
+          ),
+        },
+      ];
     });
 
     return {

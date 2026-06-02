@@ -1,9 +1,13 @@
 import AddIcon from "@mui/icons-material/Add";
+import CheckIcon from "@mui/icons-material/Check";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
-import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
+import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { ActionIconButton } from "@repo/ui/action-icon-button";
 import { SectionPanel } from "@repo/ui/section-panel";
@@ -13,16 +17,22 @@ import type { FamilyMember } from "../domain/family";
 
 interface FamilySidebarMembersProps {
   disabled: boolean;
+  isMemberVisible?: (memberId: string) => boolean;
   members: FamilyMember[];
   onAddMember?: () => void;
   onDeleteMember?: (member: FamilyMember) => void;
+  onEditMember?: (member: FamilyMember) => void;
+  onToggleMemberVisibility?: (member: FamilyMember) => void;
 }
 
 export function FamilySidebarMembers({
   disabled,
+  isMemberVisible,
   members,
   onAddMember,
   onDeleteMember,
+  onEditMember,
+  onToggleMemberVisibility,
 }: FamilySidebarMembersProps) {
   const { t } = useTranslation();
 
@@ -51,9 +61,12 @@ export function FamilySidebarMembers({
         {members.map((member) => (
           <FamilySidebarMemberRow
             disabled={disabled}
+            isVisible={isMemberVisible?.(member.id) ?? true}
             key={member.id}
             member={member}
             onDeleteMember={onDeleteMember}
+            onEditMember={onEditMember}
+            onToggleMemberVisibility={onToggleMemberVisibility}
           />
         ))}
       </Stack>
@@ -63,14 +76,23 @@ export function FamilySidebarMembers({
 
 function FamilySidebarMemberRow({
   disabled,
+  isVisible,
   member,
   onDeleteMember,
+  onEditMember,
+  onToggleMemberVisibility,
 }: {
   disabled: boolean;
+  isVisible: boolean;
   member: FamilyMember;
   onDeleteMember?: (member: FamilyMember) => void;
+  onEditMember?: (member: FamilyMember) => void;
+  onToggleMemberVisibility?: (member: FamilyMember) => void;
 }) {
   const { t } = useTranslation();
+  const hasActions = Boolean(
+    onDeleteMember || onEditMember || onToggleMemberVisibility,
+  );
 
   return (
     <Box
@@ -78,7 +100,7 @@ function FamilySidebarMemberRow({
         alignItems: "center",
         display: "grid",
         gap: 1.25,
-        gridTemplateColumns: onDeleteMember
+        gridTemplateColumns: hasActions
           ? "36px minmax(0, 1fr) auto"
           : "36px minmax(0, 1fr)",
         py: 1,
@@ -96,39 +118,75 @@ function FamilySidebarMemberRow({
         {member.name.slice(0, 1)}
       </Avatar>
       <Box sx={{ minWidth: 0 }}>
-        <Typography sx={{ fontWeight: 600 }}>{member.name}</Typography>
-        {member.role || !member.isActive ? (
-          <Stack
-            direction="row"
-            spacing={0.75}
-            sx={{ alignItems: "center", flexWrap: "wrap", mt: 0.25 }}
-          >
-            {member.role ? (
-              <Typography color="text.secondary" variant="body2">
-                {member.role}
-              </Typography>
-            ) : null}
-            {!member.isActive ? (
-              <Chip
-                label={t("family.sidebar.members.inactive")}
-                size="small"
-                variant="outlined"
+        <Stack
+          direction="row"
+          spacing={0.75}
+          sx={{ alignItems: "center", flexWrap: "wrap", mt: 0.25 }}
+        >
+          <Typography sx={{ fontWeight: 600 }}>{member.name}</Typography>
+          {member.isActive && (
+            <Tooltip title={t("family.sidebar.members.activeTooltip")}>
+              <CheckIcon
+                aria-label={t("family.sidebar.members.activeLabel")}
+                color="primary"
+                fontSize="small"
               />
-            ) : null}
-          </Stack>
-        ) : null}
+            </Tooltip>
+          )}
+        </Stack>
       </Box>
-      {onDeleteMember ? (
-        <ActionIconButton
-          disabled={disabled}
-          icon={<DeleteIcon fontSize="small" />}
-          label={t("family.sidebar.members.deleteLabel", {
-            name: member.name,
-          })}
-          onClick={() => onDeleteMember(member)}
-          size="small"
-          tooltip={t("family.sidebar.members.deleteTooltip")}
-        />
+      {hasActions ? (
+        <Stack direction="row" spacing={0.25}>
+          {onEditMember ? (
+            <ActionIconButton
+              disabled={disabled}
+              icon={<EditIcon fontSize="small" />}
+              label={t("family.sidebar.members.editLabel", {
+                name: member.name,
+              })}
+              onClick={() => onEditMember(member)}
+              size="small"
+              tooltip={t("family.sidebar.members.editTooltip")}
+            />
+          ) : null}
+          {onToggleMemberVisibility ? (
+            <ActionIconButton
+              disabled={disabled}
+              icon={
+                isVisible ? (
+                  <VisibilityIcon fontSize="small" />
+                ) : (
+                  <VisibilityOffIcon fontSize="small" />
+                )
+              }
+              label={t(
+                isVisible
+                  ? "family.sidebar.members.hideLabel"
+                  : "family.sidebar.members.showLabel",
+                { name: member.name },
+              )}
+              onClick={() => onToggleMemberVisibility(member)}
+              size="small"
+              tooltip={t(
+                isVisible
+                  ? "family.sidebar.members.hideTooltip"
+                  : "family.sidebar.members.showTooltip",
+              )}
+            />
+          ) : null}
+          {onDeleteMember ? (
+            <ActionIconButton
+              disabled={disabled}
+              icon={<DeleteIcon fontSize="small" />}
+              label={t("family.sidebar.members.deleteLabel", {
+                name: member.name,
+              })}
+              onClick={() => onDeleteMember(member)}
+              size="small"
+              tooltip={t("family.sidebar.members.deleteTooltip")}
+            />
+          ) : null}
+        </Stack>
       ) : null}
     </Box>
   );
