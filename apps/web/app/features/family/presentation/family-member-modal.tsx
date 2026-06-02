@@ -16,6 +16,7 @@ interface FamilyMemberModalProps {
   isSaving?: boolean;
   mode?: "create" | "edit";
   onClose: () => void;
+  onExited?: () => void;
   onSave: (member: CreateFamilyMemberInput) => Promise<void> | void;
   open: boolean;
 }
@@ -25,6 +26,7 @@ export function FamilyMemberModal({
   isSaving = false,
   mode = "create",
   onClose,
+  onExited,
   onSave,
   open,
 }: FamilyMemberModalProps) {
@@ -50,6 +52,7 @@ export function FamilyMemberModal({
       isSubmitting={isSaving}
       key={formKey}
       onClose={onClose}
+      onExited={onExited}
       onSubmit={handleSubmit}
       open={open}
       submitLabel={t(isEditMode ? "common.save" : "common.add")}

@@ -299,10 +299,8 @@ export function FamilyParticipationsDashboard({
           initialMember={selectedMember}
           isSaving={isSaving}
           mode={selectedMember ? "edit" : "create"}
-          onClose={() => {
-            setIsMemberModalOpen(false);
-            setSelectedMember(null);
-          }}
+          onClose={() => setIsMemberModalOpen(false)}
+          onExited={() => setSelectedMember(null)}
           onSave={handleSaveMember}
           open={isMemberModalOpen}
         />
