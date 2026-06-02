@@ -203,6 +203,8 @@ export const resources = {
         memberModal: {
           editTitle: "Edit member",
           isActive: "Active member",
+          isActiveHelper:
+            "Active members can participate financially and be selected in participations.",
           label: "Name",
           title: "Add member",
         },
@@ -525,6 +527,8 @@ export const resources = {
         memberModal: {
           editTitle: "Modifier un membre",
           isActive: "Membre actif",
+          isActiveHelper:
+            "Un membre actif peut participer financièrement et être sélectionné dans les participations.",
           label: "Nom",
           title: "Ajouter un membre",
         },
@@ -844,6 +848,8 @@ export const resources = {
         memberModal: {
           editTitle: "メンバーを編集",
           isActive: "有効なメンバー",
+          isActiveHelper:
+            "有効なメンバーは家計に参加でき、持分で選択できます。",
           label: "名前",
           title: "メンバーを追加",
         },
