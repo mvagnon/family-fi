@@ -4,6 +4,7 @@ import {
   useDeleteFamilyParticipationLine,
   useDeleteFamilyMember,
   useFamily,
+  useUpdateFamilyMember,
   useUpdateFamilyParticipationLine,
 } from "../application/family-queries";
 import type { FamilyRepository } from "../domain/family-repository";
@@ -38,18 +39,21 @@ export function FamilyParticipationsPage({
   );
   const addMemberMutation = useAddFamilyMember(repository, spaceId);
   const deleteMemberMutation = useDeleteFamilyMember(repository, spaceId);
+  const updateMemberMutation = useUpdateFamilyMember(repository, spaceId);
   const isSaving =
     createLineMutation.isPending ||
     updateLineMutation.isPending ||
     deleteLineMutation.isPending ||
     addMemberMutation.isPending ||
-    deleteMemberMutation.isPending;
+    deleteMemberMutation.isPending ||
+    updateMemberMutation.isPending;
   const mutationError = getFamilyMutationError([
     createLineMutation,
     updateLineMutation,
     deleteLineMutation,
     addMemberMutation,
     deleteMemberMutation,
+    updateMemberMutation,
   ]);
 
   if (familyQuery.isPending) {
@@ -85,6 +89,9 @@ export function FamilyParticipationsPage({
       }}
       onDeleteMember={async (memberId) => {
         await deleteMemberMutation.mutateAsync(memberId);
+      }}
+      onUpdateMember={async (memberId, input) => {
+        await updateMemberMutation.mutateAsync({ input, memberId });
       }}
       onUpdateParticipationLine={async (lineId, input) => {
         await updateLineMutation.mutateAsync({ input, lineId });

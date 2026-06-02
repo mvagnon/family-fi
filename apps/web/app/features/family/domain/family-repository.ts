@@ -4,6 +4,7 @@ import type {
   CreateParticipationLineInput,
   CreateRecurringLineInput,
   Family,
+  UpdateFamilyMemberInput,
   UpdateParticipationLineInput,
   UpdateRecurringLineInput,
 } from "./family";
@@ -27,6 +28,11 @@ export interface FamilyRepository {
   deleteMember(spaceId: string, memberId: string): Promise<Family>;
   deleteRecurringLine(spaceId: string, lineId: string): Promise<Family>;
   getFamily(spaceId: string): Promise<Family>;
+  updateMember(
+    spaceId: string,
+    memberId: string,
+    input: UpdateFamilyMemberInput,
+  ): Promise<Family>;
   updateParticipationLine(
     spaceId: string,
     lineId: string,

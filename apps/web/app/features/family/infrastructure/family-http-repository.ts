@@ -104,6 +104,13 @@ export function createFamilyHttpRepository(
           param: { spaceId },
         }),
       ),
+    updateMember: async (spaceId, memberId, input) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family.members[":id"].$put({
+          json: input,
+          param: { id: memberId, spaceId },
+        }),
+      ),
     updateRecurringLine: async (spaceId, lineId, input) =>
       readFamilyResponse(
         await client.api.spaces[":spaceId"].family["recurring-lines"][

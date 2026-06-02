@@ -43,6 +43,7 @@ export type ParticipationMemberResolution =
 interface FamilyParticipationProjectionInput {
   currentMonthIndex: number;
   currentYear: number;
+  visibleMemberIds?: ReadonlySet<string>;
   year: number;
 }
 
@@ -50,14 +51,16 @@ export function getFamilyParticipationProjection(
   family: Family,
   input: FamilyParticipationProjectionInput,
 ): FamilyParticipationProjection {
-  const membersById = new Map(
-    family.members.map((member) => [member.id, member]),
-  );
+  const visibleMemberIds = input.visibleMemberIds;
+  const members = visibleMemberIds
+    ? family.members.filter((member) => visibleMemberIds.has(member.id))
+    : family.members;
+  const membersById = new Map(members.map((member) => [member.id, member]));
   const participationLines = getParticipationLines(family, membersById, input);
 
   return {
-    activeMembers: family.members.filter((member) => member.isActive),
-    monthGroups: buildMonthGroups(participationLines, family.members, input),
+    activeMembers: members.filter((member) => member.isActive),
+    monthGroups: buildMonthGroups(participationLines, members, input),
     summary: getParticipationSummary(participationLines),
   };
 }

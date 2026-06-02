@@ -12,6 +12,7 @@ import {
 import {
   getDuplicateFamilyCategoryLabelError,
   getDuplicateFamilyMemberNameError,
+  getFamilyMemberLinkedCategoryIds,
   type FamilyLocalValidationError,
 } from "../application/family-local-commands";
 import {
@@ -27,11 +28,13 @@ import type {
   FamilyCategory,
   FamilyMember,
   RecurringLine,
+  UpdateFamilyMemberInput,
   UpdateRecurringLineInput,
 } from "../domain/family";
 import { FamilyBudgetTable } from "./family-budget-table";
 import { FamilyCategoryModal } from "./family-category-modal";
 import { FamilyMemberModal } from "./family-member-modal";
+import { useFamilyMemberVisibility } from "./family-member-visibility-provider";
 import { FamilySidebar } from "./family-sidebar";
 import { FamilySummaryStrip } from "./family-summary-strip";
 import { LineEditDialog } from "./line-edit-dialog";
@@ -50,6 +53,10 @@ interface FamilyDashboardProps {
   onDeleteCategory: (categoryId: string) => Promise<void> | void;
   onDeleteMember: (memberId: string) => Promise<void> | void;
   onDeleteRecurringLine: (lineId: string) => Promise<void> | void;
+  onUpdateMember: (
+    memberId: string,
+    input: UpdateFamilyMemberInput,
+  ) => Promise<void> | void;
   onUpdateRecurringLine: (
     lineId: string,
     input: UpdateRecurringLineInput,
@@ -67,9 +74,12 @@ export function FamilyDashboard({
   onDeleteCategory,
   onDeleteMember,
   onDeleteRecurringLine,
+  onUpdateMember,
   onUpdateRecurringLine,
 }: FamilyDashboardProps) {
   const { t } = useTranslation();
+  const { isMemberVisible, toggleMemberVisibility } =
+    useFamilyMemberVisibility();
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [localError, setLocalError] = useState<{
@@ -81,14 +91,35 @@ export function FamilyDashboard({
   );
   const [linePendingDeletion, setLinePendingDeletion] =
     useState<RecurringLine | null>(null);
+  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(
+    null,
+  );
   const [sidebarItemPendingDeletion, setSidebarItemPendingDeletion] =
     useState<SidebarDeletionTarget | null>(null);
   const [summaryLine, setSummaryLine] = useState<RecurringLine | null>(null);
   const [selectedLine, setSelectedLine] = useState<RecurringLine | null>(null);
+  const hiddenCategoryIds = new Set(
+    family.categories.flatMap((category) =>
+      category.ownerId && !isMemberVisible(category.ownerId)
+        ? [category.id]
+        : [],
+    ),
+  );
+  const visibleCategories = family.categories.filter(
+    (category) => !hiddenCategoryIds.has(category.id),
+  );
+  const visibleRecurringLines = family.recurringLines.filter(
+    (line) => !hiddenCategoryIds.has(line.categoryId),
+  );
 
   function handleAddLine() {
     setLineDialogMode("create");
-    setSelectedLine(createDraftRecurringLine(family, `new-line-${Date.now()}`));
+    setSelectedLine(
+      createDraftRecurringLine(
+        { ...family, categories: visibleCategories },
+        `new-line-${Date.now()}`,
+      ),
+    );
   }
 
   function handleEditLine(line: RecurringLine) {
@@ -98,6 +129,16 @@ export function FamilyDashboard({
 
   function handleViewLine(line: RecurringLine) {
     setSummaryLine(line);
+  }
+
+  function handleRequestAddMember() {
+    setSelectedMember(null);
+    setIsMemberModalOpen(true);
+  }
+
+  function handleRequestEditMember(member: FamilyMember) {
+    setSelectedMember(member);
+    setIsMemberModalOpen(true);
   }
 
   async function handleSaveCategory(input: CreateFamilyCategoryInput) {
@@ -120,10 +161,21 @@ export function FamilyDashboard({
     }
   }
 
-  async function handleSaveMember(input: CreateFamilyMemberInput) {
+  async function handleSaveMember(input: UpdateFamilyMemberInput) {
+    const ignoredCategoryIds = selectedMember
+      ? getFamilyMemberLinkedCategoryIds(family.categories, selectedMember.id)
+      : [];
     const duplicateError =
-      getDuplicateFamilyMemberNameError(family.members, input.name) ??
-      getDuplicateFamilyCategoryLabelError(family.categories, input.name);
+      getDuplicateFamilyMemberNameError(
+        family.members,
+        input.name,
+        selectedMember?.id,
+      ) ??
+      getDuplicateFamilyCategoryLabelError(
+        family.categories,
+        input.name,
+        ignoredCategoryIds,
+      );
 
     if (duplicateError) {
       showLocalError(getFamilyLocalValidationErrorMessage(duplicateError, t));
@@ -131,9 +183,15 @@ export function FamilyDashboard({
     }
 
     try {
-      await onAddMember(input);
+      if (selectedMember) {
+        await onUpdateMember(selectedMember.id, input);
+      } else {
+        await onAddMember(input);
+      }
+
       setLocalError(null);
       setIsMemberModalOpen(false);
+      setSelectedMember(null);
     } catch {
       return;
     }
@@ -206,13 +264,13 @@ export function FamilyDashboard({
   return (
     <>
       <AppShellTop>
-        <FamilySummaryStrip lines={family.recurringLines} />
+        <FamilySummaryStrip lines={visibleRecurringLines} />
       </AppShellTop>
       <AppShellContent>
         <FamilyBudgetTable
-          categories={family.categories}
+          categories={visibleCategories}
           disabled={isSaving}
-          lines={family.recurringLines}
+          lines={visibleRecurringLines}
           onAddLine={handleAddLine}
           onDeleteLine={handleRequestDeleteLine}
           onEditLine={handleEditLine}
@@ -230,13 +288,18 @@ export function FamilyDashboard({
           open={isCategoryModalOpen}
         />
         <FamilyMemberModal
+          initialMember={selectedMember}
           isSaving={isSaving}
-          onClose={() => setIsMemberModalOpen(false)}
+          mode={selectedMember ? "edit" : "create"}
+          onClose={() => {
+            setIsMemberModalOpen(false);
+            setSelectedMember(null);
+          }}
           onSave={handleSaveMember}
           open={isMemberModalOpen}
         />
         <LineEditDialog
-          categories={family.categories}
+          categories={visibleCategories}
           isSaving={isSaving}
           line={selectedLine}
           mode={lineDialogMode}
@@ -291,11 +354,16 @@ export function FamilyDashboard({
         <FamilySidebar
           categories={family.categories}
           disabled={isSaving}
+          isMemberVisible={isMemberVisible}
           members={family.members}
           onAddCategory={() => setIsCategoryModalOpen(true)}
-          onAddMember={() => setIsMemberModalOpen(true)}
+          onAddMember={handleRequestAddMember}
           onDeleteCategory={handleRequestDeleteCategory}
           onDeleteMember={handleRequestDeleteMember}
+          onEditMember={handleRequestEditMember}
+          onToggleMemberVisibility={(member) =>
+            toggleMemberVisibility(member.id)
+          }
         />
       </AppShellWidgets>
     </>

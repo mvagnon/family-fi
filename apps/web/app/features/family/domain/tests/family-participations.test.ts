@@ -61,6 +61,35 @@ test("family participation projection groups every member under each month", () 
   );
 });
 
+test("family participation projection excludes hidden members before totals", () => {
+  const projection = getFamilyParticipationProjection(createFamily(), {
+    currentMonthIndex: 4,
+    currentYear: 2026,
+    visibleMemberIds: new Set(["lea"]),
+    year: 2026,
+  });
+  const mayGroup = projection.monthGroups.find(
+    (group) => group.id === "2026-05",
+  );
+
+  assert.deepEqual(projection.summary, {
+    difference: 70,
+    expenses: 30,
+    income: 100,
+  });
+  assert.ok(mayGroup);
+  assert.deepEqual(
+    mayGroup.memberGroups.map((group) => group.member.id),
+    ["lea"],
+  );
+  assert.equal(
+    projection.monthGroups.some((group) =>
+      group.lines.some((item) => item.line.id === "marc-expense"),
+    ),
+    false,
+  );
+});
+
 test("family participation projection shows all months for past years", () => {
   const projection = getFamilyParticipationProjection(createFamily(), {
     currentMonthIndex: 4,

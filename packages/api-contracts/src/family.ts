@@ -70,6 +70,8 @@ export interface CreateFamilyMemberInput {
   name: string;
 }
 
+export type UpdateFamilyMemberInput = CreateFamilyMemberInput;
+
 export interface CreateFamilyCategoryInput {
   kind?: FamilyCategory["kind"];
   label: string;
@@ -87,15 +89,27 @@ export type CreateParticipationLineInput = Omit<
 
 export type UpdateParticipationLineInput = CreateParticipationLineInput;
 
+const familyMemberNameInputSchema = z.string({
+  error: "name must be a string.",
+});
+
+const familyMemberIsActiveInputSchema = z.boolean({
+  error: "isActive must be a boolean.",
+});
+
 export const createFamilyMemberInputSchema = z
   .object({
-    isActive: z
-      .boolean({ error: "isActive must be a boolean." })
-      .optional()
-      .default(true),
-    name: z.string({ error: "name must be a string." }),
+    isActive: familyMemberIsActiveInputSchema.optional().default(true),
+    name: familyMemberNameInputSchema,
   })
   .meta({ id: "CreateFamilyMemberInput" });
+
+export const updateFamilyMemberInputSchema = z
+  .object({
+    isActive: familyMemberIsActiveInputSchema,
+    name: familyMemberNameInputSchema,
+  })
+  .meta({ id: "UpdateFamilyMemberInput" });
 
 export const createFamilyCategoryInputSchema = z
   .object({

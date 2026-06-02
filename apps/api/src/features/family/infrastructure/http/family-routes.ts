@@ -17,6 +17,7 @@ import {
   familySchema,
   participationLineInputSchema,
   recurringLineInputSchema,
+  updateFamilyMemberInputSchema,
 } from "../../domain/family.js";
 
 interface FamilyRouteRequest {
@@ -93,6 +94,28 @@ const createMemberRoute = createRoute({
     400: validationErrorResponse,
     401: unauthenticatedResponse,
     403: accessDeniedResponse,
+  },
+});
+
+const updateMemberRoute = createRoute({
+  method: "put",
+  path: "/members/{id}",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: updateFamilyMemberInputSchema,
+        },
+      },
+    },
+    params: familyEntityRouteParamsSchema,
+  },
+  responses: {
+    200: familyJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+    404: notFoundResponse,
   },
 });
 
@@ -280,6 +303,15 @@ export function createFamilyRouter(
       );
 
       return context.json(family, 201);
+    })
+    .openapi(updateMemberRoute, async (context) => {
+      const family = await service.updateMember(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.param("id"),
+        context.req.valid("json"),
+      );
+
+      return context.json(family, 200);
     })
     .openapi(deleteMemberRoute, async (context) => {
       const family = await service.deleteMember(
