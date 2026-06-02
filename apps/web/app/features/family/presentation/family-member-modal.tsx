@@ -1,4 +1,3 @@
-import type { FormEvent } from "react";
 import Checkbox from "@mui/material/Checkbox";
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -6,6 +5,7 @@ import FormHelperText from "@mui/material/FormHelperText";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { FormDialog } from "@repo/ui/form-dialog";
+import type { FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { CreateFamilyMemberInput, FamilyMember } from "../domain/family";
@@ -80,7 +80,7 @@ export function FamilyMemberModal({
             }
             label={t("family.memberModal.isActive")}
           />
-          <FormHelperText sx={{ ml: 4, mt: -0.5 }}>
+          <FormHelperText sx={{ ml: 0, mt: 0.5 }}>
             {t("family.memberModal.isActiveHelper")}
           </FormHelperText>
         </FormControl>

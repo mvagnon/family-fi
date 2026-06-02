@@ -6,7 +6,6 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
-import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
@@ -119,31 +118,20 @@ function FamilySidebarMemberRow({
         {member.name.slice(0, 1)}
       </Avatar>
       <Box sx={{ minWidth: 0 }}>
-        <Typography sx={{ fontWeight: 600 }}>{member.name}</Typography>
         <Stack
           direction="row"
           spacing={0.75}
           sx={{ alignItems: "center", flexWrap: "wrap", mt: 0.25 }}
         >
-          {member.role ? (
-            <Typography color="text.secondary" variant="body2">
-              {member.role}
-            </Typography>
-          ) : null}
-          {member.isActive ? (
+          <Typography sx={{ fontWeight: 600 }}>{member.name}</Typography>
+          {member.isActive && (
             <Tooltip title={t("family.sidebar.members.activeTooltip")}>
               <CheckIcon
                 aria-label={t("family.sidebar.members.activeLabel")}
-                color="success"
+                color="primary"
                 fontSize="small"
               />
             </Tooltip>
-          ) : (
-            <Chip
-              label={t("family.sidebar.members.inactive")}
-              size="small"
-              variant="outlined"
-            />
           )}
         </Stack>
       </Box>

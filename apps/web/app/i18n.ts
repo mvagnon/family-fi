@@ -6,8 +6,8 @@ import {
   supportedLanguages,
 } from "./features/configuration/domain/supported-language";
 
-export { defaultLanguage, supportedLanguages };
 export type { SupportedLanguage } from "./features/configuration/domain/supported-language";
+export { defaultLanguage, supportedLanguages };
 
 export const resources = {
   en: {
@@ -227,7 +227,6 @@ export const resources = {
             editTooltip: "Edit member",
             hideLabel: "Hide {{name}}",
             hideTooltip: "Hide member",
-            inactive: "Inactive",
             showLabel: "Show {{name}}",
             showTooltip: "Show member",
             subtitle_one: "{{count}} person",
@@ -551,7 +550,6 @@ export const resources = {
             editTooltip: "Modifier le membre",
             hideLabel: "Masquer {{name}}",
             hideTooltip: "Masquer le membre",
-            inactive: "Inactif",
             showLabel: "Afficher {{name}}",
             showTooltip: "Afficher le membre",
             subtitle_one: "{{count}} personne",
@@ -872,7 +870,6 @@ export const resources = {
             editTooltip: "メンバーを編集",
             hideLabel: "{{name}}を非表示",
             hideTooltip: "メンバーを非表示",
-            inactive: "無効",
             showLabel: "{{name}}を表示",
             showTooltip: "メンバーを表示",
             subtitle_other: "{{count}}人",
