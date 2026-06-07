@@ -45,7 +45,6 @@ export function FamilyLoansPage({ repository, spaceId }: FamilyLoansPageProps) {
   const isSaving =
     createLoanMutation.isPending ||
     updateLoanMutation.isPending ||
-    updateLoanVisibilityMutation.isPending ||
     deleteLoanMutation.isPending ||
     createLineMutation.isPending ||
     updateLineMutation.isPending ||

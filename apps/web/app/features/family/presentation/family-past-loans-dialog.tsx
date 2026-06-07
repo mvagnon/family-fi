@@ -2,6 +2,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
+import Divider from "@mui/material/Divider";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -36,7 +37,7 @@ export function FamilyPastLoansDialog({
       <DialogTitle>{t("loans.pastDialog.title")}</DialogTitle>
       <DialogContent>
         {loans.length > 0 ? (
-          <Stack spacing={1} sx={{ pt: 1 }}>
+          <Stack divider={<Divider flexItem />} spacing={0} sx={{ pt: 1 }}>
             {loans.map((loan) => (
               <FamilyLoanListRow
                 disabled={disabled}

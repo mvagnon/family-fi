@@ -1,6 +1,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import HistoryIcon from "@mui/icons-material/History";
 import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { ActionIconButton } from "@repo/ui/action-icon-button";
@@ -54,16 +55,18 @@ export function FamilyLoansSidebar({
     >
       <Stack spacing={2}>
         {loans.length > 0 ? (
-          loans.map((loan) => (
-            <FamilyLoanListRow
-              disabled={disabled}
-              key={loan.loan.id}
-              loan={loan}
-              onDeleteLoan={onDeleteLoan}
-              onEditLoan={onEditLoan}
-              onToggleLoanVisibility={onToggleLoanVisibility}
-            />
-          ))
+          <Stack divider={<Divider flexItem />} spacing={0}>
+            {loans.map((loan) => (
+              <FamilyLoanListRow
+                disabled={disabled}
+                key={loan.loan.id}
+                loan={loan}
+                onDeleteLoan={onDeleteLoan}
+                onEditLoan={onEditLoan}
+                onToggleLoanVisibility={onToggleLoanVisibility}
+              />
+            ))}
+          </Stack>
         ) : (
           <Typography color="text.secondary" variant="body2">
             {t("loans.sidebar.empty")}

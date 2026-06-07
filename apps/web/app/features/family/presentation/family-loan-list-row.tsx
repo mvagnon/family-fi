@@ -31,19 +31,72 @@ export function FamilyLoanListRow({
 
   return (
     <Box
-      sx={(theme) => ({
-        border: `1px solid ${theme.palette.divider}`,
-        borderRadius: 1,
+      sx={{
         display: "grid",
-        gap: 1,
+        gap: 0.75,
         opacity: loan.loan.isHidden ? 0.58 : 1,
-        p: 1.25,
-      })}
+        py: 1.25,
+      }}
     >
-      <Box sx={{ display: "grid", gap: 0.5, minWidth: 0 }}>
+      <Box
+        sx={{
+          alignItems: "center",
+          display: "grid",
+          gap: 1,
+          gridTemplateColumns: "minmax(0, 1fr) auto",
+          minWidth: 0,
+        }}
+      >
         <Typography noWrap sx={{ fontWeight: 700 }}>
           {loan.loan.title}
         </Typography>
+        <Stack
+          direction="row"
+          spacing={0.25}
+          sx={{ flexShrink: 0, justifyContent: "flex-end" }}
+        >
+          <ActionIconButton
+            disabled={disabled}
+            icon={<EditIcon fontSize="small" />}
+            label={t("loans.sidebar.editLabel", { title: loan.loan.title })}
+            onClick={() => onEditLoan(loan)}
+            size="small"
+            tooltip={t("loans.sidebar.editTooltip")}
+          />
+          <ActionIconButton
+            disabled={disabled}
+            icon={
+              loan.loan.isHidden ? (
+                <VisibilityOffIcon fontSize="small" />
+              ) : (
+                <VisibilityIcon fontSize="small" />
+              )
+            }
+            label={t(
+              loan.loan.isHidden
+                ? "loans.sidebar.showLabel"
+                : "loans.sidebar.hideLabel",
+              { title: loan.loan.title },
+            )}
+            onClick={() => onToggleLoanVisibility(loan)}
+            size="small"
+            tooltip={t(
+              loan.loan.isHidden
+                ? "loans.sidebar.showTooltip"
+                : "loans.sidebar.hideTooltip",
+            )}
+          />
+          <ActionIconButton
+            disabled={disabled}
+            icon={<DeleteIcon fontSize="small" />}
+            label={t("loans.sidebar.deleteLabel", { title: loan.loan.title })}
+            onClick={() => onDeleteLoan(loan)}
+            size="small"
+            tooltip={t("loans.sidebar.deleteTooltip")}
+          />
+        </Stack>
+      </Box>
+      <Box sx={{ display: "grid", gap: 0.5, minWidth: 0 }}>
         <Typography color="text.secondary" variant="body2">
           {t("loans.sidebar.initialAmount", {
             value: familyFormat.formatCurrency(loan.loan.initialAmount),
@@ -60,47 +113,6 @@ export function FamilyLoanListRow({
           })}
         </Typography>
       </Box>
-      <Stack direction="row" spacing={0.25} sx={{ justifyContent: "flex-end" }}>
-        <ActionIconButton
-          disabled={disabled}
-          icon={<EditIcon fontSize="small" />}
-          label={t("loans.sidebar.editLabel", { title: loan.loan.title })}
-          onClick={() => onEditLoan(loan)}
-          size="small"
-          tooltip={t("loans.sidebar.editTooltip")}
-        />
-        <ActionIconButton
-          disabled={disabled}
-          icon={
-            loan.loan.isHidden ? (
-              <VisibilityOffIcon fontSize="small" />
-            ) : (
-              <VisibilityIcon fontSize="small" />
-            )
-          }
-          label={t(
-            loan.loan.isHidden
-              ? "loans.sidebar.showLabel"
-              : "loans.sidebar.hideLabel",
-            { title: loan.loan.title },
-          )}
-          onClick={() => onToggleLoanVisibility(loan)}
-          size="small"
-          tooltip={t(
-            loan.loan.isHidden
-              ? "loans.sidebar.showTooltip"
-              : "loans.sidebar.hideTooltip",
-          )}
-        />
-        <ActionIconButton
-          disabled={disabled}
-          icon={<DeleteIcon fontSize="small" />}
-          label={t("loans.sidebar.deleteLabel", { title: loan.loan.title })}
-          onClick={() => onDeleteLoan(loan)}
-          size="small"
-          tooltip={t("loans.sidebar.deleteTooltip")}
-        />
-      </Stack>
     </Box>
   );
 }
