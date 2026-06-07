@@ -1,6 +1,8 @@
+import {
+  getVisibleMonthIndexes,
+  roundCurrency,
+} from "./family-finance-calculations";
 import type { DistributionLine, Family, FamilyMember } from "./family";
-
-const monthIndexes = Array.from({ length: 12 }, (_, index) => index);
 
 export interface FamilyDistributionMemberAmount {
   amount: number;
@@ -202,24 +204,4 @@ function isVisibleDistributionMonth(
   }
 
   return false;
-}
-
-function getVisibleMonthIndexes(
-  input: FamilyDistributionProjectionInput,
-): number[] {
-  if (input.year > input.currentYear) {
-    return [];
-  }
-
-  if (input.year === input.currentYear) {
-    return monthIndexes.filter(
-      (monthIndex) => monthIndex <= input.currentMonthIndex,
-    );
-  }
-
-  return monthIndexes;
-}
-
-function roundCurrency(value: number): number {
-  return Math.round(value * 100) / 100;
 }

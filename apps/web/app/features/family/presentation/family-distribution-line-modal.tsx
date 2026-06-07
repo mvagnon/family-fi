@@ -20,6 +20,7 @@ import type {
   DistributionLine,
   FamilyMember,
 } from "../domain/family";
+import { roundCurrency } from "../domain/family-finance-calculations";
 import { distributionLineInputSchema } from "../domain/family";
 import type { FamilyDistributionMemberBalance } from "../domain/family-distributions";
 import {
@@ -558,10 +559,6 @@ function getBalanceColor(balance: number) {
   }
 
   return "text.secondary";
-}
-
-function roundCurrency(value: number): number {
-  return Math.round(value * 100) / 100;
 }
 
 function getDistributionLineFormValidationMessages(

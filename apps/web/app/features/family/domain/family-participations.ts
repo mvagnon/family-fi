@@ -1,6 +1,5 @@
+import { getVisibleMonthIndexes } from "./family-finance-calculations";
 import type { Family, FamilyMember, ParticipationLine } from "./family";
-
-const monthIndexes = Array.from({ length: 12 }, (_, index) => index);
 
 export interface FamilyParticipationLine {
   line: ParticipationLine;
@@ -163,22 +162,6 @@ function buildMonthGroups(
       year: input.year,
     };
   });
-}
-
-function getVisibleMonthIndexes(
-  input: FamilyParticipationProjectionInput,
-): number[] {
-  if (input.year > input.currentYear) {
-    return [];
-  }
-
-  if (input.year === input.currentYear) {
-    return monthIndexes.filter(
-      (monthIndex) => monthIndex <= input.currentMonthIndex,
-    );
-  }
-
-  return monthIndexes;
 }
 
 function getParticipationSummary(
