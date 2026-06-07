@@ -1,4 +1,4 @@
-import { roundCurrency } from "./family-finance-calculations";
+import { getAverageMonthlyAmountTotal } from "./family-finance-calculations";
 import type {
   Family,
   GeneratedRecurringLineSource,
@@ -41,7 +41,7 @@ function getLoanGeneratedRecurringLines(
   family: Family,
 ): GeneratedFamilyBudgetLine[] {
   return family.loans.flatMap((loan) => {
-    const monthlyTotals = getMonthlyTotals(
+    const averageAmount = getAverageMonthlyAmountTotal(
       family.loanRepaymentLines
         .filter((line) => line.loanId === loan.id)
         .map((line) => ({
@@ -50,7 +50,6 @@ function getLoanGeneratedRecurringLines(
           year: line.year,
         })),
     );
-    const averageAmount = getAverageNonZeroMonthlyTotal(monthlyTotals);
 
     if (averageAmount <= 0) {
       return [];
@@ -72,7 +71,7 @@ function getParticipationGeneratedRecurringLines(
   family: Family,
 ): GeneratedFamilyBudgetLine[] {
   return family.members.flatMap((member) => {
-    const monthlyTotals = getMonthlyTotals(
+    const averageAmount = getAverageMonthlyAmountTotal(
       family.participationLines
         .filter((line) => line.memberId === member.id)
         .map((line) => ({
@@ -81,7 +80,6 @@ function getParticipationGeneratedRecurringLines(
           year: line.year,
         })),
     );
-    const averageAmount = getAverageNonZeroMonthlyTotal(monthlyTotals);
 
     if (averageAmount === 0) {
       return [];
@@ -103,7 +101,7 @@ function getDistributionGeneratedRecurringLines(
   family: Family,
 ): GeneratedFamilyBudgetLine[] {
   return family.members.flatMap((member) => {
-    const monthlyTotals = getMonthlyTotals(
+    const averageAmount = getAverageMonthlyAmountTotal(
       family.distributionLines.flatMap((line) =>
         line.memberAmounts
           .filter((memberAmount) => memberAmount.memberId === member.id)
@@ -114,7 +112,6 @@ function getDistributionGeneratedRecurringLines(
           })),
       ),
     );
-    const averageAmount = getAverageNonZeroMonthlyTotal(monthlyTotals);
 
     if (averageAmount <= 0) {
       return [];
@@ -169,30 +166,4 @@ function getGeneratedRecurringLineId(
   sourceId: string,
 ): string {
   return `generated:${source}:${sourceId}`;
-}
-
-function getMonthlyTotals(
-  lines: { amount: number; month: number; year: number }[],
-): number[] {
-  const totalsByMonth = new Map<string, number>();
-
-  for (const line of lines) {
-    const key = `${line.year}-${String(line.month).padStart(2, "0")}`;
-    totalsByMonth.set(key, (totalsByMonth.get(key) ?? 0) + line.amount);
-  }
-
-  return [...totalsByMonth.values()].map(roundCurrency);
-}
-
-function getAverageNonZeroMonthlyTotal(monthlyTotals: number[]): number {
-  const nonZeroTotals = monthlyTotals.filter((total) => total !== 0);
-
-  if (nonZeroTotals.length === 0) {
-    return 0;
-  }
-
-  return roundCurrency(
-    nonZeroTotals.reduce((total, value) => total + value, 0) /
-      nonZeroTotals.length,
-  );
 }
