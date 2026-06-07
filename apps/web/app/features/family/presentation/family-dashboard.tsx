@@ -20,6 +20,10 @@ import {
   toCreateRecurringLineInput,
   toUpdateRecurringLineInput,
 } from "../application/family-line-commands";
+import {
+  toManualFamilyBudgetLines,
+  type FamilyBudgetLine,
+} from "../domain/family-budget";
 import type {
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
@@ -28,9 +32,14 @@ import type {
   FamilyCategory,
   FamilyMember,
   RecurringLine,
+  UpdateGeneratedRecurringLineSettingInput,
   UpdateFamilyMemberInput,
   UpdateRecurringLineInput,
 } from "../domain/family";
+import {
+  getGeneratedRecurringLines,
+  type GeneratedFamilyBudgetLine,
+} from "../domain/family-generated-recurring-lines";
 import { FamilyBudgetTable } from "./family-budget-table";
 import { FamilyCategoryModal } from "./family-category-modal";
 import { FamilyMemberModal } from "./family-member-modal";
@@ -53,6 +62,9 @@ interface FamilyDashboardProps {
   onDeleteCategory: (categoryId: string) => Promise<void> | void;
   onDeleteMember: (memberId: string) => Promise<void> | void;
   onDeleteRecurringLine: (lineId: string) => Promise<void> | void;
+  onUpdateGeneratedRecurringLineSetting: (
+    input: UpdateGeneratedRecurringLineSettingInput,
+  ) => Promise<void> | void;
   onUpdateMember: (
     memberId: string,
     input: UpdateFamilyMemberInput,
@@ -74,6 +86,7 @@ export function FamilyDashboard({
   onDeleteCategory,
   onDeleteMember,
   onDeleteRecurringLine,
+  onUpdateGeneratedRecurringLineSetting,
   onUpdateMember,
   onUpdateRecurringLine,
 }: FamilyDashboardProps) {
@@ -96,8 +109,13 @@ export function FamilyDashboard({
   );
   const [sidebarItemPendingDeletion, setSidebarItemPendingDeletion] =
     useState<SidebarDeletionTarget | null>(null);
-  const [summaryLine, setSummaryLine] = useState<RecurringLine | null>(null);
+  const [summaryLine, setSummaryLine] = useState<FamilyBudgetLine | null>(null);
   const [selectedLine, setSelectedLine] = useState<RecurringLine | null>(null);
+  const hiddenMemberIds = new Set(
+    family.members.flatMap((member) =>
+      isMemberVisible(member.id) ? [] : [member.id],
+    ),
+  );
   const hiddenCategoryIds = new Set(
     family.categories.flatMap((category) =>
       category.ownerId && !isMemberVisible(category.ownerId)
@@ -111,6 +129,13 @@ export function FamilyDashboard({
   const visibleRecurringLines = family.recurringLines.filter(
     (line) => !hiddenCategoryIds.has(line.categoryId),
   );
+  const visibleGeneratedLines = getGeneratedRecurringLines(family).filter(
+    (line) => line.source === "loans" || !hiddenMemberIds.has(line.sourceId),
+  );
+  const budgetLines = [
+    ...toManualFamilyBudgetLines(visibleRecurringLines),
+    ...visibleGeneratedLines,
+  ];
 
   function handleAddLine() {
     setLineDialogMode("create");
@@ -128,6 +153,10 @@ export function FamilyDashboard({
   }
 
   function handleViewLine(line: RecurringLine) {
+    setSummaryLine({ kind: "manual", line });
+  }
+
+  function handleViewBudgetLine(line: FamilyBudgetLine) {
     setSummaryLine(line);
   }
 
@@ -214,6 +243,18 @@ export function FamilyDashboard({
     setLinePendingDeletion(line);
   }
 
+  async function handleToggleGeneratedLine(line: GeneratedFamilyBudgetLine) {
+    try {
+      await onUpdateGeneratedRecurringLineSetting({
+        isEnabled: !line.isEnabled,
+        source: line.source,
+        sourceId: line.sourceId,
+      });
+    } catch {
+      return;
+    }
+  }
+
   function handleRequestDeleteMember(member: FamilyMember) {
     setSidebarItemPendingDeletion({ item: member, type: "member" });
   }
@@ -263,16 +304,18 @@ export function FamilyDashboard({
   return (
     <>
       <AppShellTop>
-        <FamilySummaryStrip lines={visibleRecurringLines} />
+        <FamilySummaryStrip lines={budgetLines} />
       </AppShellTop>
       <AppShellContent>
         <FamilyBudgetTable
           categories={visibleCategories}
           disabled={isSaving}
-          lines={visibleRecurringLines}
+          lines={budgetLines}
           onAddLine={handleAddLine}
           onDeleteLine={handleRequestDeleteLine}
           onEditLine={handleEditLine}
+          onToggleGeneratedLine={handleToggleGeneratedLine}
+          onViewBudgetLine={handleViewBudgetLine}
           onViewLine={handleViewLine}
         />
         <FeedbackSnackbar
@@ -305,7 +348,7 @@ export function FamilyDashboard({
           open={selectedLine !== null}
         />
         <LineSummaryDialog
-          categoryLabel={getCategoryLabel(family, summaryLine)}
+          categoryLabel={getCategoryLabel(family, summaryLine, t)}
           line={summaryLine}
           onClose={() => setSummaryLine(null)}
           open={summaryLine !== null}
@@ -371,14 +414,22 @@ type SidebarDeletionTarget =
   | { item: FamilyMember; type: "member" }
   | { item: FamilyCategory; type: "category" };
 
-function getCategoryLabel(family: Family, line: RecurringLine | null): string {
+function getCategoryLabel(
+  family: Family,
+  line: FamilyBudgetLine | null,
+  t: TFunction,
+): string {
   if (!line) {
     return "";
   }
 
+  if (line.kind === "generated") {
+    return t("family.budget.generatedCategory");
+  }
+
   return (
-    family.categories.find((category) => category.id === line.categoryId)
-      ?.label ?? line.categoryId
+    family.categories.find((category) => category.id === line.line.categoryId)
+      ?.label ?? line.line.categoryId
   );
 }
 

@@ -7,6 +7,8 @@ import type {
   FamilyCategory,
   FamilyMember,
   FamilySnapshot,
+  GeneratedRecurringLineSetting,
+  GeneratedRecurringLineSource,
   Loan,
   LoanRepaymentLine,
   ParticipationLine,
@@ -28,6 +30,9 @@ const familyInclude = {
       { month: "asc" as const },
       { createdAt: "asc" as const },
     ],
+  },
+  generatedRecurringLineSettings: {
+    orderBy: [{ source: "asc" as const }, { sourceId: "asc" as const }],
   },
   loanRepaymentLines: {
     orderBy: [
@@ -69,6 +74,9 @@ type LoanRecord = FamilyRecord["loans"][number];
 
 type LoanRepaymentLineRecord = FamilyRecord["loanRepaymentLines"][number];
 
+type GeneratedRecurringLineSettingRecord =
+  FamilyRecord["generatedRecurringLineSettings"][number];
+
 export class PrismaFamilyRepository implements FamilyRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
@@ -83,6 +91,11 @@ export class PrismaFamilyRepository implements FamilyRepository {
         members: toJsonValue(family.members),
         distributionLines: {
           create: family.distributionLines.map(toDistributionLineCreateInput),
+        },
+        generatedRecurringLineSettings: {
+          create: family.generatedRecurringLineSettings.map(
+            toGeneratedRecurringLineSettingCreateInput,
+          ),
         },
         loans: {
           create: family.loans.map(toLoanCreateInput),
@@ -175,18 +188,35 @@ export class PrismaFamilyRepository implements FamilyRepository {
     familyId: string,
     loanId: string,
   ): Promise<FamilySnapshot | null> {
-    const result = await this.prisma.loan.deleteMany({
-      where: {
-        familyId,
-        id: loanId,
-      },
+    return this.prisma.$transaction(async (prisma) => {
+      const result = await prisma.loan.deleteMany({
+        where: {
+          familyId,
+          id: loanId,
+        },
+      });
+
+      if (result.count === 0) {
+        return null;
+      }
+
+      await prisma.generatedRecurringLineSetting.deleteMany({
+        where: {
+          familyId,
+          source: "loans",
+          sourceId: loanId,
+        },
+      });
+
+      const updatedFamily = await prisma.family.findUniqueOrThrow({
+        include: familyInclude,
+        where: {
+          id: familyId,
+        },
+      });
+
+      return toFamilySnapshot(updatedFamily);
     });
-
-    if (result.count === 0) {
-      return null;
-    }
-
-    return this.getFamilyById(familyId);
   }
 
   async deleteLoanRepaymentLine(
@@ -316,6 +346,15 @@ export class PrismaFamilyRepository implements FamilyRepository {
           memberAmounts: {
             none: {},
           },
+        },
+      });
+      await prisma.generatedRecurringLineSetting.deleteMany({
+        where: {
+          familyId,
+          source: {
+            in: ["distribution", "participations"],
+          },
+          sourceId: memberId,
         },
       });
 
@@ -572,6 +611,30 @@ export class PrismaFamilyRepository implements FamilyRepository {
     });
   }
 
+  async updateGeneratedRecurringLineSetting(
+    familyId: string,
+    setting: GeneratedRecurringLineSetting,
+  ): Promise<FamilySnapshot> {
+    await this.prisma.generatedRecurringLineSetting.upsert({
+      create: {
+        ...toGeneratedRecurringLineSettingCreateInput(setting),
+        familyId,
+      },
+      update: {
+        isEnabled: setting.isEnabled,
+      },
+      where: {
+        familyId_source_sourceId: {
+          familyId,
+          source: setting.source,
+          sourceId: setting.sourceId,
+        },
+      },
+    });
+
+    return this.getFamilyById(familyId);
+  }
+
   async updateLoan(
     familyId: string,
     loan: Loan,
@@ -659,6 +722,9 @@ function toFamilySnapshot(family: FamilyRecord): FamilySnapshot {
   return {
     categories: parseCategories(family.categories),
     distributionLines: family.distributionLines.map(toDistributionLine),
+    generatedRecurringLineSettings: family.generatedRecurringLineSettings.map(
+      toGeneratedRecurringLineSetting,
+    ),
     id: family.id,
     loanRepaymentLines: family.loanRepaymentLines.map(toLoanRepaymentLine),
     loans: family.loans.map(toLoan),
@@ -666,6 +732,40 @@ function toFamilySnapshot(family: FamilyRecord): FamilySnapshot {
     participationLines: family.participationLines.map(toParticipationLine),
     recurringLines: family.recurringLines.map(toRecurringLine),
   };
+}
+
+function toGeneratedRecurringLineSettingCreateInput(
+  setting: GeneratedRecurringLineSetting,
+) {
+  return {
+    isEnabled: setting.isEnabled,
+    source: setting.source,
+    sourceId: setting.sourceId,
+  };
+}
+
+function toGeneratedRecurringLineSetting(
+  setting: GeneratedRecurringLineSettingRecord,
+): GeneratedRecurringLineSetting {
+  return {
+    isEnabled: setting.isEnabled,
+    source: toGeneratedRecurringLineSource(setting.source),
+    sourceId: setting.sourceId,
+  };
+}
+
+function toGeneratedRecurringLineSource(
+  source: string,
+): GeneratedRecurringLineSource {
+  if (
+    source === "loans" ||
+    source === "participations" ||
+    source === "distribution"
+  ) {
+    return source;
+  }
+
+  throw new Error(`Generated recurring line source ${source} is invalid.`);
 }
 
 function toDistributionLineCreateInput(line: DistributionLine) {

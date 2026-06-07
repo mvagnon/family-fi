@@ -16,6 +16,7 @@ export function createSeedFamily(familyId = "family-dev"): FamilySnapshot {
       },
     ],
     distributionLines: [],
+    generatedRecurringLineSettings: [],
     id: familyId,
     loanRepaymentLines: [],
     loans: [],

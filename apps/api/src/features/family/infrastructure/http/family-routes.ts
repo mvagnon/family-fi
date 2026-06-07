@@ -20,6 +20,7 @@ import {
   loanRepaymentLineInputSchema,
   participationLineInputSchema,
   recurringLineInputSchema,
+  updateGeneratedRecurringLineSettingInputSchema,
   updateLoanInputSchema,
   updateFamilyMemberInputSchema,
 } from "../../domain/family.js";
@@ -416,6 +417,28 @@ const updateRecurringLineRoute = createRoute({
   },
 });
 
+const updateGeneratedRecurringLineSettingRoute = createRoute({
+  method: "put",
+  path: "/generated-recurring-line-settings",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: updateGeneratedRecurringLineSettingInputSchema,
+        },
+      },
+    },
+    params: familyRouteParamsSchema,
+  },
+  responses: {
+    200: familyJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+    404: notFoundResponse,
+  },
+});
+
 const deleteRecurringLineRoute = createRoute({
   method: "delete",
   path: "/recurring-lines/{id}",
@@ -624,6 +647,14 @@ export function createFamilyRouter(
       const family = await service.updateRecurringLine(
         await getFamilyRouteRequest(context, authProvider),
         context.req.param("id"),
+        context.req.valid("json"),
+      );
+
+      return context.json(family, 200);
+    })
+    .openapi(updateGeneratedRecurringLineSettingRoute, async (context) => {
+      const family = await service.updateGeneratedRecurringLineSetting(
+        await getFamilyRouteRequest(context, authProvider),
         context.req.valid("json"),
       );
 

@@ -1,6 +1,7 @@
 import type {
   DistributionLine,
   FamilySnapshot,
+  GeneratedRecurringLineSetting,
   Loan,
   LoanRepaymentLine,
   ParticipationLine,
@@ -95,6 +96,11 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
 
       const updatedFamily = {
         ...family,
+        generatedRecurringLineSettings:
+          family.generatedRecurringLineSettings.filter(
+            (setting) =>
+              setting.source !== "loans" || setting.sourceId !== loanId,
+          ),
         loanRepaymentLines: family.loanRepaymentLines.filter(
           (line) => line.loanId !== loanId,
         ),
@@ -194,6 +200,13 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
 
           return memberAmounts.length > 0 ? [{ ...line, memberAmounts }] : [];
         }),
+        generatedRecurringLineSettings:
+          family.generatedRecurringLineSettings.filter(
+            (setting) =>
+              (setting.source !== "distribution" &&
+                setting.source !== "participations") ||
+              setting.sourceId !== memberId,
+          ),
         members: family.members.filter((member) => member.id !== memberId),
         participationLines: family.participationLines.filter(
           (line) => line.memberId !== memberId,
@@ -302,6 +315,33 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
       return cloneFamily(updatedFamily);
     },
 
+    async updateGeneratedRecurringLineSetting(familyId, setting) {
+      const family = getFamily(families, familyId);
+      const existingSettingIndex =
+        family.generatedRecurringLineSettings.findIndex(
+          (item) =>
+            item.source === setting.source &&
+            item.sourceId === setting.sourceId,
+        );
+      const generatedRecurringLineSettings = [
+        ...family.generatedRecurringLineSettings,
+      ];
+
+      if (existingSettingIndex === -1) {
+        generatedRecurringLineSettings.push(
+          cloneGeneratedRecurringLineSetting(setting),
+        );
+      } else {
+        generatedRecurringLineSettings[existingSettingIndex] =
+          cloneGeneratedRecurringLineSetting(setting);
+      }
+
+      const updatedFamily = { ...family, generatedRecurringLineSettings };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
+
     async updateLoan(familyId, loan) {
       const family = getFamily(families, familyId);
       const loanIndex = family.loans.findIndex((item) => item.id === loan.id);
@@ -358,6 +398,9 @@ function cloneFamily(family: FamilySnapshot): FamilySnapshot {
     ...family,
     categories: family.categories.map((category) => ({ ...category })),
     distributionLines: family.distributionLines.map(cloneDistributionLine),
+    generatedRecurringLineSettings: family.generatedRecurringLineSettings.map(
+      cloneGeneratedRecurringLineSetting,
+    ),
     loanRepaymentLines: family.loanRepaymentLines.map(cloneLoanRepaymentLine),
     loans: family.loans.map(cloneLoan),
     members: family.members.map((member) => ({ ...member })),
@@ -381,6 +424,12 @@ function cloneDistributionLine(line: DistributionLine): DistributionLine {
       ...memberAmount,
     })),
   };
+}
+
+function cloneGeneratedRecurringLineSetting(
+  setting: GeneratedRecurringLineSetting,
+): GeneratedRecurringLineSetting {
+  return { ...setting };
 }
 
 function cloneLoan(loan: Loan): Loan {

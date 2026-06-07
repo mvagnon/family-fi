@@ -4,6 +4,8 @@ import type {
   Family,
   FamilyCategory,
   FamilyMember,
+  GeneratedRecurringLineSetting,
+  GeneratedRecurringLineSource,
   Loan,
   LoanRepaymentLine,
   Movement,
@@ -28,6 +30,10 @@ export function parseFamilyResponse(value: unknown): Family {
     distributionLines: getOptionalArray(family, "distributionLines").map(
       parseDistributionLine,
     ),
+    generatedRecurringLineSettings: getOptionalArray(
+      family,
+      "generatedRecurringLineSettings",
+    ).map(parseGeneratedRecurringLineSetting),
     id: getString(family, "id"),
     loanRepaymentLines: getOptionalArray(family, "loanRepaymentLines").map(
       parseLoanRepaymentLine,
@@ -38,6 +44,18 @@ export function parseFamilyResponse(value: unknown): Family {
       parseParticipationLine,
     ),
     recurringLines: getArray(family, "recurringLines").map(parseRecurringLine),
+  };
+}
+
+function parseGeneratedRecurringLineSetting(
+  value: unknown,
+): GeneratedRecurringLineSetting {
+  const setting = getRecord(value);
+
+  return {
+    isEnabled: getBoolean(setting, "isEnabled"),
+    source: getGeneratedRecurringLineSource(setting),
+    sourceId: getString(setting, "sourceId"),
   };
 }
 
@@ -161,6 +179,22 @@ function getMovement(value: Record<string, unknown>): Movement {
 
   if (movement === "positive" || movement === "negative") {
     return movement;
+  }
+
+  throw new FamilyApiError(invalidFamilyMessage);
+}
+
+function getGeneratedRecurringLineSource(
+  value: Record<string, unknown>,
+): GeneratedRecurringLineSource {
+  const source = getString(value, "source");
+
+  if (
+    source === "loans" ||
+    source === "participations" ||
+    source === "distribution"
+  ) {
+    return source;
   }
 
   throw new FamilyApiError(invalidFamilyMessage);

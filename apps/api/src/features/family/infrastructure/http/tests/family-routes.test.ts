@@ -19,6 +19,7 @@ test("family routes expose and mutate the current family snapshot", async () => 
   assert.equal(initialResponse.status, 200);
   assert.equal(initialFamily.recurringLines.length, 6);
   assert.deepEqual(initialFamily.distributionLines, []);
+  assert.deepEqual(initialFamily.generatedRecurringLineSettings, []);
   assert.deepEqual(initialFamily.loans, []);
   assert.deepEqual(initialFamily.loanRepaymentLines, []);
 
@@ -67,6 +68,112 @@ test("family routes expose and mutate the current family snapshot", async () => 
     ),
     true,
   );
+});
+
+test("family routes update generated recurring line settings", async () => {
+  const app = createTestApp();
+
+  await authenticatedRequest(app, familyPath);
+
+  const loanResponse = await authenticatedRequest(app, `${familyPath}/loans`, {
+    body: JSON.stringify({
+      annualInterestRate: 3.5,
+      initialAmount: 1200,
+      title: "Saxophone",
+    }),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+  const familyWithLoan = await loanResponse.json();
+  const loan = familyWithLoan.loans.find(
+    (item: { title: string }) => item.title === "Saxophone",
+  );
+
+  assert.ok(loan);
+
+  const recurringLineCount = familyWithLoan.recurringLines.length;
+  const response = await authenticatedRequest(
+    app,
+    `${familyPath}/generated-recurring-line-settings`,
+    {
+      body: JSON.stringify({
+        isEnabled: false,
+        source: "loans",
+        sourceId: loan.id,
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "PUT",
+    },
+  );
+  const family = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(family.generatedRecurringLineSettings, [
+    {
+      isEnabled: false,
+      source: "loans",
+      sourceId: loan.id,
+    },
+  ]);
+  assert.equal(family.recurringLines.length, recurringLineCount);
+
+  const getResponse = await authenticatedRequest(app, familyPath);
+  const persistedFamily = await getResponse.json();
+
+  assert.equal(getResponse.status, 200);
+  assert.deepEqual(persistedFamily.generatedRecurringLineSettings, [
+    {
+      isEnabled: false,
+      source: "loans",
+      sourceId: loan.id,
+    },
+  ]);
+});
+
+test("family routes reject invalid generated recurring line settings", async () => {
+  const app = createTestApp();
+
+  await authenticatedRequest(app, familyPath);
+
+  const emptySourceIdResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/generated-recurring-line-settings`,
+    {
+      body: JSON.stringify({
+        isEnabled: false,
+        source: "loans",
+        sourceId: "",
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "PUT",
+    },
+  );
+  const emptySourceIdBody = await emptySourceIdResponse.json();
+
+  assert.equal(emptySourceIdResponse.status, 400);
+  assert.deepEqual(emptySourceIdBody, {
+    message: "Generated recurring line source id is required.",
+  });
+
+  const missingSourceResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/generated-recurring-line-settings`,
+    {
+      body: JSON.stringify({
+        isEnabled: false,
+        source: "participations",
+        sourceId: "missing-member",
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "PUT",
+    },
+  );
+  const missingSourceBody = await missingSourceResponse.json();
+
+  assert.equal(missingSourceResponse.status, 404);
+  assert.deepEqual(missingSourceBody, {
+    message: "Family member missing-member was not found.",
+  });
 });
 
 test("family routes delete recurring lines", async () => {

@@ -26,10 +26,12 @@ import type {
   FamilyCategory,
   FamilyMember,
   FamilySnapshot,
+  GeneratedRecurringLineSetting,
   Loan,
   LoanRepaymentLine,
   ParticipationLine,
   RecurringLine,
+  UpdateGeneratedRecurringLineSettingInput,
   UpdateLoanInput,
   UpdateLoanRepaymentLineInput,
   UpdateDistributionLineInput,
@@ -563,6 +565,19 @@ export class FamilyService {
     return updatedFamily;
   }
 
+  async updateGeneratedRecurringLineSetting(
+    request: FamilyRequest,
+    input: UpdateGeneratedRecurringLineSettingInput,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
+    const setting = normalizeGeneratedRecurringLineSetting(family, input);
+
+    return this.repository.updateGeneratedRecurringLineSetting(
+      family.id,
+      setting,
+    );
+  }
+
   async deleteRecurringLine(
     request: FamilyRequest,
     lineId: string,
@@ -852,6 +867,54 @@ function normalizeRecurringLine(line: RecurringLine): RecurringLine {
     recurrenceMonths,
     title,
   };
+}
+
+function normalizeGeneratedRecurringLineSetting(
+  family: FamilySnapshot,
+  input: UpdateGeneratedRecurringLineSettingInput,
+): GeneratedRecurringLineSetting {
+  const sourceId = requireText(
+    input.sourceId,
+    "Generated recurring line source id is required.",
+  );
+
+  if (typeof input.isEnabled !== "boolean") {
+    throw new InvalidFamilyInputError(
+      "Generated recurring line enabled state is invalid.",
+    );
+  }
+
+  if (input.source === "loans") {
+    const loan = family.loans.find((item) => item.id === sourceId);
+
+    if (!loan) {
+      throw new LoanNotFoundError(sourceId);
+    }
+
+    return {
+      isEnabled: input.isEnabled,
+      source: input.source,
+      sourceId,
+    };
+  }
+
+  if (input.source === "participations" || input.source === "distribution") {
+    const member = family.members.find((item) => item.id === sourceId);
+
+    if (!member) {
+      throw new FamilyMemberNotFoundError(sourceId);
+    }
+
+    return {
+      isEnabled: input.isEnabled,
+      source: input.source,
+      sourceId,
+    };
+  }
+
+  throw new InvalidFamilyInputError(
+    "Generated recurring line source is invalid.",
+  );
 }
 
 function normalizeLoanInput(loan: Loan): Loan {

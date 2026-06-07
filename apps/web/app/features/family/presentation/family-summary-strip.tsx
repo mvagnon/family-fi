@@ -2,18 +2,21 @@ import Box from "@mui/material/Box";
 import { MetricSummaryCard } from "@repo/ui/metric-summary-card";
 import { useTranslation } from "react-i18next";
 
-import { getFamilyBudgetSummary } from "../domain/family-budget";
-import type { RecurringLine } from "../domain/family";
+import {
+  getActiveBudgetRecurringLines,
+  getFamilyBudgetSummary,
+  type FamilyBudgetLine,
+} from "../domain/family-budget";
 import { useFamilyFormat } from "./use-family-format";
 
 interface FamilySummaryStripProps {
-  lines: RecurringLine[];
+  lines: FamilyBudgetLine[];
 }
 
 export function FamilySummaryStrip({ lines }: FamilySummaryStripProps) {
   const { t } = useTranslation();
   const familyFormat = useFamilyFormat();
-  const summary = getFamilyBudgetSummary(lines);
+  const summary = getFamilyBudgetSummary(getActiveBudgetRecurringLines(lines));
   const summaryCards = [
     { label: t("family.summary.monthly"), totals: summary.monthly },
     { label: t("family.summary.annual"), totals: summary.annual },
