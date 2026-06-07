@@ -11,8 +11,12 @@ import { LoadingButton } from "@repo/ui/loading-button";
 import { SectionPanel } from "@repo/ui/section-panel";
 import { useTranslation } from "react-i18next";
 
-import { getCategoryGroups } from "../domain/family-budget";
+import {
+  getCategoryGroups,
+  type FamilyBudgetLine,
+} from "../domain/family-budget";
 import type { FamilyCategory, RecurringLine } from "../domain/family";
+import type { GeneratedFamilyBudgetLine } from "../domain/family-generated-recurring-lines";
 import { FamilyBudgetEmptyState } from "./family-budget-empty-state";
 import { FamilyBudgetCategoryGroup } from "./family-budget-category-group";
 import {
@@ -23,11 +27,13 @@ import {
 interface FamilyBudgetTableProps {
   categories: FamilyCategory[];
   disabled?: boolean;
-  lines: RecurringLine[];
+  lines: FamilyBudgetLine[];
   onAddLine: () => void;
   onDeleteLine: (line: RecurringLine) => void;
   onEditLine: (line: RecurringLine) => void;
+  onToggleGeneratedLine: (line: GeneratedFamilyBudgetLine) => void;
   onViewLine?: (line: RecurringLine) => void;
+  onViewBudgetLine?: (line: FamilyBudgetLine) => void;
 }
 
 export function FamilyBudgetTable({
@@ -37,6 +43,8 @@ export function FamilyBudgetTable({
   onAddLine,
   onDeleteLine,
   onEditLine,
+  onToggleGeneratedLine,
+  onViewBudgetLine,
   onViewLine,
 }: FamilyBudgetTableProps) {
   const { t } = useTranslation();
@@ -115,6 +123,8 @@ export function FamilyBudgetTable({
                 key={group.id}
                 onDeleteLine={onDeleteLine}
                 onEditLine={onEditLine}
+                onToggleGeneratedLine={onToggleGeneratedLine}
+                onViewBudgetLine={onViewBudgetLine}
                 onViewLine={onViewLine}
               />
             ))}

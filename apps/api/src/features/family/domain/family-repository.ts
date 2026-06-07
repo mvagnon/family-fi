@@ -1,6 +1,7 @@
 import type {
   DistributionLine,
   FamilySnapshot,
+  GeneratedRecurringLineSetting,
   Loan,
   LoanRepaymentLine,
   ParticipationLine,
@@ -68,6 +69,10 @@ export interface FamilyRepository {
     familyId: string,
     line: DistributionLine,
   ): Promise<FamilySnapshot | null>;
+  updateGeneratedRecurringLineSetting(
+    familyId: string,
+    setting: GeneratedRecurringLineSetting,
+  ): Promise<FamilySnapshot>;
   updateLoan(familyId: string, loan: Loan): Promise<FamilySnapshot | null>;
   updateLoanRepaymentLine(
     familyId: string,

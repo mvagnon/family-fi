@@ -4,6 +4,12 @@ export const movementSchema = z.enum(["positive", "negative"]);
 
 export const familyCategoryKindSchema = z.enum(["shared", "professional"]);
 
+export const generatedRecurringLineSourceSchema = z.enum([
+  "loans",
+  "participations",
+  "distribution",
+]);
+
 export const familyMemberSchema = z
   .object({
     id: z.string(),
@@ -87,10 +93,31 @@ export const loanRepaymentLineSchema = z
   })
   .meta({ id: "LoanRepaymentLine" });
 
+export const generatedRecurringLineKeySchema = z
+  .object({
+    source: generatedRecurringLineSourceSchema,
+    sourceId: requiredTextSchema(
+      "Generated recurring line source id is required.",
+    ),
+  })
+  .meta({ id: "GeneratedRecurringLineKey" });
+
+export const generatedRecurringLineSettingSchema =
+  generatedRecurringLineKeySchema
+    .extend({
+      isEnabled: z.boolean({
+        error: "Generated recurring line enabled state is invalid.",
+      }),
+    })
+    .meta({ id: "GeneratedRecurringLineSetting" });
+
 export const familySchema = z
   .object({
     categories: z.array(familyCategorySchema),
     distributionLines: z.array(distributionLineSchema),
+    generatedRecurringLineSettings: z.array(
+      generatedRecurringLineSettingSchema,
+    ),
     id: z.string(),
     loanRepaymentLines: z.array(loanRepaymentLineSchema),
     loans: z.array(loanSchema),
@@ -111,6 +138,15 @@ export type DistributionMemberAmount = z.infer<
 export type DistributionLine = z.infer<typeof distributionLineSchema>;
 export type Loan = z.infer<typeof loanSchema>;
 export type LoanRepaymentLine = z.infer<typeof loanRepaymentLineSchema>;
+export type GeneratedRecurringLineSource = z.infer<
+  typeof generatedRecurringLineSourceSchema
+>;
+export type GeneratedRecurringLineKey = z.infer<
+  typeof generatedRecurringLineKeySchema
+>;
+export type GeneratedRecurringLineSetting = z.infer<
+  typeof generatedRecurringLineSettingSchema
+>;
 export type Family = z.infer<typeof familySchema>;
 
 export interface CreateFamilyMemberInput {
@@ -162,6 +198,9 @@ export type CreateLoanRepaymentLineInput = Omit<
 >;
 
 export type UpdateLoanRepaymentLineInput = CreateLoanRepaymentLineInput;
+
+export type UpdateGeneratedRecurringLineSettingInput =
+  GeneratedRecurringLineSetting;
 
 const familyMemberNameInputSchema = z.string({
   error: "name must be a string.",
@@ -354,6 +393,11 @@ export const loanRepaymentLineInputSchema = z
     path: ["feesAmount"],
   })
   .meta({ id: "LoanRepaymentLineInput" });
+
+export const updateGeneratedRecurringLineSettingInputSchema =
+  generatedRecurringLineSettingSchema.meta({
+    id: "UpdateGeneratedRecurringLineSettingInput",
+  });
 
 function requiredTextSchema(message: string) {
   return z.string({ error: message }).trim().min(1, { message });

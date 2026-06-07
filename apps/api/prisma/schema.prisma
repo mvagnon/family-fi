@@ -12,18 +12,19 @@ datasource db {
 }
 
 model Family {
-  id                 String             @id
-  spaceId            String             @unique @map("space_id")
-  space              Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  members            Json
-  categories         Json
-  distributionLines  DistributionLine[]
-  loans              Loan[]
-  loanRepaymentLines LoanRepaymentLine[]
-  recurringLines     RecurringLine[]
-  participationLines ParticipationLine[]
-  createdAt          DateTime           @default(now()) @map("created_at")
-  updatedAt          DateTime           @updatedAt @map("updated_at")
+  id                             String                          @id
+  spaceId                        String                          @unique @map("space_id")
+  space                          Space                           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  members                        Json
+  categories                     Json
+  distributionLines              DistributionLine[]
+  generatedRecurringLineSettings GeneratedRecurringLineSetting[]
+  loans                          Loan[]
+  loanRepaymentLines             LoanRepaymentLine[]
+  recurringLines                 RecurringLine[]
+  participationLines             ParticipationLine[]
+  createdAt                      DateTime                        @default(now()) @map("created_at")
+  updatedAt                      DateTime                        @updatedAt @map("updated_at")
 
   @@map("family")
 }
@@ -149,6 +150,19 @@ model RecurringLine {
 
   @@index([familyId])
   @@map("recurring_lines")
+}
+
+model GeneratedRecurringLineSetting {
+  familyId  String   @map("family_id")
+  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  source    String
+  sourceId  String   @map("source_id")
+  isEnabled Boolean  @default(true) @map("is_enabled")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@id([familyId, source, sourceId])
+  @@map("generated_recurring_line_settings")
 }
 
 model ParticipationLine {

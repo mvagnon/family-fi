@@ -1,9 +1,23 @@
 import type { FamilyCategory, RecurringLine } from "./family";
+import {
+  isGeneratedRecurringLineCategoryId,
+  type GeneratedFamilyBudgetLine,
+} from "./family-generated-recurring-lines";
+
+export interface ManualFamilyBudgetLine {
+  kind: "manual";
+  line: RecurringLine;
+}
+
+export type FamilyBudgetLine =
+  | ManualFamilyBudgetLine
+  | GeneratedFamilyBudgetLine;
 
 export interface FamilyCategoryGroup {
   id: string;
+  isGenerated?: boolean;
   label: string;
-  lines: RecurringLine[];
+  lines: FamilyBudgetLine[];
 }
 
 export interface PeriodTotals {
@@ -19,14 +33,15 @@ export interface FamilyBudgetSummary {
 
 export function getCategoryGroups(
   categories: FamilyCategory[],
-  lines: RecurringLine[],
+  lines: FamilyBudgetLine[],
 ): FamilyCategoryGroup[] {
-  const linesByCategory = new Map<string, RecurringLine[]>();
+  const linesByCategory = new Map<string, FamilyBudgetLine[]>();
 
   for (const line of lines) {
-    const categoryLines = linesByCategory.get(line.categoryId) ?? [];
+    const categoryId = line.line.categoryId;
+    const categoryLines = linesByCategory.get(categoryId) ?? [];
     categoryLines.push(line);
-    linesByCategory.set(line.categoryId, categoryLines);
+    linesByCategory.set(categoryId, categoryLines);
   }
 
   const knownCategoryIds = new Set(categories.map((category) => category.id));
@@ -54,6 +69,7 @@ export function getCategoryGroups(
       return [
         {
           id: categoryId,
+          isGenerated: isGeneratedRecurringLineCategoryId(categoryId),
           label: categoryId,
           lines: categoryLines,
         },
@@ -73,6 +89,23 @@ export function getFamilyBudgetSummary(
     annual: multiplyTotals(monthly, 12),
     monthly,
   };
+}
+
+export function toManualFamilyBudgetLines(
+  lines: RecurringLine[],
+): FamilyBudgetLine[] {
+  return lines.map((line) => ({
+    kind: "manual",
+    line,
+  }));
+}
+
+export function getActiveBudgetRecurringLines(
+  lines: FamilyBudgetLine[],
+): RecurringLine[] {
+  return lines.flatMap((line) =>
+    line.kind === "manual" || line.isEnabled ? [line.line] : [],
+  );
 }
 
 export function getPeriodTotals(lines: RecurringLine[]): PeriodTotals {

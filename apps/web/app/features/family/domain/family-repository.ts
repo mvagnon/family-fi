@@ -8,6 +8,7 @@ import type {
   CreateRecurringLineInput,
   Family,
   UpdateDistributionLineInput,
+  UpdateGeneratedRecurringLineSettingInput,
   UpdateLoanInput,
   UpdateLoanRepaymentLineInput,
   UpdateFamilyMemberInput,
@@ -60,6 +61,10 @@ export interface FamilyRepository {
     spaceId: string,
     lineId: string,
     input: UpdateDistributionLineInput,
+  ): Promise<Family>;
+  updateGeneratedRecurringLineSetting(
+    spaceId: string,
+    input: UpdateGeneratedRecurringLineSettingInput,
   ): Promise<Family>;
   updateLoan(
     spaceId: string,

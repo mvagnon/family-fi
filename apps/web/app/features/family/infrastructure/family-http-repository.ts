@@ -183,6 +183,15 @@ export function createFamilyHttpRepository(
           param: { id: lineId, spaceId },
         }),
       ),
+    updateGeneratedRecurringLineSetting: async (spaceId, input) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family[
+          "generated-recurring-line-settings"
+        ].$put({
+          json: input,
+          param: { spaceId },
+        }),
+      ),
     updateLoan: async (spaceId, loanId, input) =>
       readFamilyResponse(
         await client.api.spaces[":spaceId"].family.loans[":id"].$put({

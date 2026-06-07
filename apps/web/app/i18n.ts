@@ -132,6 +132,7 @@ export const resources = {
           category: {
             monthlyTotal: "{{value}} per month",
           },
+          generatedCategory: "Calculated",
           columns: {
             actions: "Actions",
             amount: "Amount",
@@ -188,11 +189,16 @@ export const resources = {
             maxAmount: "Maximum value",
             minAmount: "Minimum value",
             recurrence: "Recurrence",
+            source: "Source",
             title: "Title",
           },
+          hideGeneratedLabel: "Hide {{title}}",
+          hideGeneratedTooltip: "Hide generated line",
           noDescription: "No description.",
           selectCategory: "Select a category",
           selectRecurrence: "Select a recurrence",
+          showGeneratedLabel: "Show {{title}}",
+          showGeneratedTooltip: "Show generated line",
           summaryTitle: "Line summary",
           useEstimate: "Use an estimate",
           validation: {
@@ -665,6 +671,7 @@ export const resources = {
           category: {
             monthlyTotal: "{{value}} par mois",
           },
+          generatedCategory: "Calculé",
           columns: {
             actions: "Actions",
             amount: "Montant",
@@ -721,11 +728,16 @@ export const resources = {
             maxAmount: "Valeur maximale",
             minAmount: "Valeur minimale",
             recurrence: "Récurrence",
+            source: "Source",
             title: "Intitulé",
           },
+          hideGeneratedLabel: "Masquer {{title}}",
+          hideGeneratedTooltip: "Masquer la ligne calculée",
           noDescription: "Aucune description.",
           selectCategory: "Sélectionner une catégorie",
           selectRecurrence: "Sélectionner une récurrence",
+          showGeneratedLabel: "Afficher {{title}}",
+          showGeneratedTooltip: "Afficher la ligne calculée",
           summaryTitle: "Résumé de ligne",
           useEstimate: "Utiliser une estimation",
           validation: {
@@ -1201,6 +1213,7 @@ export const resources = {
           category: {
             monthlyTotal: "{{value}} / 月",
           },
+          generatedCategory: "計算",
           columns: {
             actions: "操作",
             amount: "金額",
@@ -1255,11 +1268,16 @@ export const resources = {
             maxAmount: "最大値",
             minAmount: "最小値",
             recurrence: "頻度",
+            source: "ソース",
             title: "項目",
           },
+          hideGeneratedLabel: "{{title}}を非表示",
+          hideGeneratedTooltip: "計算明細を非表示",
           noDescription: "説明はありません。",
           selectCategory: "カテゴリを選択",
           selectRecurrence: "頻度を選択",
+          showGeneratedLabel: "{{title}}を表示",
+          showGeneratedTooltip: "計算明細を表示",
           summaryTitle: "明細サマリー",
           useEstimate: "見積もりを使う",
           validation: {

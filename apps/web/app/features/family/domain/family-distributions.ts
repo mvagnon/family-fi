@@ -1,4 +1,6 @@
 import {
+  getAverageMonthlyAmountTotal,
+  getMonthlyAmountTotals,
   getVisibleMonthIndexes,
   roundCurrency,
 } from "./family-finance-calculations";
@@ -171,7 +173,14 @@ function getMemberBalances(family: Family): FamilyDistributionMemberBalance[] {
 function getDistributionSummary(
   monthGroups: FamilyDistributionMonthGroup[],
 ): FamilyDistributionSummary {
-  if (monthGroups.length === 0) {
+  const monthlyAmountLines = monthGroups.map((group) => ({
+    amount: group.receivedAmount,
+    month: group.monthIndex + 1,
+    year: group.year,
+  }));
+  const monthlyTotals = getMonthlyAmountTotals(monthlyAmountLines);
+
+  if (monthlyTotals.length === 0) {
     return {
       averageSalary: 0,
       maxSalary: 0,
@@ -179,13 +188,10 @@ function getDistributionSummary(
     };
   }
 
-  const monthlyTotals = monthGroups.map((group) => group.receivedAmount);
-
   return {
-    averageSalary: roundCurrency(
-      monthlyTotals.reduce((total, value) => total + value, 0) /
-        monthlyTotals.length,
-    ),
+    averageSalary: getAverageMonthlyAmountTotal(monthlyAmountLines, {
+      includeTotal: () => true,
+    }),
     maxSalary: Math.max(...monthlyTotals),
     minSalary: Math.min(...monthlyTotals),
   };

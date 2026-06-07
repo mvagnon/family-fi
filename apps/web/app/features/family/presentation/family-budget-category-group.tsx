@@ -6,8 +6,13 @@ import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import { useTranslation } from "react-i18next";
 
-import { getMonthlyRange } from "../domain/family-budget";
+import {
+  getActiveBudgetRecurringLines,
+  getMonthlyRange,
+  type FamilyBudgetLine,
+} from "../domain/family-budget";
 import type { RecurringLine } from "../domain/family";
+import type { GeneratedFamilyBudgetLine } from "../domain/family-generated-recurring-lines";
 import { FamilyBudgetLineRow } from "./family-budget-line-row";
 import { familyBudgetTableGridColumns } from "./family-budget-table-layout";
 import { useFamilyFormat } from "./use-family-format";
@@ -16,11 +21,14 @@ interface FamilyBudgetCategoryGroupProps {
   disabled: boolean;
   group: {
     id: string;
+    isGenerated?: boolean;
     label: string;
-    lines: RecurringLine[];
+    lines: FamilyBudgetLine[];
   };
   onDeleteLine: (line: RecurringLine) => void;
   onEditLine: (line: RecurringLine) => void;
+  onToggleGeneratedLine: (line: GeneratedFamilyBudgetLine) => void;
+  onViewBudgetLine?: (line: FamilyBudgetLine) => void;
   onViewLine?: (line: RecurringLine) => void;
 }
 
@@ -29,10 +37,15 @@ export function FamilyBudgetCategoryGroup({
   group,
   onDeleteLine,
   onEditLine,
+  onToggleGeneratedLine,
+  onViewBudgetLine,
   onViewLine,
 }: FamilyBudgetCategoryGroupProps) {
   const { t } = useTranslation();
   const familyFormat = useFamilyFormat();
+  const groupLabel = group.isGenerated
+    ? t("family.budget.generatedCategory")
+    : group.label;
 
   return (
     <Fragment>
@@ -49,7 +62,7 @@ export function FamilyBudgetCategoryGroup({
               py: 0.85,
             })}
           >
-            <Typography sx={{ fontWeight: 600 }}>{group.label}</Typography>
+            <Typography sx={{ fontWeight: 600 }}>{groupLabel}</Typography>
             <Typography
               sx={{
                 fontWeight: 600,
@@ -69,10 +82,12 @@ export function FamilyBudgetCategoryGroup({
       {group.lines.map((line) => (
         <FamilyBudgetLineRow
           disabled={disabled}
-          key={line.id}
+          key={line.line.id}
           line={line}
           onDeleteLine={onDeleteLine}
           onEditLine={onEditLine}
+          onToggleGeneratedLine={onToggleGeneratedLine}
+          onViewBudgetLine={onViewBudgetLine}
           onViewLine={onViewLine}
         />
       ))}
@@ -81,10 +96,10 @@ export function FamilyBudgetCategoryGroup({
 }
 
 function formatCategoryTotal(
-  lines: RecurringLine[],
+  lines: FamilyBudgetLine[],
   familyFormat: ReturnType<typeof useFamilyFormat>,
 ): string {
-  const total = lines.reduce(
+  const total = getActiveBudgetRecurringLines(lines).reduce(
     (summary, line) => {
       const range = getMonthlyRange(line);
 

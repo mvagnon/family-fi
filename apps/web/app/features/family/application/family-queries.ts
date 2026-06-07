@@ -11,6 +11,7 @@ import type {
   CreateRecurringLineInput,
   Family,
   UpdateDistributionLineInput,
+  UpdateGeneratedRecurringLineSettingInput,
   UpdateLoanInput,
   UpdateLoanRepaymentLineInput,
   UpdateFamilyMemberInput,
@@ -231,6 +232,19 @@ export function useUpdateFamilyDistributionLine(
       input: UpdateDistributionLineInput;
       lineId: string;
     }) => repository.updateDistributionLine(spaceId, lineId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
+  });
+}
+
+export function useUpdateGeneratedRecurringLineSetting(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: UpdateGeneratedRecurringLineSettingInput) =>
+      repository.updateGeneratedRecurringLineSetting(spaceId, input),
     onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
   });
 }

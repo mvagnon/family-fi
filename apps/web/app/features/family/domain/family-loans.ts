@@ -1,4 +1,5 @@
 import {
+  getAverageMonthlyAmountTotal,
   getVisibleMonthIndexes,
   roundCurrency,
 } from "./family-finance-calculations";
@@ -306,30 +307,22 @@ function getAverageMonthlyRepayment(
   family: Family,
   visibleLoanIds: ReadonlySet<string>,
 ): number {
-  const repaymentsByMonth = new Map<string, number>();
-
-  for (const line of family.loanRepaymentLines) {
-    if (!visibleLoanIds.has(line.loanId)) {
-      continue;
-    }
-
-    const key = `${line.year}-${String(line.month).padStart(2, "0")}`;
-    repaymentsByMonth.set(
-      key,
-      (repaymentsByMonth.get(key) ?? 0) + getLineRepaymentAmount(line),
-    );
-  }
-
-  const repayments = [...repaymentsByMonth.values()].filter(
-    (value) => value > 0,
-  );
-
-  if (repayments.length === 0) {
-    return 0;
-  }
-
-  return (
-    repayments.reduce((total, value) => total + value, 0) / repayments.length
+  return getAverageMonthlyAmountTotal(
+    family.loanRepaymentLines.flatMap((line) =>
+      visibleLoanIds.has(line.loanId)
+        ? [
+            {
+              amount: getLineRepaymentAmount(line),
+              month: line.month,
+              year: line.year,
+            },
+          ]
+        : [],
+    ),
+    {
+      includeTotal: (total) => total > 0,
+      roundAverage: false,
+    },
   );
 }
 

@@ -201,6 +201,7 @@ function createFamily(): Family {
         year: 2025,
       },
     ],
+    generatedRecurringLineSettings: [],
     recurringLines: [],
   };
 }

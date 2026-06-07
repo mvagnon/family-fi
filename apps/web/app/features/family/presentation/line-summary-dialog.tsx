@@ -6,21 +6,21 @@ import DialogTitle from "@mui/material/DialogTitle";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { RecurringLine } from "../domain/family";
+import type { FamilyBudgetLine } from "../domain/family-budget";
 import { LineSummaryContent } from "./line-summary-content";
 
 export { LineSummaryContent } from "./line-summary-content";
 
 interface LineSummaryDialogProps {
   categoryLabel: string;
-  line: RecurringLine | null;
+  line: FamilyBudgetLine | null;
   onClose: () => void;
   open: boolean;
 }
 
 interface VisibleLineSummaryDialog {
   categoryLabel: string;
-  line: RecurringLine;
+  line: FamilyBudgetLine;
 }
 
 export function LineSummaryDialog({
