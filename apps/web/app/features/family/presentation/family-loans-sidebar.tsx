@@ -52,7 +52,7 @@ export function FamilyLoansSidebar({
       titleId="family-loans-sidebar-title"
       titleVariant="h3"
     >
-      <Stack spacing={1}>
+      <Stack spacing={2}>
         {loans.length > 0 ? (
           loans.map((loan) => (
             <FamilyLoanListRow
@@ -69,15 +69,17 @@ export function FamilyLoansSidebar({
             {t("loans.sidebar.empty")}
           </Typography>
         )}
-        <Button
-          disabled={disabled}
-          onClick={onViewPastLoans}
-          startIcon={<HistoryIcon />}
-          sx={{ justifyContent: "flex-start", mt: 1 }}
-          variant="outlined"
-        >
-          {t("loans.sidebar.pastLoans", { count: pastLoanCount })}
-        </Button>
+        {pastLoanCount > 0 && (
+          <Button
+            disabled={disabled}
+            onClick={onViewPastLoans}
+            startIcon={<HistoryIcon />}
+            sx={{ justifyContent: "flex-start", mt: 1 }}
+            variant="text"
+          >
+            {t("loans.sidebar.pastLoans", { count: pastLoanCount })}
+          </Button>
+        )}
       </Stack>
     </SectionPanel>
   );
