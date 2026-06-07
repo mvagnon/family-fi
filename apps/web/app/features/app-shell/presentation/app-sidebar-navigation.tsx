@@ -28,7 +28,7 @@ const sidebarNavigationItems: SidebarNavigationItem[] = [
   { icon: ReceiptLongIcon, labelKey: "recurringBudget", to: "/family" },
   { icon: AccountBalanceIcon, labelKey: "loans", to: "/loans" },
   { icon: GroupsIcon, labelKey: "participations", to: "/participations" },
-  { icon: CallSplitIcon, labelKey: "distribution" },
+  { icon: CallSplitIcon, labelKey: "distribution", to: "/distribution" },
   { icon: SettingsIcon, labelKey: "settings", to: "/configuration" },
 ];
 
@@ -120,7 +120,8 @@ function SidebarNavigationRow({ item }: { item: SidebarNavigationItem }) {
             item.to === "/dashboard" ||
             item.to === "/family" ||
             item.to === "/loans" ||
-            item.to === "/participations"
+            item.to === "/participations" ||
+            item.to === "/distribution"
           }
           sx={navigationRowSx}
           to={item.to}

@@ -332,6 +332,86 @@ export const resources = {
           yearAriaLabel: "Participation year",
         },
       },
+      distributions: {
+        creation: {
+          addMember: "Add member",
+          amount: "Base amount",
+          balanceCurrent: "Balance: {{amount}}",
+          balanceProjected: "After distribution: {{amount}}",
+          balanceProjectedPending: "After distribution: --",
+          editTitle: "Edit distribution",
+          errors: {
+            noActiveMember:
+              "No active member is available for new distributions.",
+          },
+          memberAmount: "Received amount",
+          memberAmounts: "Included members",
+          memberField: "Member",
+          month: "Month",
+          removeMember: "Remove member",
+          title: "Add distribution",
+          validation: {
+            amountRequired: "Base amount is required.",
+            memberAmountInvalid: "Member amount must be 0 or more.",
+            memberDuplicate: "This member is already included.",
+            memberRequired: "Member is required.",
+            membersRequired: "At least one member is required.",
+            monthFuture: "Month cannot be after the current month.",
+            monthRequired: "Month is required.",
+            yearFuture: "Year cannot be after the current year.",
+            yearRequired: "Year is required.",
+          },
+          year: "Year",
+        },
+        deletion: {
+          lineDescription: "The distribution will be permanently deleted.",
+          lineTitle: "Delete this distribution?",
+        },
+        line: {
+          deleteLabel: "Delete {{label}}",
+          deleteTooltip: "Delete distribution",
+          editLabel: "Edit {{label}}",
+          editTooltip: "Edit distribution",
+        },
+        meta: {
+          description: "Salary distribution tracking.",
+          title: "Family-Fi | Distribution",
+        },
+        metrics: {
+          averageSalary: "Average salary",
+          maxSalary: "Max salary",
+          minSalary: "Min salary",
+        },
+        sidebar: {
+          balance: "Balance {{amount}}",
+        },
+        table: {
+          addLine: "Add distribution",
+          ariaLabel: "Monthly distributions",
+          collapseMonth: "Collapse {{month}}",
+          columns: {
+            balance: "Balance",
+            base: "Base",
+            distribution: "Distribution",
+            received: "Received",
+          },
+          empty: {
+            noLinesInYear: "No distribution for this year.",
+            noMember: "Add a family member to see distributions.",
+            title: "No distribution",
+          },
+          expandMonth: "Expand {{month}}",
+          memberAmount: "{{member}}: {{amount}} ({{balance}})",
+          title: "Monthly distributions",
+        },
+        top: {
+          keyFigures: "Key figures",
+          nextYear: "Next year",
+          previousYear: "Previous year",
+          selection: "Year",
+          yearAriaLabel: "Distribution year",
+        },
+      },
       loans: {
         deletion: {
           lineDescription: "The repayment line will be permanently deleted.",
@@ -786,6 +866,88 @@ export const resources = {
           yearAriaLabel: "Année des participations",
         },
       },
+      distributions: {
+        creation: {
+          addMember: "Ajouter un membre",
+          amount: "Somme de base",
+          balanceCurrent: "Solde : {{amount}}",
+          balanceProjected: "Après distribution : {{amount}}",
+          balanceProjectedPending: "Après distribution : --",
+          editTitle: "Modifier une distribution",
+          errors: {
+            noActiveMember:
+              "Aucun membre actif n'est disponible pour ajouter une distribution.",
+          },
+          memberAmount: "Somme reçue",
+          memberAmounts: "Membres intégrés",
+          memberField: "Membre",
+          month: "Mois",
+          removeMember: "Retirer le membre",
+          title: "Ajouter une distribution",
+          validation: {
+            amountRequired: "La somme de base est obligatoire.",
+            memberAmountInvalid:
+              "La somme du membre doit être supérieure ou égale à 0.",
+            memberDuplicate: "Ce membre est déjà intégré.",
+            memberRequired: "Le membre est obligatoire.",
+            membersRequired: "Au moins un membre est obligatoire.",
+            monthFuture: "Le mois ne peut pas dépasser le mois actuel.",
+            monthRequired: "Le mois est obligatoire.",
+            yearFuture: "L'année ne peut pas dépasser l'année actuelle.",
+            yearRequired: "L'année est obligatoire.",
+          },
+          year: "Année",
+        },
+        deletion: {
+          lineDescription: "La distribution sera supprimée définitivement.",
+          lineTitle: "Supprimer cette distribution ?",
+        },
+        line: {
+          deleteLabel: "Supprimer {{label}}",
+          deleteTooltip: "Supprimer la distribution",
+          editLabel: "Modifier {{label}}",
+          editTooltip: "Modifier la distribution",
+        },
+        meta: {
+          description: "Suivi des distributions de salaire.",
+          title: "Family-Fi | Distribution",
+        },
+        metrics: {
+          averageSalary: "Salaire moyen",
+          maxSalary: "Salaire max",
+          minSalary: "Salaire minimum",
+        },
+        sidebar: {
+          balance: "Solde {{amount}}",
+        },
+        table: {
+          addLine: "Ajouter une distribution",
+          ariaLabel: "Distributions mensuelles",
+          collapseMonth: "Réduire {{month}}",
+          columns: {
+            balance: "Solde",
+            base: "Base",
+            distribution: "Distribution",
+            received: "Reçu",
+          },
+          empty: {
+            noLinesInYear: "Aucune distribution pour cette année.",
+            noMember:
+              "Ajoutez un membre du foyer pour afficher les distributions.",
+            title: "Aucune distribution",
+          },
+          expandMonth: "Déplier {{month}}",
+          memberAmount: "{{member}} : {{amount}} ({{balance}})",
+          title: "Distributions mensuelles",
+        },
+        top: {
+          keyFigures: "Chiffres clés",
+          nextYear: "Année suivante",
+          previousYear: "Année précédente",
+          selection: "Année",
+          yearAriaLabel: "Année des distributions",
+        },
+      },
       loans: {
         deletion: {
           lineDescription:
@@ -1230,6 +1392,85 @@ export const resources = {
           previousYear: "前年",
           selection: "年",
           yearAriaLabel: "持分の年",
+        },
+      },
+      distributions: {
+        creation: {
+          addMember: "メンバーを追加",
+          amount: "基準額",
+          balanceCurrent: "残高: {{amount}}",
+          balanceProjected: "分配後: {{amount}}",
+          balanceProjectedPending: "分配後: --",
+          editTitle: "分配を編集",
+          errors: {
+            noActiveMember: "新しい分配に使える有効なメンバーがいません。",
+          },
+          memberAmount: "受取額",
+          memberAmounts: "対象メンバー",
+          memberField: "メンバー",
+          month: "月",
+          removeMember: "メンバーを削除",
+          title: "分配を追加",
+          validation: {
+            amountRequired: "基準額は必須です。",
+            memberAmountInvalid: "メンバー金額は0以上にしてください。",
+            memberDuplicate: "このメンバーはすでに含まれています。",
+            memberRequired: "メンバーは必須です。",
+            membersRequired: "少なくとも1人のメンバーが必要です。",
+            monthFuture: "月は現在の月を超えられません。",
+            monthRequired: "月は必須です。",
+            yearFuture: "年は現在の年を超えられません。",
+            yearRequired: "年は必須です。",
+          },
+          year: "年",
+        },
+        deletion: {
+          lineDescription: "分配は完全に削除されます。",
+          lineTitle: "この分配を削除しますか？",
+        },
+        line: {
+          deleteLabel: "{{label}}を削除",
+          deleteTooltip: "分配を削除",
+          editLabel: "{{label}}を編集",
+          editTooltip: "分配を編集",
+        },
+        meta: {
+          description: "給与分配の追跡。",
+          title: "Family-Fi | 分配",
+        },
+        metrics: {
+          averageSalary: "平均給与",
+          maxSalary: "最大給与",
+          minSalary: "最小給与",
+        },
+        sidebar: {
+          balance: "残高 {{amount}}",
+        },
+        table: {
+          addLine: "分配を追加",
+          ariaLabel: "月次分配",
+          collapseMonth: "{{month}}を折りたたむ",
+          columns: {
+            balance: "残高",
+            base: "基準",
+            distribution: "分配",
+            received: "受取",
+          },
+          empty: {
+            noLinesInYear: "この年の分配はありません。",
+            noMember: "分配を表示するには家族メンバーを追加してください。",
+            title: "分配はありません",
+          },
+          expandMonth: "{{month}}を展開",
+          memberAmount: "{{member}}: {{amount}} ({{balance}})",
+          title: "月次分配",
+        },
+        top: {
+          keyFigures: "主要指標",
+          nextYear: "翌年",
+          previousYear: "前年",
+          selection: "年",
+          yearAriaLabel: "分配の年",
         },
       },
       loans: {

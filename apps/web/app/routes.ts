@@ -11,6 +11,7 @@ export default [
   layout("routes/app-layout.tsx", [
     route("configuration", "routes/configuration.tsx"),
     route("dashboard", "routes/dashboard.tsx"),
+    route("distribution", "routes/distribution.tsx"),
     route("family", "routes/family.tsx"),
     route("loans", "routes/loans.tsx"),
     route("participations", "routes/participations.tsx"),

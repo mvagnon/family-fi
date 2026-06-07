@@ -11,12 +11,14 @@ import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { ActionIconButton } from "@repo/ui/action-icon-button";
 import { SectionPanel } from "@repo/ui/section-panel";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { FamilyMember } from "../domain/family";
 
 interface FamilySidebarMembersProps {
   disabled: boolean;
+  getMemberSecondaryContent?: (member: FamilyMember) => ReactNode;
   isMemberVisible?: (memberId: string) => boolean;
   members: FamilyMember[];
   onAddMember?: () => void;
@@ -27,6 +29,7 @@ interface FamilySidebarMembersProps {
 
 export function FamilySidebarMembers({
   disabled,
+  getMemberSecondaryContent,
   isMemberVisible,
   members,
   onAddMember,
@@ -61,6 +64,7 @@ export function FamilySidebarMembers({
         {members.map((member) => (
           <FamilySidebarMemberRow
             disabled={disabled}
+            secondaryContent={getMemberSecondaryContent?.(member)}
             isVisible={isMemberVisible?.(member.id) ?? true}
             key={member.id}
             member={member}
@@ -81,6 +85,7 @@ function FamilySidebarMemberRow({
   onDeleteMember,
   onEditMember,
   onToggleMemberVisibility,
+  secondaryContent,
 }: {
   disabled: boolean;
   isVisible: boolean;
@@ -88,6 +93,7 @@ function FamilySidebarMemberRow({
   onDeleteMember?: (member: FamilyMember) => void;
   onEditMember?: (member: FamilyMember) => void;
   onToggleMemberVisibility?: (member: FamilyMember) => void;
+  secondaryContent?: ReactNode;
 }) {
   const { t } = useTranslation();
   const hasActions = Boolean(
@@ -134,6 +140,9 @@ function FamilySidebarMemberRow({
             </Tooltip>
           )}
         </Stack>
+        {secondaryContent ? (
+          <Box sx={{ mt: 0.25, minWidth: 0 }}>{secondaryContent}</Box>
+        ) : null}
       </Box>
       {hasActions ? (
         <Stack direction="row" spacing={0.25}>

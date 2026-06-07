@@ -3,6 +3,7 @@ import type {
   PrismaClient,
 } from "../../../../generated/prisma/client.js";
 import type {
+  DistributionLine,
   FamilyCategory,
   FamilyMember,
   FamilySnapshot,
@@ -14,6 +15,20 @@ import type {
 import type { FamilyRepository } from "../../domain/family-repository.js";
 
 const familyInclude = {
+  distributionLines: {
+    include: {
+      memberAmounts: {
+        orderBy: {
+          memberId: "asc" as const,
+        },
+      },
+    },
+    orderBy: [
+      { year: "asc" as const },
+      { month: "asc" as const },
+      { createdAt: "asc" as const },
+    ],
+  },
   loanRepaymentLines: {
     orderBy: [
       { year: "asc" as const },
@@ -48,6 +63,8 @@ type RecurringLineRecord = FamilyRecord["recurringLines"][number];
 
 type ParticipationLineRecord = FamilyRecord["participationLines"][number];
 
+type DistributionLineRecord = FamilyRecord["distributionLines"][number];
+
 type LoanRecord = FamilyRecord["loans"][number];
 
 type LoanRepaymentLineRecord = FamilyRecord["loanRepaymentLines"][number];
@@ -64,6 +81,9 @@ export class PrismaFamilyRepository implements FamilyRepository {
         categories: toJsonValue(family.categories),
         id: family.id,
         members: toJsonValue(family.members),
+        distributionLines: {
+          create: family.distributionLines.map(toDistributionLineCreateInput),
+        },
         loans: {
           create: family.loans.map(toLoanCreateInput),
         },
@@ -105,6 +125,20 @@ export class PrismaFamilyRepository implements FamilyRepository {
     await this.prisma.participationLine.create({
       data: {
         ...toParticipationLineCreateInput(line),
+        familyId,
+      },
+    });
+
+    return this.getFamilyById(familyId);
+  }
+
+  async createDistributionLine(
+    familyId: string,
+    line: DistributionLine,
+  ): Promise<FamilySnapshot> {
+    await this.prisma.distributionLine.create({
+      data: {
+        ...toDistributionLineCreateInput(line),
         familyId,
       },
     });
@@ -191,6 +225,24 @@ export class PrismaFamilyRepository implements FamilyRepository {
     return this.getFamilyById(familyId);
   }
 
+  async deleteDistributionLine(
+    familyId: string,
+    lineId: string,
+  ): Promise<FamilySnapshot | null> {
+    const result = await this.prisma.distributionLine.deleteMany({
+      where: {
+        familyId,
+        id: lineId,
+      },
+    });
+
+    if (result.count === 0) {
+      return null;
+    }
+
+    return this.getFamilyById(familyId);
+  }
+
   async deleteRecurringLine(
     familyId: string,
     lineId: string,
@@ -248,6 +300,22 @@ export class PrismaFamilyRepository implements FamilyRepository {
         where: {
           familyId,
           memberId,
+        },
+      });
+      await prisma.distributionMemberAmount.deleteMany({
+        where: {
+          distributionLine: {
+            familyId,
+          },
+          memberId,
+        },
+      });
+      await prisma.distributionLine.deleteMany({
+        where: {
+          familyId,
+          memberAmounts: {
+            none: {},
+          },
         },
       });
 
@@ -340,6 +408,11 @@ export class PrismaFamilyRepository implements FamilyRepository {
           familyId: family.id,
         },
       });
+      await prisma.distributionLine.deleteMany({
+        where: {
+          familyId: family.id,
+        },
+      });
       await prisma.participationLine.deleteMany({
         where: {
           familyId: family.id,
@@ -365,6 +438,15 @@ export class PrismaFamilyRepository implements FamilyRepository {
         await prisma.loan.create({
           data: {
             ...toLoanCreateInput(loan),
+            familyId: family.id,
+          },
+        });
+      }
+
+      for (const line of family.distributionLines) {
+        await prisma.distributionLine.create({
+          data: {
+            ...toDistributionLineCreateInput(line),
             familyId: family.id,
           },
         });
@@ -444,6 +526,50 @@ export class PrismaFamilyRepository implements FamilyRepository {
     }
 
     return this.getFamilyById(familyId);
+  }
+
+  async updateDistributionLine(
+    familyId: string,
+    line: DistributionLine,
+  ): Promise<FamilySnapshot | null> {
+    return this.prisma.$transaction(async (prisma) => {
+      const result = await prisma.distributionLine.updateMany({
+        data: toDistributionLineUpdateInput(line),
+        where: {
+          familyId,
+          id: line.id,
+        },
+      });
+
+      if (result.count === 0) {
+        return null;
+      }
+
+      await prisma.distributionMemberAmount.deleteMany({
+        where: {
+          distributionLineId: line.id,
+        },
+      });
+
+      for (const memberAmount of line.memberAmounts) {
+        await prisma.distributionMemberAmount.create({
+          data: {
+            amountCents: toCents(memberAmount.amount),
+            distributionLineId: line.id,
+            memberId: memberAmount.memberId,
+          },
+        });
+      }
+
+      const updatedFamily = await prisma.family.findUniqueOrThrow({
+        include: familyInclude,
+        where: {
+          id: familyId,
+        },
+      });
+
+      return toFamilySnapshot(updatedFamily);
+    });
   }
 
   async updateLoan(
@@ -532,12 +658,51 @@ function toRecurringLineUpdateInput(line: RecurringLine) {
 function toFamilySnapshot(family: FamilyRecord): FamilySnapshot {
   return {
     categories: parseCategories(family.categories),
+    distributionLines: family.distributionLines.map(toDistributionLine),
     id: family.id,
     loanRepaymentLines: family.loanRepaymentLines.map(toLoanRepaymentLine),
     loans: family.loans.map(toLoan),
     members: parseMembers(family.members),
     participationLines: family.participationLines.map(toParticipationLine),
     recurringLines: family.recurringLines.map(toRecurringLine),
+  };
+}
+
+function toDistributionLineCreateInput(line: DistributionLine) {
+  return {
+    amountCents: toCents(line.amount),
+    createdAt: new Date(line.createdAt),
+    id: line.id,
+    memberAmounts: {
+      create: line.memberAmounts.map((memberAmount) => ({
+        amountCents: toCents(memberAmount.amount),
+        memberId: memberAmount.memberId,
+      })),
+    },
+    month: line.month,
+    year: line.year,
+  };
+}
+
+function toDistributionLineUpdateInput(line: DistributionLine) {
+  return {
+    amountCents: toCents(line.amount),
+    month: line.month,
+    year: line.year,
+  };
+}
+
+function toDistributionLine(line: DistributionLineRecord): DistributionLine {
+  return {
+    amount: fromCents(line.amountCents),
+    createdAt: line.createdAt.toISOString(),
+    id: line.id,
+    memberAmounts: line.memberAmounts.map((memberAmount) => ({
+      amount: fromCents(memberAmount.amountCents),
+      memberId: memberAmount.memberId,
+    })),
+    month: line.month,
+    year: line.year,
   };
 }
 

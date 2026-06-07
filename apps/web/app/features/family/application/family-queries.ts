@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { FamilyRepository } from "../domain/family-repository";
 import type {
+  CreateDistributionLineInput,
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
   CreateLoanInput,
@@ -9,6 +10,7 @@ import type {
   CreateParticipationLineInput,
   CreateRecurringLineInput,
   Family,
+  UpdateDistributionLineInput,
   UpdateLoanInput,
   UpdateLoanRepaymentLineInput,
   UpdateFamilyMemberInput,
@@ -93,6 +95,19 @@ export function useCreateFamilyParticipationLine(
   return useMutation({
     mutationFn: (input: CreateParticipationLineInput) =>
       repository.createParticipationLine(spaceId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
+  });
+}
+
+export function useCreateFamilyDistributionLine(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateDistributionLineInput) =>
+      repository.createDistributionLine(spaceId, input),
     onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
   });
 }
@@ -202,6 +217,24 @@ export function useUpdateFamilyParticipationLine(
   });
 }
 
+export function useUpdateFamilyDistributionLine(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      input,
+      lineId,
+    }: {
+      input: UpdateDistributionLineInput;
+      lineId: string;
+    }) => repository.updateDistributionLine(spaceId, lineId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
+  });
+}
+
 export function useDeleteFamilyParticipationLine(
   repository: FamilyRepository,
   spaceId: string,
@@ -211,6 +244,19 @@ export function useDeleteFamilyParticipationLine(
   return useMutation({
     mutationFn: (lineId: string) =>
       repository.deleteParticipationLine(spaceId, lineId),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
+  });
+}
+
+export function useDeleteFamilyDistributionLine(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (lineId: string) =>
+      repository.deleteDistributionLine(spaceId, lineId),
     onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
   });
 }

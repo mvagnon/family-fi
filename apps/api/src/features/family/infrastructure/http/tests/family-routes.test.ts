@@ -18,6 +18,7 @@ test("family routes expose and mutate the current family snapshot", async () => 
 
   assert.equal(initialResponse.status, 200);
   assert.equal(initialFamily.recurringLines.length, 6);
+  assert.deepEqual(initialFamily.distributionLines, []);
   assert.deepEqual(initialFamily.loans, []);
   assert.deepEqual(initialFamily.loanRepaymentLines, []);
 

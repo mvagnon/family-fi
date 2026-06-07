@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import {
   DUPLICATE_FAMILY_CATEGORY_LABEL_MESSAGE,
   DUPLICATE_FAMILY_MEMBER_NAME_MESSAGE,
+  DistributionLineNotFoundError,
   FamilyCategoryNotFoundError,
   FamilyMemberNotFoundError,
   InvalidFamilyInputError,
@@ -13,12 +14,15 @@ import {
   RecurringLineNotFoundError,
 } from "../domain/family.js";
 import type {
+  CreateDistributionLineInput,
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
   CreateLoanInput,
   CreateLoanRepaymentLineInput,
   CreateParticipationLineInput,
   CreateRecurringLineInput,
+  DistributionLine,
+  DistributionMemberAmount,
   FamilyCategory,
   FamilyMember,
   FamilySnapshot,
@@ -28,6 +32,7 @@ import type {
   RecurringLine,
   UpdateLoanInput,
   UpdateLoanRepaymentLineInput,
+  UpdateDistributionLineInput,
   UpdateFamilyMemberInput,
   UpdateParticipationLineInput,
   UpdateRecurringLineInput,
@@ -316,6 +321,89 @@ export class FamilyService {
 
     if (!updatedFamily) {
       throw new ParticipationLineNotFoundError(lineId);
+    }
+
+    return updatedFamily;
+  }
+
+  async createDistributionLine(
+    request: FamilyRequest,
+    input: CreateDistributionLineInput,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
+    const createdAt = this.now();
+    const distributionLine = normalizeDistributionLineInput(
+      family,
+      input,
+      createdAt,
+    );
+
+    const line: DistributionLine = {
+      amount: distributionLine.amount,
+      createdAt: createdAt.toISOString(),
+      id: this.createUniqueId(
+        "distribution",
+        distributionLine.label,
+        family.distributionLines.map((item) => item.id),
+      ),
+      memberAmounts: distributionLine.memberAmounts,
+      month: distributionLine.month,
+      year: distributionLine.year,
+    };
+
+    return this.repository.createDistributionLine(family.id, line);
+  }
+
+  async updateDistributionLine(
+    request: FamilyRequest,
+    lineId: string,
+    input: UpdateDistributionLineInput,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
+    const existingLine = family.distributionLines.find(
+      (line) => line.id === lineId,
+    );
+
+    if (!existingLine) {
+      throw new DistributionLineNotFoundError(lineId);
+    }
+
+    const distributionLine = normalizeDistributionLineInput(
+      family,
+      input,
+      this.now(),
+    );
+    const updatedFamily = await this.repository.updateDistributionLine(
+      family.id,
+      {
+        amount: distributionLine.amount,
+        createdAt: existingLine.createdAt,
+        id: existingLine.id,
+        memberAmounts: distributionLine.memberAmounts,
+        month: distributionLine.month,
+        year: distributionLine.year,
+      },
+    );
+
+    if (!updatedFamily) {
+      throw new DistributionLineNotFoundError(lineId);
+    }
+
+    return updatedFamily;
+  }
+
+  async deleteDistributionLine(
+    request: FamilyRequest,
+    lineId: string,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
+    const updatedFamily = await this.repository.deleteDistributionLine(
+      family.id,
+      lineId,
+    );
+
+    if (!updatedFamily) {
+      throw new DistributionLineNotFoundError(lineId);
     }
 
     return updatedFamily;
@@ -610,25 +698,100 @@ function normalizeParticipationLineInput(
   );
   const year = requireInteger(input.year, "Participation year is invalid.");
   const month = requireInteger(input.month, "Participation month is invalid.");
-  const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth() + 1;
-
-  if (year > currentYear) {
-    throw new InvalidFamilyInputError("Participation year is invalid.");
-  }
-
-  if (
-    month < 1 ||
-    month > 12 ||
-    (year === currentYear && month > currentMonth)
-  ) {
-    throw new InvalidFamilyInputError("Participation month is invalid.");
-  }
+  assertCurrentOrPastYearMonth({
+    currentDate,
+    month,
+    monthMessage: "Participation month is invalid.",
+    year,
+    yearMessage: "Participation year is invalid.",
+  });
 
   return {
     amount,
     member,
     memberId,
+    month,
+    year,
+  };
+}
+
+interface NormalizedDistributionLineInput {
+  amount: number;
+  label: string;
+  memberAmounts: DistributionMemberAmount[];
+  month: number;
+  year: number;
+}
+
+function normalizeDistributionLineInput(
+  family: FamilySnapshot,
+  input: CreateDistributionLineInput | UpdateDistributionLineInput,
+  currentDate: Date,
+): NormalizedDistributionLineInput {
+  const amount = requirePositiveNumber(
+    input.amount,
+    "Distribution amount is required.",
+  );
+  const year = requireInteger(input.year, "Distribution year is invalid.");
+  const month = requireInteger(input.month, "Distribution month is invalid.");
+
+  assertCurrentOrPastYearMonth({
+    currentDate,
+    month,
+    monthMessage: "Distribution month is invalid.",
+    year,
+    yearMessage: "Distribution year is invalid.",
+  });
+
+  if (input.memberAmounts.length === 0) {
+    throw new InvalidFamilyInputError("Distribution members are required.");
+  }
+
+  const memberIds = new Set<string>();
+  const memberAmounts = input.memberAmounts.map((item) => {
+    const memberId = requireText(
+      item.memberId,
+      "Distribution member is required.",
+    );
+
+    if (memberIds.has(memberId)) {
+      throw new InvalidFamilyInputError("Distribution member is duplicated.");
+    }
+
+    memberIds.add(memberId);
+
+    const member = family.members.find((familyMember) => {
+      return familyMember.id === memberId;
+    });
+
+    if (!member) {
+      throw new FamilyMemberNotFoundError(memberId);
+    }
+
+    if (!member.isActive) {
+      throw new InvalidFamilyInputError("Distribution member is inactive.");
+    }
+
+    return {
+      amount: requireNonNegativeNumber(
+        item.amount,
+        "Distribution member amount is invalid.",
+      ),
+      memberId,
+    };
+  });
+  const memberNames = memberAmounts
+    .map((memberAmount) => {
+      return family.members.find(
+        (member) => member.id === memberAmount.memberId,
+      )?.name;
+    })
+    .filter((name): name is string => Boolean(name));
+
+  return {
+    amount,
+    label: `${memberNames.join("-")}-${year}-${month}`,
+    memberAmounts,
     month,
     year,
   };
@@ -728,20 +891,13 @@ function normalizeLoanRepaymentLineInput(
   );
   const year = requireInteger(line.year, "Loan repayment year is invalid.");
   const month = requireInteger(line.month, "Loan repayment month is invalid.");
-  const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth() + 1;
-
-  if (year > currentYear) {
-    throw new InvalidFamilyInputError("Loan repayment year is invalid.");
-  }
-
-  if (
-    month < 1 ||
-    month > 12 ||
-    (year === currentYear && month > currentMonth)
-  ) {
-    throw new InvalidFamilyInputError("Loan repayment month is invalid.");
-  }
+  assertCurrentOrPastYearMonth({
+    currentDate,
+    month,
+    monthMessage: "Loan repayment month is invalid.",
+    year,
+    yearMessage: "Loan repayment year is invalid.",
+  });
 
   if (feesAmount > paidAmount) {
     throw new InvalidFamilyInputError(
@@ -757,6 +913,35 @@ function normalizeLoanRepaymentLineInput(
     paidAmount,
     year,
   };
+}
+
+function assertCurrentOrPastYearMonth({
+  currentDate,
+  month,
+  monthMessage,
+  year,
+  yearMessage,
+}: {
+  currentDate: Date;
+  month: number;
+  monthMessage: string;
+  year: number;
+  yearMessage: string;
+}) {
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1;
+
+  if (year > currentYear) {
+    throw new InvalidFamilyInputError(yearMessage);
+  }
+
+  if (
+    month < 1 ||
+    month > 12 ||
+    (year === currentYear && month > currentMonth)
+  ) {
+    throw new InvalidFamilyInputError(monthMessage);
+  }
 }
 
 function createDefaultId(prefix: string, label: string): string {

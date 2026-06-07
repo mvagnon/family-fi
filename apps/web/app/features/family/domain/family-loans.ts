@@ -1,6 +1,8 @@
+import {
+  getVisibleMonthIndexes,
+  roundCurrency,
+} from "./family-finance-calculations";
 import type { Family, Loan, LoanRepaymentLine } from "./family";
-
-const monthIndexes = Array.from({ length: 12 }, (_, index) => index);
 
 export interface FamilyLoanRepaymentLine {
   feesAmount: number;
@@ -384,20 +386,6 @@ function isVisibleLoanMonth(
   return false;
 }
 
-function getVisibleMonthIndexes(input: FamilyLoanProjectionInput): number[] {
-  if (input.year > input.currentYear) {
-    return [];
-  }
-
-  if (input.year === input.currentYear) {
-    return monthIndexes.filter(
-      (monthIndex) => monthIndex <= input.currentMonthIndex,
-    );
-  }
-
-  return monthIndexes;
-}
-
 function isLineBeforeOrInPeriod(
   line: LoanRepaymentLine,
   input: LoanPeriodInput,
@@ -418,8 +406,4 @@ function compareLoanRepaymentLines(
     Date.parse(left.createdAt) - Date.parse(right.createdAt) ||
     left.id.localeCompare(right.id)
   );
-}
-
-function roundCurrency(value: number): number {
-  return Math.round(value * 100) / 100;
 }

@@ -8,6 +8,9 @@ export const LINKED_FAMILY_CATEGORY_DELETE_MESSAGE =
 export {
   createFamilyCategoryInputSchema,
   createFamilyMemberInputSchema,
+  distributionLineInputSchema,
+  distributionLineSchema,
+  distributionMemberAmountSchema,
   familyCategoryKindSchema,
   familyCategorySchema,
   familyMemberSchema,
@@ -25,12 +28,15 @@ export {
 } from "@repo/api-contracts/family";
 
 export type {
+  CreateDistributionLineInput,
   CreateLoanInput,
   CreateLoanRepaymentLineInput,
   CreateParticipationLineInput,
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
   CreateRecurringLineInput,
+  DistributionLine,
+  DistributionMemberAmount,
   Family as FamilySnapshot,
   FamilyCategory,
   FamilyMember,
@@ -41,6 +47,7 @@ export type {
   RecurringLine,
   UpdateLoanInput,
   UpdateLoanRepaymentLineInput,
+  UpdateDistributionLineInput,
   UpdateParticipationLineInput,
   UpdateFamilyMemberInput,
   UpdateRecurringLineInput,
@@ -85,6 +92,13 @@ export class ParticipationLineNotFoundError extends FamilyEntityNotFoundError {
   constructor(lineId: string) {
     super(`Participation line ${lineId} was not found.`);
     this.name = "ParticipationLineNotFoundError";
+  }
+}
+
+export class DistributionLineNotFoundError extends FamilyEntityNotFoundError {
+  constructor(lineId: string) {
+    super(`Distribution line ${lineId} was not found.`);
+    this.name = "DistributionLineNotFoundError";
   }
 }
 

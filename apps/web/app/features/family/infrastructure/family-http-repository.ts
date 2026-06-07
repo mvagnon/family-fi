@@ -70,6 +70,13 @@ export function createFamilyHttpRepository(
           },
         ),
       ),
+    createDistributionLine: async (spaceId, input) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family["distribution-lines"].$post({
+          json: input,
+          param: { spaceId },
+        }),
+      ),
     createLoan: async (spaceId, input) =>
       readFamilyResponse(
         await client.api.spaces[":spaceId"].family.loans.$post({
@@ -103,6 +110,14 @@ export function createFamilyHttpRepository(
     deleteParticipationLine: async (spaceId, lineId) =>
       readFamilyResponse(
         await client.api.spaces[":spaceId"].family["participation-lines"][
+          ":id"
+        ].$delete({
+          param: { id: lineId, spaceId },
+        }),
+      ),
+    deleteDistributionLine: async (spaceId, lineId) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family["distribution-lines"][
           ":id"
         ].$delete({
           param: { id: lineId, spaceId },
@@ -153,6 +168,15 @@ export function createFamilyHttpRepository(
     updateParticipationLine: async (spaceId, lineId, input) =>
       readFamilyResponse(
         await client.api.spaces[":spaceId"].family["participation-lines"][
+          ":id"
+        ].$put({
+          json: input,
+          param: { id: lineId, spaceId },
+        }),
+      ),
+    updateDistributionLine: async (spaceId, lineId, input) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family["distribution-lines"][
           ":id"
         ].$put({
           json: input,

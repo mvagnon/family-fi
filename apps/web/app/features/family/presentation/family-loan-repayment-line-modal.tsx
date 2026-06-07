@@ -1,7 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { TFunction } from "i18next";
 import { useEffect, useMemo, useRef, useState } from "react";
-import InputAdornment from "@mui/material/InputAdornment";
 import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
@@ -18,6 +17,13 @@ import type {
 } from "../domain/family";
 import { loanRepaymentLineInputSchema } from "../domain/family";
 import { getSuggestedLoanFees } from "../domain/family-loans";
+import {
+  getAmountSlotProps,
+  getFieldErrorMessage,
+  requiredIntegerTextSchema,
+  requiredNumberTextSchema,
+  requiredTextSchema,
+} from "./family-form-fields";
 import { useFamilyFormat } from "./use-family-format";
 
 interface LoanRepaymentLineFormValidationMessages {
@@ -389,40 +395,4 @@ function getLoanRepaymentLineFormValidationMessages(
     yearFuture: t("loans.repaymentModal.validation.yearFuture"),
     yearRequired: t("loans.repaymentModal.validation.yearRequired"),
   };
-}
-
-function requiredTextSchema(message: string) {
-  return z.string({ error: message }).trim().min(1, { message });
-}
-
-function requiredNumberTextSchema(message: string) {
-  return z
-    .string({ error: message })
-    .trim()
-    .min(1, { message })
-    .transform((value) => Number(value.replace(",", ".")))
-    .refine((value) => Number.isFinite(value), { message });
-}
-
-function requiredIntegerTextSchema(message: string) {
-  return requiredNumberTextSchema(message).refine(Number.isInteger, {
-    message,
-  });
-}
-
-function getFieldErrorMessage(error: { message?: unknown } | undefined) {
-  return typeof error?.message === "string" ? error.message : undefined;
-}
-
-function getAmountSlotProps(currencySymbol: string) {
-  return {
-    htmlInput: {
-      inputMode: "decimal",
-    },
-    input: {
-      startAdornment: (
-        <InputAdornment position="start">{currencySymbol}</InputAdornment>
-      ),
-    },
-  } as const;
 }

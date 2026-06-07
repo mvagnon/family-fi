@@ -1,4 +1,6 @@
 import type {
+  DistributionLine,
+  DistributionMemberAmount,
   Family,
   FamilyCategory,
   FamilyMember,
@@ -23,6 +25,9 @@ export function parseFamilyResponse(value: unknown): Family {
 
   return {
     categories: getArray(family, "categories").map(parseCategory),
+    distributionLines: getOptionalArray(family, "distributionLines").map(
+      parseDistributionLine,
+    ),
     id: getString(family, "id"),
     loanRepaymentLines: getOptionalArray(family, "loanRepaymentLines").map(
       parseLoanRepaymentLine,
@@ -110,6 +115,32 @@ function parseParticipationLine(value: unknown): ParticipationLine {
     memberId: getString(line, "memberId"),
     month: getMonth(line),
     year: getPositiveInteger(line, "year"),
+  };
+}
+
+function parseDistributionLine(value: unknown): DistributionLine {
+  const line = getRecord(value);
+
+  return {
+    amount: getPositiveNumber(line, "amount"),
+    createdAt: getDateString(line, "createdAt"),
+    id: getString(line, "id"),
+    memberAmounts: getArray(line, "memberAmounts").map(
+      parseDistributionMemberAmount,
+    ),
+    month: getMonth(line),
+    year: getPositiveInteger(line, "year"),
+  };
+}
+
+function parseDistributionMemberAmount(
+  value: unknown,
+): DistributionMemberAmount {
+  const memberAmount = getRecord(value);
+
+  return {
+    amount: getNonNegativeNumber(memberAmount, "amount"),
+    memberId: getString(memberAmount, "memberId"),
   };
 }
 

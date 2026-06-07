@@ -14,6 +14,7 @@ import type { FamilyService } from "../../application/family-service.js";
 import {
   createFamilyCategoryInputSchema,
   createFamilyMemberInputSchema,
+  distributionLineInputSchema,
   familySchema,
   loanInputSchema,
   loanRepaymentLineInputSchema,
@@ -214,6 +215,27 @@ const createParticipationLineRoute = createRoute({
   },
 });
 
+const createDistributionLineRoute = createRoute({
+  method: "post",
+  path: "/distribution-lines",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: distributionLineInputSchema,
+        },
+      },
+    },
+    params: familyRouteParamsSchema,
+  },
+  responses: {
+    201: familyJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+  },
+});
+
 const createLoanRoute = createRoute({
   method: "post",
   path: "/loans",
@@ -350,6 +372,28 @@ const updateParticipationLineRoute = createRoute({
   },
 });
 
+const updateDistributionLineRoute = createRoute({
+  method: "put",
+  path: "/distribution-lines/{id}",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: distributionLineInputSchema,
+        },
+      },
+    },
+    params: familyEntityRouteParamsSchema,
+  },
+  responses: {
+    200: familyJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+    404: notFoundResponse,
+  },
+});
+
 const updateRecurringLineRoute = createRoute({
   method: "put",
   path: "/recurring-lines/{id}",
@@ -389,6 +433,20 @@ const deleteRecurringLineRoute = createRoute({
 const deleteParticipationLineRoute = createRoute({
   method: "delete",
   path: "/participation-lines/{id}",
+  request: {
+    params: familyEntityRouteParamsSchema,
+  },
+  responses: {
+    200: familyJsonResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+    404: notFoundResponse,
+  },
+});
+
+const deleteDistributionLineRoute = createRoute({
+  method: "delete",
+  path: "/distribution-lines/{id}",
   request: {
     params: familyEntityRouteParamsSchema,
   },
@@ -470,6 +528,14 @@ export function createFamilyRouter(
 
       return context.json(family, 201);
     })
+    .openapi(createDistributionLineRoute, async (context) => {
+      const family = await service.createDistributionLine(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.valid("json"),
+      );
+
+      return context.json(family, 201);
+    })
     .openapi(createLoanRoute, async (context) => {
       const family = await service.createLoan(
         await getFamilyRouteRequest(context, authProvider),
@@ -529,8 +595,25 @@ export function createFamilyRouter(
 
       return context.json(family, 200);
     })
+    .openapi(updateDistributionLineRoute, async (context) => {
+      const family = await service.updateDistributionLine(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.param("id"),
+        context.req.valid("json"),
+      );
+
+      return context.json(family, 200);
+    })
     .openapi(deleteParticipationLineRoute, async (context) => {
       const family = await service.deleteParticipationLine(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.param("id"),
+      );
+
+      return context.json(family, 200);
+    })
+    .openapi(deleteDistributionLineRoute, async (context) => {
+      const family = await service.deleteDistributionLine(
         await getFamilyRouteRequest(context, authProvider),
         context.req.param("id"),
       );

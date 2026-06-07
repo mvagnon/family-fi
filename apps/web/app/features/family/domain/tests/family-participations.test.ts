@@ -143,6 +143,7 @@ test("family participation member resolution distinguishes active states", () =>
 function createFamily(): Family {
   return {
     categories: [],
+    distributionLines: [],
     id: "family",
     loanRepaymentLines: [],
     loans: [],
