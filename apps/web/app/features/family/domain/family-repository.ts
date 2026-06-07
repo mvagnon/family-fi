@@ -1,4 +1,5 @@
 import type {
+  CreateDistributionLineInput,
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
   CreateLoanInput,
@@ -6,6 +7,7 @@ import type {
   CreateParticipationLineInput,
   CreateRecurringLineInput,
   Family,
+  UpdateDistributionLineInput,
   UpdateLoanInput,
   UpdateLoanRepaymentLineInput,
   UpdateFamilyMemberInput,
@@ -27,6 +29,10 @@ export interface FamilyRepository {
     spaceId: string,
     input: CreateParticipationLineInput,
   ): Promise<Family>;
+  createDistributionLine(
+    spaceId: string,
+    input: CreateDistributionLineInput,
+  ): Promise<Family>;
   createLoan(spaceId: string, input: CreateLoanInput): Promise<Family>;
   createLoanRepaymentLine(
     spaceId: string,
@@ -35,6 +41,7 @@ export interface FamilyRepository {
   deleteLoan(spaceId: string, loanId: string): Promise<Family>;
   deleteLoanRepaymentLine(spaceId: string, lineId: string): Promise<Family>;
   deleteParticipationLine(spaceId: string, lineId: string): Promise<Family>;
+  deleteDistributionLine(spaceId: string, lineId: string): Promise<Family>;
   deleteCategory(spaceId: string, categoryId: string): Promise<Family>;
   deleteMember(spaceId: string, memberId: string): Promise<Family>;
   deleteRecurringLine(spaceId: string, lineId: string): Promise<Family>;
@@ -48,6 +55,11 @@ export interface FamilyRepository {
     spaceId: string,
     lineId: string,
     input: UpdateParticipationLineInput,
+  ): Promise<Family>;
+  updateDistributionLine(
+    spaceId: string,
+    lineId: string,
+    input: UpdateDistributionLineInput,
   ): Promise<Family>;
   updateLoan(
     spaceId: string,

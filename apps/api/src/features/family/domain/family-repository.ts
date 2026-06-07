@@ -1,4 +1,5 @@
 import type {
+  DistributionLine,
   FamilySnapshot,
   Loan,
   LoanRepaymentLine,
@@ -19,6 +20,10 @@ export interface FamilyRepository {
     familyId: string,
     line: ParticipationLine,
   ): Promise<FamilySnapshot>;
+  createDistributionLine(
+    familyId: string,
+    line: DistributionLine,
+  ): Promise<FamilySnapshot>;
   createLoan(familyId: string, loan: Loan): Promise<FamilySnapshot>;
   createLoanRepaymentLine(
     familyId: string,
@@ -30,6 +35,10 @@ export interface FamilyRepository {
     lineId: string,
   ): Promise<FamilySnapshot | null>;
   deleteParticipationLine(
+    familyId: string,
+    lineId: string,
+  ): Promise<FamilySnapshot | null>;
+  deleteDistributionLine(
     familyId: string,
     lineId: string,
   ): Promise<FamilySnapshot | null>;
@@ -54,6 +63,10 @@ export interface FamilyRepository {
   updateParticipationLine(
     familyId: string,
     line: ParticipationLine,
+  ): Promise<FamilySnapshot | null>;
+  updateDistributionLine(
+    familyId: string,
+    line: DistributionLine,
   ): Promise<FamilySnapshot | null>;
   updateLoan(familyId: string, loan: Loan): Promise<FamilySnapshot | null>;
   updateLoanRepaymentLine(

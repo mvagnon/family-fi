@@ -47,6 +47,24 @@ export const participationLineSchema = z
   })
   .meta({ id: "ParticipationLine" });
 
+export const distributionMemberAmountSchema = z
+  .object({
+    amount: z.number().nonnegative(),
+    memberId: z.string(),
+  })
+  .meta({ id: "DistributionMemberAmount" });
+
+export const distributionLineSchema = z
+  .object({
+    amount: z.number().positive(),
+    createdAt: z.string(),
+    id: z.string(),
+    memberAmounts: z.array(distributionMemberAmountSchema),
+    month: z.number().int().min(1).max(12),
+    year: z.number().int().positive(),
+  })
+  .meta({ id: "DistributionLine" });
+
 export const loanSchema = z
   .object({
     annualInterestRate: z.number().nonnegative(),
@@ -72,6 +90,7 @@ export const loanRepaymentLineSchema = z
 export const familySchema = z
   .object({
     categories: z.array(familyCategorySchema),
+    distributionLines: z.array(distributionLineSchema),
     id: z.string(),
     loanRepaymentLines: z.array(loanRepaymentLineSchema),
     loans: z.array(loanSchema),
@@ -86,6 +105,10 @@ export type FamilyMember = z.infer<typeof familyMemberSchema>;
 export type FamilyCategory = z.infer<typeof familyCategorySchema>;
 export type RecurringLine = z.infer<typeof recurringLineSchema>;
 export type ParticipationLine = z.infer<typeof participationLineSchema>;
+export type DistributionMemberAmount = z.infer<
+  typeof distributionMemberAmountSchema
+>;
+export type DistributionLine = z.infer<typeof distributionLineSchema>;
 export type Loan = z.infer<typeof loanSchema>;
 export type LoanRepaymentLine = z.infer<typeof loanRepaymentLineSchema>;
 export type Family = z.infer<typeof familySchema>;
@@ -113,6 +136,13 @@ export type CreateParticipationLineInput = Omit<
 >;
 
 export type UpdateParticipationLineInput = CreateParticipationLineInput;
+
+export type CreateDistributionLineInput = Omit<
+  DistributionLine,
+  "createdAt" | "id"
+>;
+
+export type UpdateDistributionLineInput = CreateDistributionLineInput;
 
 export interface CreateLoanInput {
   annualInterestRate: number;
@@ -249,6 +279,46 @@ export const participationLineInputSchema = z.object({
     .int({ message: "Participation year is invalid." })
     .positive({ message: "Participation year is invalid." }),
 });
+
+export const distributionMemberAmountInputSchema = z
+  .object({
+    amount: nonNegativeNumberSchema("Distribution member amount is invalid."),
+    memberId: requiredTextSchema("Distribution member is required."),
+  })
+  .meta({ id: "DistributionMemberAmountInput" });
+
+export const distributionLineInputSchema = z
+  .object({
+    amount: positiveNumberSchema("Distribution amount is required."),
+    memberAmounts: z
+      .array(distributionMemberAmountInputSchema)
+      .min(1, { message: "Distribution members are required." }),
+    month: z
+      .number({ error: "Distribution month is invalid." })
+      .int({ message: "Distribution month is invalid." })
+      .min(1, { message: "Distribution month is invalid." })
+      .max(12, { message: "Distribution month is invalid." }),
+    year: z
+      .number({ error: "Distribution year is invalid." })
+      .int({ message: "Distribution year is invalid." })
+      .positive({ message: "Distribution year is invalid." }),
+  })
+  .superRefine((line, context) => {
+    const memberIds = new Set<string>();
+
+    line.memberAmounts.forEach((memberAmount, index) => {
+      if (memberIds.has(memberAmount.memberId)) {
+        context.addIssue({
+          code: "custom",
+          message: "Distribution member is duplicated.",
+          path: ["memberAmounts", index, "memberId"],
+        });
+      }
+
+      memberIds.add(memberAmount.memberId);
+    });
+  })
+  .meta({ id: "DistributionLineInput" });
 
 export const loanInputSchema = z
   .object({

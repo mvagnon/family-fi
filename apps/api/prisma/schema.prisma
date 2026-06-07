@@ -12,17 +12,18 @@ datasource db {
 }
 
 model Family {
-  id                 String              @id
-  spaceId            String              @unique @map("space_id")
-  space              Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  id                 String             @id
+  spaceId            String             @unique @map("space_id")
+  space              Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   members            Json
   categories         Json
+  distributionLines  DistributionLine[]
   loans              Loan[]
   loanRepaymentLines LoanRepaymentLine[]
   recurringLines     RecurringLine[]
   participationLines ParticipationLine[]
-  createdAt          DateTime            @default(now()) @map("created_at")
-  updatedAt          DateTime            @updatedAt @map("updated_at")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
 
   @@map("family")
 }
@@ -164,6 +165,34 @@ model ParticipationLine {
   @@index([familyId])
   @@index([familyId, memberId])
   @@map("participation_lines")
+}
+
+model DistributionLine {
+  id            String                     @id
+  familyId      String                     @map("family_id")
+  family        Family                     @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  amountCents   Int                        @map("amount_cents")
+  memberAmounts DistributionMemberAmount[]
+  year          Int
+  month         Int
+  createdAt     DateTime                   @default(now()) @map("created_at")
+  updatedAt     DateTime                   @updatedAt @map("updated_at")
+
+  @@index([familyId])
+  @@map("distribution_lines")
+}
+
+model DistributionMemberAmount {
+  distributionLineId String           @map("distribution_line_id")
+  distributionLine   DistributionLine @relation(fields: [distributionLineId], references: [id], onDelete: Cascade)
+  memberId           String           @map("member_id")
+  amountCents        Int              @map("amount_cents")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+
+  @@id([distributionLineId, memberId])
+  @@index([memberId])
+  @@map("distribution_member_amounts")
 }
 
 model Loan {

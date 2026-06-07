@@ -15,6 +15,7 @@ export function createSeedFamily(familyId = "family-dev"): FamilySnapshot {
         ownerId: "marc",
       },
     ],
+    distributionLines: [],
     id: familyId,
     loanRepaymentLines: [],
     loans: [],

@@ -1,4 +1,5 @@
 import type {
+  DistributionLine,
   FamilySnapshot,
   Loan,
   LoanRepaymentLine,
@@ -38,6 +39,20 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
         participationLines: [
           ...family.participationLines,
           cloneParticipationLine(line),
+        ],
+      };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
+
+    async createDistributionLine(familyId, line) {
+      const family = getFamily(families, familyId);
+      const updatedFamily = {
+        ...family,
+        distributionLines: [
+          ...family.distributionLines,
+          cloneDistributionLine(line),
         ],
       };
       families.set(familyId, updatedFamily);
@@ -122,6 +137,22 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
       return cloneFamily(updatedFamily);
     },
 
+    async deleteDistributionLine(familyId, lineId) {
+      const family = getFamily(families, familyId);
+      const distributionLines = family.distributionLines.filter(
+        (line) => line.id !== lineId,
+      );
+
+      if (distributionLines.length === family.distributionLines.length) {
+        return null;
+      }
+
+      const updatedFamily = { ...family, distributionLines };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
+
     async deleteRecurringLine(familyId, lineId) {
       const family = getFamily(families, familyId);
       const recurringLines = family.recurringLines.filter(
@@ -156,6 +187,13 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
         categories: family.categories.filter(
           (category) => category.ownerId !== memberId,
         ),
+        distributionLines: family.distributionLines.flatMap((line) => {
+          const memberAmounts = line.memberAmounts.filter(
+            (memberAmount) => memberAmount.memberId !== memberId,
+          );
+
+          return memberAmounts.length > 0 ? [{ ...line, memberAmounts }] : [];
+        }),
         members: family.members.filter((member) => member.id !== memberId),
         participationLines: family.participationLines.filter(
           (line) => line.memberId !== memberId,
@@ -245,6 +283,25 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
       return cloneFamily(updatedFamily);
     },
 
+    async updateDistributionLine(familyId, line) {
+      const family = getFamily(families, familyId);
+      const lineIndex = family.distributionLines.findIndex(
+        (item) => item.id === line.id,
+      );
+
+      if (lineIndex === -1) {
+        return null;
+      }
+
+      const distributionLines = [...family.distributionLines];
+      distributionLines[lineIndex] = cloneDistributionLine(line);
+
+      const updatedFamily = { ...family, distributionLines };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
+
     async updateLoan(familyId, loan) {
       const family = getFamily(families, familyId);
       const loanIndex = family.loans.findIndex((item) => item.id === loan.id);
@@ -300,6 +357,7 @@ function cloneFamily(family: FamilySnapshot): FamilySnapshot {
   return {
     ...family,
     categories: family.categories.map((category) => ({ ...category })),
+    distributionLines: family.distributionLines.map(cloneDistributionLine),
     loanRepaymentLines: family.loanRepaymentLines.map(cloneLoanRepaymentLine),
     loans: family.loans.map(cloneLoan),
     members: family.members.map((member) => ({ ...member })),
@@ -314,6 +372,15 @@ function cloneLine(line: RecurringLine): RecurringLine {
 
 function cloneParticipationLine(line: ParticipationLine): ParticipationLine {
   return { ...line };
+}
+
+function cloneDistributionLine(line: DistributionLine): DistributionLine {
+  return {
+    ...line,
+    memberAmounts: line.memberAmounts.map((memberAmount) => ({
+      ...memberAmount,
+    })),
+  };
 }
 
 function cloneLoan(loan: Loan): Loan {
