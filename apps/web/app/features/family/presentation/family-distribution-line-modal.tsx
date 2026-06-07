@@ -1,16 +1,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { TFunction } from "i18next";
-import { useMemo } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { ActionIconButton } from "@repo/ui/action-icon-button";
 import { FormDialog } from "@repo/ui/form-dialog";
+import type { TFunction } from "i18next";
+import { useMemo } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -310,7 +310,7 @@ export function FamilyDistributionLineModal({
           slotProps={amountSlotProps}
         />
 
-        <Stack spacing={1.25}>
+        <Stack spacing={2}>
           <Box>
             <Typography sx={{ fontWeight: 700 }} variant="subtitle2">
               {t("distributions.creation.memberAmounts")}
