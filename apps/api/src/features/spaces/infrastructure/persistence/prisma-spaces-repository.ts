@@ -3,8 +3,24 @@ import type { SpaceRepository } from "../../domain/space-repository.js";
 import type {
   SpaceRole,
   SpaceSummary,
+  SupportedCurrency,
   UserSettings,
 } from "../../domain/spaces.js";
+import { supportedCurrencySchema } from "../../domain/spaces.js";
+
+interface SpaceMembershipWithSpace {
+  role: string;
+  space: {
+    currencyCode: string;
+    id: string;
+    memberships: {
+      user: {
+        email: string;
+      };
+    }[];
+    name: string;
+  };
+}
 
 export class PrismaSpacesRepository implements SpaceRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -67,13 +83,55 @@ export class PrismaSpacesRepository implements SpaceRepository {
       },
     });
 
-    return memberships.map((membership) => ({
-      id: membership.space.id,
-      name: membership.space.name,
-      ownerEmail:
-        membership.space.memberships[0]?.user.email ?? membership.space.name,
-      role: toSpaceRole(membership.role),
-    }));
+    return memberships.map(toSpaceSummary);
+  }
+
+  async setSpaceCurrency(
+    userId: string,
+    spaceId: string,
+    currencyCode: SupportedCurrency,
+  ): Promise<SpaceSummary> {
+    await this.prisma.space.update({
+      data: {
+        currencyCode,
+      },
+      where: {
+        id: spaceId,
+      },
+    });
+
+    const membership = await this.prisma.spaceMembership.findUniqueOrThrow({
+      include: {
+        space: {
+          include: {
+            memberships: {
+              select: {
+                user: {
+                  select: {
+                    email: true,
+                  },
+                },
+              },
+              orderBy: {
+                createdAt: "asc",
+              },
+              take: 1,
+              where: {
+                role: "owner",
+              },
+            },
+          },
+        },
+      },
+      where: {
+        spaceId_userId: {
+          spaceId,
+          userId,
+        },
+      },
+    });
+
+    return toSpaceSummary(membership);
   }
 
   async setDefaultSpaceId(
@@ -95,6 +153,17 @@ export class PrismaSpacesRepository implements SpaceRepository {
 
     return toUserSettings(settings.defaultSpaceId);
   }
+}
+
+function toSpaceSummary(membership: SpaceMembershipWithSpace): SpaceSummary {
+  return {
+    currencyCode: supportedCurrencySchema.parse(membership.space.currencyCode),
+    id: membership.space.id,
+    name: membership.space.name,
+    ownerEmail:
+      membership.space.memberships[0]?.user.email ?? membership.space.name,
+    role: toSpaceRole(membership.role),
+  };
 }
 
 function toSpaceRole(role: string): SpaceRole {

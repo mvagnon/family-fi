@@ -1,7 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { SpaceRepository } from "../domain/space-repository";
-import type { UpdateDefaultSpaceInput, UserSettings } from "../domain/spaces";
+import type {
+  SpaceSummary,
+  UpdateDefaultSpaceInput,
+  UpdateSpaceCurrencyInput,
+  UserSettings,
+} from "../domain/spaces";
 
 export const spaceQueryKeys = {
   list: () => ["spaces", "list"] as const,
@@ -32,9 +37,35 @@ export function useUpdateDefaultSpace(repository: SpaceRepository) {
   });
 }
 
+export function useUpdateSpaceCurrency(repository: SpaceRepository) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      input,
+      spaceId,
+    }: {
+      input: UpdateSpaceCurrencyInput;
+      spaceId: string;
+    }) => repository.updateSpaceCurrency(spaceId, input),
+    onSuccess: (space) => setSpaceCache(queryClient, space),
+  });
+}
+
 function setUserSettingsCache(
   queryClient: ReturnType<typeof useQueryClient>,
   settings: UserSettings,
 ) {
   queryClient.setQueryData(spaceQueryKeys.settings(), settings);
+}
+
+function setSpaceCache(
+  queryClient: ReturnType<typeof useQueryClient>,
+  space: SpaceSummary,
+) {
+  queryClient.setQueryData(
+    spaceQueryKeys.list(),
+    (spaces: SpaceSummary[] | undefined) =>
+      spaces?.map((item) => (item.id === space.id ? space : item)),
+  );
 }

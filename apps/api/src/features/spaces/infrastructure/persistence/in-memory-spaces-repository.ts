@@ -1,5 +1,10 @@
 import type { SpaceRepository } from "../../domain/space-repository.js";
-import type { SpaceRole, SpaceSummary } from "../../domain/spaces.js";
+import type {
+  SpaceRole,
+  SpaceSummary,
+  SupportedCurrency,
+} from "../../domain/spaces.js";
+import { defaultSpaceCurrency } from "../../domain/spaces.js";
 
 interface InMemoryMembership {
   role: SpaceRole;
@@ -8,6 +13,7 @@ interface InMemoryMembership {
 }
 
 interface InMemorySpace {
+  currencyCode?: SupportedCurrency;
   id: string;
   name: string;
   ownerEmail?: string;
@@ -54,6 +60,7 @@ export function createInMemorySpacesRepository(
           );
 
           return {
+            currencyCode: space?.currencyCode ?? defaultSpaceCurrency,
             id: membership.spaceId,
             name: space?.name ?? membership.spaceId,
             ownerEmail:
@@ -63,6 +70,33 @@ export function createInMemorySpacesRepository(
             role: membership.role,
           };
         });
+    },
+    async setSpaceCurrency(userId, spaceId, currencyCode) {
+      const space = spaces.get(spaceId);
+
+      spaces.set(spaceId, {
+        currencyCode,
+        id: spaceId,
+        name: space?.name ?? spaceId,
+        ownerEmail: space?.ownerEmail,
+      });
+
+      const membership = memberships.find(
+        (candidate) =>
+          candidate.spaceId === spaceId && candidate.userId === userId,
+      );
+      const ownerMembership = memberships.find(
+        (candidate) =>
+          candidate.spaceId === spaceId && candidate.role === "owner",
+      );
+
+      return {
+        currencyCode,
+        id: spaceId,
+        name: space?.name ?? spaceId,
+        ownerEmail: space?.ownerEmail ?? ownerMembership?.userId ?? spaceId,
+        role: membership?.role ?? "member",
+      };
     },
     async setDefaultSpaceId(userId, defaultSpaceId) {
       settings.set(userId, defaultSpaceId);

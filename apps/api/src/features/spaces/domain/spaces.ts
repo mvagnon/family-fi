@@ -1,14 +1,20 @@
 export {
+  defaultSpaceCurrency,
   spaceRoleSchema,
   spaceSummarySchema,
+  supportedCurrencyCodes,
+  supportedCurrencySchema,
   updateDefaultSpaceInputSchema,
+  updateSpaceCurrencyInputSchema,
   userSettingsSchema,
 } from "@repo/api-contracts/spaces";
 
 export type {
   SpaceRole,
   SpaceSummary,
+  SupportedCurrency,
   UpdateDefaultSpaceInput,
+  UpdateSpaceCurrencyInput,
   UserSettings,
 } from "@repo/api-contracts/spaces";
 

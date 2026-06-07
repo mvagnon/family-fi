@@ -1,4 +1,10 @@
-import type { SpaceRole, SpaceSummary, UserSettings } from "../domain/spaces";
+import type {
+  SpaceRole,
+  SpaceSummary,
+  SupportedCurrency,
+  UserSettings,
+} from "../domain/spaces";
+import { supportedCurrencySchema } from "../domain/spaces";
 
 export class SpacesApiError extends Error {
   constructor(message: string) {
@@ -32,6 +38,7 @@ function parseSpaceSummary(value: unknown): SpaceSummary {
   const space = getRecord(value);
 
   return {
+    currencyCode: parseSupportedCurrency(getString(space, "currencyCode")),
     id: getString(space, "id"),
     name: getString(space, "name"),
     ownerEmail: getString(space, "ownerEmail"),
@@ -42,6 +49,16 @@ function parseSpaceSummary(value: unknown): SpaceSummary {
 function parseSpaceRole(value: string): SpaceRole {
   if (value === "owner" || value === "member") {
     return value;
+  }
+
+  throw new SpacesApiError("Les espaces n'ont pas pu être chargés.");
+}
+
+function parseSupportedCurrency(value: string): SupportedCurrency {
+  const currencyCode = supportedCurrencySchema.safeParse(value);
+
+  if (currencyCode.success) {
+    return currencyCode.data;
   }
 
   throw new SpacesApiError("Les espaces n'ont pas pu être chargés.");

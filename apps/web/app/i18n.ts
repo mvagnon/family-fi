@@ -59,6 +59,16 @@ export const resources = {
         },
       },
       configuration: {
+        currency: {
+          description:
+            "Choose the unit used to display and enter shared family amounts in the active space.",
+          empty: "No active space is available.",
+          error: "Space currency settings could not be loaded.",
+          label: "Currency",
+          loading: "Loading currency settings",
+          saveError: "Currency could not be saved.",
+          title: "Currency",
+        },
         defaultSpace: {
           description:
             "Choose the workspace selected when Family-Fi opens on this account.",
@@ -98,6 +108,15 @@ export const resources = {
         page: {
           subtitle: "Adjust app-level preferences for this browser.",
           title: "Configuration",
+        },
+        spaceSettings: {
+          scope:
+            "These settings apply only to the current personal space. They do not change other spaces you can access.",
+        },
+        tabs: {
+          ariaLabel: "Configuration sections",
+          space: "Space settings",
+          user: "User settings",
         },
       },
       dashboard: {
@@ -381,6 +400,16 @@ export const resources = {
         },
       },
       configuration: {
+        currency: {
+          description:
+            "Choisissez l'unité utilisée pour afficher et saisir les montants partagés du foyer dans l'espace actif.",
+          empty: "Aucun espace actif n'est disponible.",
+          error: "Les réglages de devise n'ont pas pu être chargés.",
+          label: "Devise",
+          loading: "Chargement des réglages de devise",
+          saveError: "La devise n'a pas pu être enregistrée.",
+          title: "Devise",
+        },
         defaultSpace: {
           description:
             "Choisissez l'espace sélectionné par défaut à l'ouverture de Family-Fi pour ce compte.",
@@ -421,6 +450,15 @@ export const resources = {
           subtitle:
             "Ajustez les préférences de l'application pour ce navigateur.",
           title: "Configuration",
+        },
+        spaceSettings: {
+          scope:
+            "Ces réglages s'appliquent uniquement à l'espace personnel courant. Ils ne modifient pas les autres espaces auxquels vous avez accès.",
+        },
+        tabs: {
+          ariaLabel: "Sections de configuration",
+          space: "Réglages de l'espace",
+          user: "Réglages utilisateur",
         },
       },
       dashboard: {
@@ -705,6 +743,16 @@ export const resources = {
         },
       },
       configuration: {
+        currency: {
+          description:
+            "有効なスペースで家族の共有金額を表示、入力するときの単位を選びます。",
+          empty: "有効なスペースはありません。",
+          error: "通貨設定を読み込めませんでした。",
+          label: "通貨",
+          loading: "通貨設定を読み込み中",
+          saveError: "通貨を保存できませんでした。",
+          title: "通貨",
+        },
         defaultSpace: {
           description:
             "このアカウントでFamily-Fiを開いたときに最初に選択するスペースを選びます。",
@@ -744,6 +792,15 @@ export const resources = {
         page: {
           subtitle: "このブラウザで使うアプリ設定を調整します。",
           title: "設定",
+        },
+        spaceSettings: {
+          scope:
+            "この設定は現在の個人スペースにのみ適用されます。アクセスできる他のスペースは変更されません。",
+        },
+        tabs: {
+          ariaLabel: "設定セクション",
+          space: "スペース設定",
+          user: "ユーザー設定",
         },
       },
       dashboard: {

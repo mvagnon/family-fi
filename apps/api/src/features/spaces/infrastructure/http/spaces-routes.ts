@@ -13,13 +13,31 @@ import type { SpacesService } from "../../application/spaces-service.js";
 import {
   spaceSummarySchema,
   updateDefaultSpaceInputSchema,
+  updateSpaceCurrencyInputSchema,
   userSettingsSchema,
 } from "../../domain/spaces.js";
+
+const pathIdSchema = (name: string, example: string) =>
+  z
+    .string()
+    .min(1)
+    .openapi({
+      example,
+      param: {
+        in: "path",
+        name,
+      },
+    });
+
+const spaceRouteParamsSchema = z.object({
+  spaceId: pathIdSchema("spaceId", "test-space"),
+});
 
 const spacesJsonResponse = jsonResponse(
   "Spaces accessible to the current user.",
   z.array(spaceSummarySchema),
 );
+const spaceJsonResponse = jsonResponse("Space settings.", spaceSummarySchema);
 const userSettingsJsonResponse = jsonResponse(
   "Current user settings.",
   userSettingsSchema,
@@ -75,15 +93,48 @@ const updateDefaultSpaceRoute = createRoute({
   },
 });
 
+const updateSpaceCurrencyRoute = createRoute({
+  method: "put",
+  path: "/{spaceId}/settings/currency",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: updateSpaceCurrencyInputSchema,
+        },
+      },
+    },
+    params: spaceRouteParamsSchema,
+  },
+  responses: {
+    200: spaceJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+  },
+});
+
 export function createSpacesRouter(
   service: SpacesService,
   authProvider: AuthSessionReader,
 ) {
-  return createOpenApiRouter().openapi(listSpacesRoute, async (context) => {
-    const user = await getAuthenticatedUser(context, authProvider);
+  return createOpenApiRouter()
+    .openapi(listSpacesRoute, async (context) => {
+      const user = await getAuthenticatedUser(context, authProvider);
 
-    return context.json(await service.listSpacesForUser(user.id), 200);
-  });
+      return context.json(await service.listSpacesForUser(user.id), 200);
+    })
+    .openapi(updateSpaceCurrencyRoute, async (context) => {
+      const user = await getAuthenticatedUser(context, authProvider);
+      const { spaceId } = context.req.valid("param");
+      const space = await service.updateSpaceCurrency(
+        user.id,
+        spaceId,
+        context.req.valid("json"),
+      );
+
+      return context.json(space, 200);
+    });
 }
 
 export function createMeRouter(
