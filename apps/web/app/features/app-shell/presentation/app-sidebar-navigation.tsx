@@ -1,11 +1,9 @@
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import CallSplitIcon from "@mui/icons-material/CallSplit";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import GroupsIcon from "@mui/icons-material/Groups";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import SettingsIcon from "@mui/icons-material/Settings";
-import ShowChartIcon from "@mui/icons-material/ShowChart";
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -31,18 +29,14 @@ const sidebarNavigationItems: SidebarNavigationItem[] = [
   { icon: AccountBalanceIcon, labelKey: "loans" },
   { icon: GroupsIcon, labelKey: "participations", to: "/participations" },
   { icon: CallSplitIcon, labelKey: "distribution" },
-  { icon: ShowChartIcon, labelKey: "investments" },
-  { icon: AccountBalanceWalletIcon, labelKey: "assets" },
   { icon: SettingsIcon, labelKey: "settings", to: "/configuration" },
 ];
 
 interface SidebarNavigationItem {
   icon: SvgIconComponent;
   labelKey:
-    | "assets"
     | "dashboard"
     | "distribution"
-    | "investments"
     | "loans"
     | "participations"
     | "recurringBudget"

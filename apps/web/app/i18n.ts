@@ -15,10 +15,8 @@ export const resources = {
       appShell: {
         navigation: {
           ariaLabel: "Finance navigation",
-          assets: "Assets",
           dashboard: "Dashboard",
           distribution: "Distribution",
-          investments: "Investments",
           loans: "Loans",
           participations: "Participations",
           recurringBudget: "Recurring budget",
@@ -356,10 +354,8 @@ export const resources = {
       appShell: {
         navigation: {
           ariaLabel: "Navigation finances",
-          assets: "Patrimoine",
           dashboard: "Tableau de bord",
           distribution: "Distribution",
-          investments: "Investissements",
           loans: "Prêts",
           participations: "Participations",
           recurringBudget: "Budget récurrent",
@@ -699,10 +695,8 @@ export const resources = {
       appShell: {
         navigation: {
           ariaLabel: "家計ナビゲーション",
-          assets: "資産",
           dashboard: "ダッシュボード",
           distribution: "分配",
-          investments: "投資",
           loans: "ローン",
           participations: "持分",
           recurringBudget: "定期予算",
