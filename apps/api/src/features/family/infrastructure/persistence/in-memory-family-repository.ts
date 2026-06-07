@@ -1,5 +1,7 @@
 import type {
   FamilySnapshot,
+  Loan,
+  LoanRepaymentLine,
   ParticipationLine,
   RecurringLine,
 } from "../../domain/family.js";
@@ -38,6 +40,67 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
           cloneParticipationLine(line),
         ],
       };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
+
+    async createLoan(familyId, loan) {
+      const family = getFamily(families, familyId);
+      const updatedFamily = {
+        ...family,
+        loans: [...family.loans, cloneLoan(loan)],
+      };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
+
+    async createLoanRepaymentLine(familyId, line) {
+      const family = getFamily(families, familyId);
+      const updatedFamily = {
+        ...family,
+        loanRepaymentLines: [
+          ...family.loanRepaymentLines,
+          cloneLoanRepaymentLine(line),
+        ],
+      };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
+
+    async deleteLoan(familyId, loanId) {
+      const family = getFamily(families, familyId);
+      const loans = family.loans.filter((loan) => loan.id !== loanId);
+
+      if (loans.length === family.loans.length) {
+        return null;
+      }
+
+      const updatedFamily = {
+        ...family,
+        loanRepaymentLines: family.loanRepaymentLines.filter(
+          (line) => line.loanId !== loanId,
+        ),
+        loans,
+      };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
+
+    async deleteLoanRepaymentLine(familyId, lineId) {
+      const family = getFamily(families, familyId);
+      const loanRepaymentLines = family.loanRepaymentLines.filter(
+        (line) => line.id !== lineId,
+      );
+
+      if (loanRepaymentLines.length === family.loanRepaymentLines.length) {
+        return null;
+      }
+
+      const updatedFamily = { ...family, loanRepaymentLines };
       families.set(familyId, updatedFamily);
 
       return cloneFamily(updatedFamily);
@@ -181,6 +244,59 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
 
       return cloneFamily(updatedFamily);
     },
+
+    async updateLoan(familyId, loan) {
+      const family = getFamily(families, familyId);
+      const loanIndex = family.loans.findIndex((item) => item.id === loan.id);
+
+      if (loanIndex === -1) {
+        return null;
+      }
+
+      const loans = [...family.loans];
+      loans[loanIndex] = cloneLoan(loan);
+
+      const updatedFamily = { ...family, loans };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
+
+    async updateLoanRepaymentLine(familyId, line) {
+      const family = getFamily(families, familyId);
+      const lineIndex = family.loanRepaymentLines.findIndex(
+        (item) => item.id === line.id,
+      );
+
+      if (lineIndex === -1) {
+        return null;
+      }
+
+      const loanRepaymentLines = [...family.loanRepaymentLines];
+      loanRepaymentLines[lineIndex] = cloneLoanRepaymentLine(line);
+
+      const updatedFamily = { ...family, loanRepaymentLines };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
+
+    async updateLoanVisibility(familyId, loanId, isHidden) {
+      const family = getFamily(families, familyId);
+      const loanIndex = family.loans.findIndex((item) => item.id === loanId);
+
+      if (loanIndex === -1) {
+        return null;
+      }
+
+      const loans = [...family.loans];
+      loans[loanIndex] = { ...loans[loanIndex], isHidden };
+
+      const updatedFamily = { ...family, loans };
+      families.set(familyId, updatedFamily);
+
+      return cloneFamily(updatedFamily);
+    },
   };
 }
 
@@ -201,6 +317,8 @@ function cloneFamily(family: FamilySnapshot): FamilySnapshot {
   return {
     ...family,
     categories: family.categories.map((category) => ({ ...category })),
+    loanRepaymentLines: family.loanRepaymentLines.map(cloneLoanRepaymentLine),
+    loans: family.loans.map(cloneLoan),
     members: family.members.map((member) => ({ ...member })),
     participationLines: family.participationLines.map(cloneParticipationLine),
     recurringLines: family.recurringLines.map(cloneLine),
@@ -212,5 +330,13 @@ function cloneLine(line: RecurringLine): RecurringLine {
 }
 
 function cloneParticipationLine(line: ParticipationLine): ParticipationLine {
+  return { ...line };
+}
+
+function cloneLoan(loan: Loan): Loan {
+  return { ...loan };
+}
+
+function cloneLoanRepaymentLine(line: LoanRepaymentLine): LoanRepaymentLine {
   return { ...line };
 }

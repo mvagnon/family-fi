@@ -4,9 +4,14 @@ import type { FamilyRepository } from "../domain/family-repository";
 import type {
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
+  CreateLoanInput,
+  CreateLoanRepaymentLineInput,
   CreateParticipationLineInput,
   CreateRecurringLineInput,
   Family,
+  UpdateLoanInput,
+  UpdateLoanRepaymentLineInput,
+  UpdateLoanVisibilityInput,
   UpdateFamilyMemberInput,
   UpdateParticipationLineInput,
   UpdateRecurringLineInput,
@@ -89,6 +94,111 @@ export function useCreateFamilyParticipationLine(
   return useMutation({
     mutationFn: (input: CreateParticipationLineInput) =>
       repository.createParticipationLine(spaceId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
+  });
+}
+
+export function useCreateFamilyLoan(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateLoanInput) =>
+      repository.createLoan(spaceId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
+  });
+}
+
+export function useUpdateFamilyLoan(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      input,
+      loanId,
+    }: {
+      input: UpdateLoanInput;
+      loanId: string;
+    }) => repository.updateLoan(spaceId, loanId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
+  });
+}
+
+export function useUpdateFamilyLoanVisibility(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      input,
+      loanId,
+    }: {
+      input: UpdateLoanVisibilityInput;
+      loanId: string;
+    }) => repository.updateLoanVisibility(spaceId, loanId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
+  });
+}
+
+export function useDeleteFamilyLoan(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (loanId: string) => repository.deleteLoan(spaceId, loanId),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
+  });
+}
+
+export function useCreateFamilyLoanRepaymentLine(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateLoanRepaymentLineInput) =>
+      repository.createLoanRepaymentLine(spaceId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
+  });
+}
+
+export function useUpdateFamilyLoanRepaymentLine(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      input,
+      lineId,
+    }: {
+      input: UpdateLoanRepaymentLineInput;
+      lineId: string;
+    }) => repository.updateLoanRepaymentLine(spaceId, lineId, input),
+    onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
+  });
+}
+
+export function useDeleteFamilyLoanRepaymentLine(
+  repository: FamilyRepository,
+  spaceId: string,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (lineId: string) =>
+      repository.deleteLoanRepaymentLine(spaceId, lineId),
     onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
   });
 }

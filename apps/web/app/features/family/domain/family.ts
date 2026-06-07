@@ -1,9 +1,15 @@
 export {
+  loanInputSchema,
+  loanRepaymentLineInputSchema,
+  loanVisibilityInputSchema,
   participationLineInputSchema,
   recurringLineInputSchema,
+  updateLoanInputSchema,
 } from "@repo/api-contracts/family";
 
 export type {
+  CreateLoanInput,
+  CreateLoanRepaymentLineInput,
   CreateParticipationLineInput,
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
@@ -11,9 +17,14 @@ export type {
   Family,
   FamilyCategory,
   FamilyMember,
+  Loan,
+  LoanRepaymentLine,
   Movement,
   ParticipationLine,
   RecurringLine,
+  UpdateLoanInput,
+  UpdateLoanRepaymentLineInput,
+  UpdateLoanVisibilityInput,
   UpdateFamilyMemberInput,
   UpdateParticipationLineInput,
   UpdateRecurringLineInput,

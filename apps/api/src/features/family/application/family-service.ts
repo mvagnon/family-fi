@@ -7,19 +7,28 @@ import {
   FamilyMemberNotFoundError,
   InvalidFamilyInputError,
   LINKED_FAMILY_CATEGORY_DELETE_MESSAGE,
+  LoanNotFoundError,
+  LoanRepaymentLineNotFoundError,
   ParticipationLineNotFoundError,
   RecurringLineNotFoundError,
 } from "../domain/family.js";
 import type {
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
+  CreateLoanInput,
+  CreateLoanRepaymentLineInput,
   CreateParticipationLineInput,
   CreateRecurringLineInput,
   FamilyCategory,
   FamilyMember,
   FamilySnapshot,
+  Loan,
+  LoanRepaymentLine,
   ParticipationLine,
   RecurringLine,
+  UpdateLoanInput,
+  UpdateLoanRepaymentLineInput,
+  UpdateLoanVisibilityInput,
   UpdateFamilyMemberInput,
   UpdateParticipationLineInput,
   UpdateRecurringLineInput,
@@ -313,6 +322,161 @@ export class FamilyService {
     return updatedFamily;
   }
 
+  async createLoan(
+    request: FamilyRequest,
+    input: CreateLoanInput,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
+    const createdAt = this.now();
+    const loan = normalizeLoanInput({
+      ...input,
+      createdAt: createdAt.toISOString(),
+      id: this.createUniqueId(
+        "loan",
+        input.title,
+        family.loans.map((item) => item.id),
+      ),
+      isHidden: input.isHidden ?? false,
+    });
+
+    return this.repository.createLoan(family.id, loan);
+  }
+
+  async updateLoan(
+    request: FamilyRequest,
+    loanId: string,
+    input: UpdateLoanInput,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
+    const existingLoan = family.loans.find((loan) => loan.id === loanId);
+
+    if (!existingLoan) {
+      throw new LoanNotFoundError(loanId);
+    }
+
+    const updatedFamily = await this.repository.updateLoan(
+      family.id,
+      normalizeLoanInput({
+        ...input,
+        createdAt: existingLoan.createdAt,
+        id: existingLoan.id,
+      }),
+    );
+
+    if (!updatedFamily) {
+      throw new LoanNotFoundError(loanId);
+    }
+
+    return updatedFamily;
+  }
+
+  async updateLoanVisibility(
+    request: FamilyRequest,
+    loanId: string,
+    input: UpdateLoanVisibilityInput,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
+    const updatedFamily = await this.repository.updateLoanVisibility(
+      family.id,
+      loanId,
+      input.isHidden,
+    );
+
+    if (!updatedFamily) {
+      throw new LoanNotFoundError(loanId);
+    }
+
+    return updatedFamily;
+  }
+
+  async deleteLoan(
+    request: FamilyRequest,
+    loanId: string,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
+    const updatedFamily = await this.repository.deleteLoan(family.id, loanId);
+
+    if (!updatedFamily) {
+      throw new LoanNotFoundError(loanId);
+    }
+
+    return updatedFamily;
+  }
+
+  async createLoanRepaymentLine(
+    request: FamilyRequest,
+    input: CreateLoanRepaymentLineInput,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
+    const createdAt = this.now();
+    const repaymentLine = normalizeLoanRepaymentLineInput(
+      family,
+      {
+        ...input,
+        createdAt: createdAt.toISOString(),
+        id: this.createUniqueId(
+          "loan-repayment",
+          `${input.loanId}-${input.year}-${input.month}`,
+          family.loanRepaymentLines.map((item) => item.id),
+        ),
+      },
+      createdAt,
+    );
+
+    return this.repository.createLoanRepaymentLine(family.id, repaymentLine);
+  }
+
+  async updateLoanRepaymentLine(
+    request: FamilyRequest,
+    lineId: string,
+    input: UpdateLoanRepaymentLineInput,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
+    const existingLine = family.loanRepaymentLines.find(
+      (line) => line.id === lineId,
+    );
+
+    if (!existingLine) {
+      throw new LoanRepaymentLineNotFoundError(lineId);
+    }
+
+    const updatedFamily = await this.repository.updateLoanRepaymentLine(
+      family.id,
+      normalizeLoanRepaymentLineInput(
+        family,
+        {
+          ...input,
+          createdAt: existingLine.createdAt,
+          id: existingLine.id,
+        },
+        this.now(),
+      ),
+    );
+
+    if (!updatedFamily) {
+      throw new LoanRepaymentLineNotFoundError(lineId);
+    }
+
+    return updatedFamily;
+  }
+
+  async deleteLoanRepaymentLine(
+    request: FamilyRequest,
+    lineId: string,
+  ): Promise<FamilySnapshot> {
+    const family = await this.getOrCreateFamily(request);
+    const updatedFamily = await this.repository.deleteLoanRepaymentLine(
+      family.id,
+      lineId,
+    );
+
+    if (!updatedFamily) {
+      throw new LoanRepaymentLineNotFoundError(lineId);
+    }
+
+    return updatedFamily;
+  }
+
   async updateRecurringLine(
     request: FamilyRequest,
     lineId: string,
@@ -548,6 +712,74 @@ function normalizeRecurringLine(line: RecurringLine): RecurringLine {
   };
 }
 
+function normalizeLoanInput(loan: Loan): Loan {
+  return {
+    ...loan,
+    annualInterestRate: requireNonNegativeNumber(
+      loan.annualInterestRate,
+      "Loan interest rate is invalid.",
+    ),
+    initialAmount: requirePositiveNumber(
+      loan.initialAmount,
+      "Loan initial amount is required.",
+    ),
+    title: requireText(loan.title, "Loan title is required."),
+  };
+}
+
+function normalizeLoanRepaymentLineInput(
+  family: FamilySnapshot,
+  line: LoanRepaymentLine,
+  currentDate: Date,
+): LoanRepaymentLine {
+  const loanId = requireText(line.loanId, "Loan is required.");
+  const loan = family.loans.find((item) => item.id === loanId);
+
+  if (!loan) {
+    throw new LoanNotFoundError(loanId);
+  }
+
+  const paidAmount = requirePositiveNumber(
+    line.paidAmount,
+    "Loan paid amount is required.",
+  );
+  const feesAmount = requireNonNegativeNumber(
+    line.feesAmount,
+    "Loan fees amount is invalid.",
+  );
+  const year = requireInteger(line.year, "Loan repayment year is invalid.");
+  const month = requireInteger(line.month, "Loan repayment month is invalid.");
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1;
+
+  if (year > currentYear) {
+    throw new InvalidFamilyInputError("Loan repayment year is invalid.");
+  }
+
+  if (
+    month < 1 ||
+    month > 12 ||
+    (year === currentYear && month > currentMonth)
+  ) {
+    throw new InvalidFamilyInputError("Loan repayment month is invalid.");
+  }
+
+  if (feesAmount > paidAmount) {
+    throw new InvalidFamilyInputError(
+      "Loan fees cannot exceed the paid amount.",
+    );
+  }
+
+  return {
+    ...line,
+    feesAmount,
+    loanId,
+    month,
+    paidAmount,
+    year,
+  };
+}
+
 function createDefaultId(prefix: string, label: string): string {
   const slug = createSlug(label);
   const suffix = randomUUID().slice(0, 8);
@@ -598,6 +830,19 @@ function requirePositiveNumber(
   const number = requireFiniteNumber(value, message);
 
   if (number <= 0) {
+    throw new InvalidFamilyInputError(message);
+  }
+
+  return number;
+}
+
+function requireNonNegativeNumber(
+  value: number | undefined,
+  message: string,
+): number {
+  const number = requireFiniteNumber(value, message);
+
+  if (number < 0) {
     throw new InvalidFamilyInputError(message);
   }
 

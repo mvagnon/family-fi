@@ -18,6 +18,8 @@ test("family routes expose and mutate the current family snapshot", async () => 
 
   assert.equal(initialResponse.status, 200);
   assert.equal(initialFamily.recurringLines.length, 6);
+  assert.deepEqual(initialFamily.loans, []);
+  assert.deepEqual(initialFamily.loanRepaymentLines, []);
 
   const categoryResponse = await authenticatedRequest(
     app,
@@ -85,6 +87,178 @@ test("family routes delete recurring lines", async () => {
     family.recurringLines.some((line: { id: string }) => line.id === "rent"),
     false,
   );
+});
+
+test("family routes manage loans and repayment lines", async () => {
+  const app = createTestApp();
+  const currentDate = new Date();
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth() + 1;
+
+  await authenticatedRequest(app, familyPath);
+
+  const loanResponse = await authenticatedRequest(app, `${familyPath}/loans`, {
+    body: JSON.stringify({
+      annualInterestRate: 3.5,
+      initialAmount: 1200,
+      title: "Saxophone",
+    }),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+  const familyWithLoan = await loanResponse.json();
+  const loan = familyWithLoan.loans.find(
+    (item: { title: string }) => item.title === "Saxophone",
+  );
+
+  assert.equal(loanResponse.status, 201);
+  assert.ok(loan);
+  assert.equal(loan.initialAmount, 1200);
+  assert.equal(loan.annualInterestRate, 3.5);
+  assert.equal(loan.isHidden, false);
+
+  const repaymentResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/loan-repayment-lines`,
+    {
+      body: JSON.stringify({
+        feesAmount: 3.5,
+        loanId: loan.id,
+        month,
+        paidAmount: 100,
+        year,
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
+  const familyWithRepayment = await repaymentResponse.json();
+  const repaymentLine = familyWithRepayment.loanRepaymentLines.find(
+    (item: { loanId: string }) => item.loanId === loan.id,
+  );
+
+  assert.equal(repaymentResponse.status, 201);
+  assert.ok(repaymentLine);
+  assert.equal(repaymentLine.paidAmount, 100);
+  assert.equal(repaymentLine.feesAmount, 3.5);
+
+  const visibilityResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/loans/${loan.id}/visibility`,
+    {
+      body: JSON.stringify({ isHidden: true }),
+      headers: { "Content-Type": "application/json" },
+      method: "PUT",
+    },
+  );
+  const familyWithHiddenLoan = await visibilityResponse.json();
+
+  assert.equal(visibilityResponse.status, 200);
+  assert.equal(
+    familyWithHiddenLoan.loans.find(
+      (item: { id: string }) => item.id === loan.id,
+    )?.isHidden,
+    true,
+  );
+
+  const updateLoanResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/loans/${loan.id}`,
+    {
+      body: JSON.stringify({
+        annualInterestRate: 4,
+        initialAmount: 1300,
+        isHidden: true,
+        title: "Saxophone Yamaha",
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "PUT",
+    },
+  );
+  const familyWithUpdatedLoan = await updateLoanResponse.json();
+  const updatedLoan = familyWithUpdatedLoan.loans.find(
+    (item: { id: string }) => item.id === loan.id,
+  );
+
+  assert.equal(updateLoanResponse.status, 200);
+  assert.equal(updatedLoan?.title, "Saxophone Yamaha");
+  assert.equal(updatedLoan?.initialAmount, 1300);
+  assert.equal(updatedLoan?.annualInterestRate, 4);
+  assert.equal(updatedLoan?.isHidden, true);
+
+  const updateLineResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/loan-repayment-lines/${repaymentLine.id}`,
+    {
+      body: JSON.stringify({
+        feesAmount: 4,
+        loanId: loan.id,
+        month,
+        paidAmount: 120,
+        year,
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "PUT",
+    },
+  );
+  const familyWithUpdatedLine = await updateLineResponse.json();
+  const updatedLine = familyWithUpdatedLine.loanRepaymentLines.find(
+    (item: { id: string }) => item.id === repaymentLine.id,
+  );
+
+  assert.equal(updateLineResponse.status, 200);
+  assert.equal(updatedLine?.paidAmount, 120);
+  assert.equal(updatedLine?.feesAmount, 4);
+
+  const deleteLineResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/loan-repayment-lines/${repaymentLine.id}`,
+    {
+      method: "DELETE",
+    },
+  );
+  const familyWithoutLine = await deleteLineResponse.json();
+
+  assert.equal(deleteLineResponse.status, 200);
+  assert.equal(
+    familyWithoutLine.loanRepaymentLines.some(
+      (item: { id: string }) => item.id === repaymentLine.id,
+    ),
+    false,
+  );
+
+  const secondRepaymentResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/loan-repayment-lines`,
+    {
+      body: JSON.stringify({
+        feesAmount: 2,
+        loanId: loan.id,
+        month,
+        paidAmount: 80,
+        year,
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
+  const familyWithSecondLine = await secondRepaymentResponse.json();
+
+  assert.equal(secondRepaymentResponse.status, 201);
+  assert.equal(familyWithSecondLine.loanRepaymentLines.length, 1);
+
+  const deleteLoanResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/loans/${loan.id}`,
+    {
+      method: "DELETE",
+    },
+  );
+  const familyWithoutLoan = await deleteLoanResponse.json();
+
+  assert.equal(deleteLoanResponse.status, 200);
+  assert.equal(familyWithoutLoan.loans.length, 0);
+  assert.equal(familyWithoutLoan.loanRepaymentLines.length, 0);
 });
 
 test("family routes create members with active flags and defaults", async () => {

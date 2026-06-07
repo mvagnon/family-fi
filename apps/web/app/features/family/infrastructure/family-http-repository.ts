@@ -70,6 +70,36 @@ export function createFamilyHttpRepository(
           },
         ),
       ),
+    createLoan: async (spaceId, input) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family.loans.$post({
+          json: input,
+          param: { spaceId },
+        }),
+      ),
+    createLoanRepaymentLine: async (spaceId, input) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family[
+          "loan-repayment-lines"
+        ].$post({
+          json: input,
+          param: { spaceId },
+        }),
+      ),
+    deleteLoan: async (spaceId, loanId) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family.loans[":id"].$delete({
+          param: { id: loanId, spaceId },
+        }),
+      ),
+    deleteLoanRepaymentLine: async (spaceId, lineId) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family["loan-repayment-lines"][
+          ":id"
+        ].$delete({
+          param: { id: lineId, spaceId },
+        }),
+      ),
     deleteParticipationLine: async (spaceId, lineId) =>
       readFamilyResponse(
         await client.api.spaces[":spaceId"].family["participation-lines"][
@@ -128,6 +158,31 @@ export function createFamilyHttpRepository(
           json: input,
           param: { id: lineId, spaceId },
         }),
+      ),
+    updateLoan: async (spaceId, loanId, input) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family.loans[":id"].$put({
+          json: input,
+          param: { id: loanId, spaceId },
+        }),
+      ),
+    updateLoanRepaymentLine: async (spaceId, lineId, input) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family["loan-repayment-lines"][
+          ":id"
+        ].$put({
+          json: input,
+          param: { id: lineId, spaceId },
+        }),
+      ),
+    updateLoanVisibility: async (spaceId, loanId, input) =>
+      readFamilyResponse(
+        await client.api.spaces[":spaceId"].family.loans[":id"].visibility.$put(
+          {
+            json: input,
+            param: { id: loanId, spaceId },
+          },
+        ),
       ),
   };
 }

@@ -15,8 +15,12 @@ import {
   createFamilyCategoryInputSchema,
   createFamilyMemberInputSchema,
   familySchema,
+  loanInputSchema,
+  loanRepaymentLineInputSchema,
+  loanVisibilityInputSchema,
   participationLineInputSchema,
   recurringLineInputSchema,
+  updateLoanInputSchema,
   updateFamilyMemberInputSchema,
 } from "../../domain/family.js";
 
@@ -211,6 +215,142 @@ const createParticipationLineRoute = createRoute({
   },
 });
 
+const createLoanRoute = createRoute({
+  method: "post",
+  path: "/loans",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: loanInputSchema,
+        },
+      },
+    },
+    params: familyRouteParamsSchema,
+  },
+  responses: {
+    201: familyJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+  },
+});
+
+const updateLoanRoute = createRoute({
+  method: "put",
+  path: "/loans/{id}",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: updateLoanInputSchema,
+        },
+      },
+    },
+    params: familyEntityRouteParamsSchema,
+  },
+  responses: {
+    200: familyJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+    404: notFoundResponse,
+  },
+});
+
+const updateLoanVisibilityRoute = createRoute({
+  method: "put",
+  path: "/loans/{id}/visibility",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: loanVisibilityInputSchema,
+        },
+      },
+    },
+    params: familyEntityRouteParamsSchema,
+  },
+  responses: {
+    200: familyJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+    404: notFoundResponse,
+  },
+});
+
+const deleteLoanRoute = createRoute({
+  method: "delete",
+  path: "/loans/{id}",
+  request: {
+    params: familyEntityRouteParamsSchema,
+  },
+  responses: {
+    200: familyJsonResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+    404: notFoundResponse,
+  },
+});
+
+const createLoanRepaymentLineRoute = createRoute({
+  method: "post",
+  path: "/loan-repayment-lines",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: loanRepaymentLineInputSchema,
+        },
+      },
+    },
+    params: familyRouteParamsSchema,
+  },
+  responses: {
+    201: familyJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+  },
+});
+
+const updateLoanRepaymentLineRoute = createRoute({
+  method: "put",
+  path: "/loan-repayment-lines/{id}",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: loanRepaymentLineInputSchema,
+        },
+      },
+    },
+    params: familyEntityRouteParamsSchema,
+  },
+  responses: {
+    200: familyJsonResponse,
+    400: validationErrorResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+    404: notFoundResponse,
+  },
+});
+
+const deleteLoanRepaymentLineRoute = createRoute({
+  method: "delete",
+  path: "/loan-repayment-lines/{id}",
+  request: {
+    params: familyEntityRouteParamsSchema,
+  },
+  responses: {
+    200: familyJsonResponse,
+    401: unauthenticatedResponse,
+    403: accessDeniedResponse,
+    404: notFoundResponse,
+  },
+});
+
 const updateParticipationLineRoute = createRoute({
   method: "put",
   path: "/participation-lines/{id}",
@@ -352,6 +492,65 @@ export function createFamilyRouter(
       );
 
       return context.json(family, 201);
+    })
+    .openapi(createLoanRoute, async (context) => {
+      const family = await service.createLoan(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.valid("json"),
+      );
+
+      return context.json(family, 201);
+    })
+    .openapi(updateLoanRoute, async (context) => {
+      const family = await service.updateLoan(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.param("id"),
+        context.req.valid("json"),
+      );
+
+      return context.json(family, 200);
+    })
+    .openapi(updateLoanVisibilityRoute, async (context) => {
+      const family = await service.updateLoanVisibility(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.param("id"),
+        context.req.valid("json"),
+      );
+
+      return context.json(family, 200);
+    })
+    .openapi(deleteLoanRoute, async (context) => {
+      const family = await service.deleteLoan(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.param("id"),
+      );
+
+      return context.json(family, 200);
+    })
+    .openapi(createLoanRepaymentLineRoute, async (context) => {
+      const family = await service.createLoanRepaymentLine(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.valid("json"),
+      );
+
+      return context.json(family, 201);
+    })
+    .openapi(updateLoanRepaymentLineRoute, async (context) => {
+      const family = await service.updateLoanRepaymentLine(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.param("id"),
+        context.req.valid("json"),
+      );
+
+      return context.json(family, 200);
+    })
+    .openapi(deleteLoanRepaymentLineRoute, async (context) => {
+      const family = await service.deleteLoanRepaymentLine(
+        await getFamilyRouteRequest(context, authProvider),
+        context.req.param("id"),
+      );
+
+      return context.json(family, 200);
     })
     .openapi(updateParticipationLineRoute, async (context) => {
       const family = await service.updateParticipationLine(
