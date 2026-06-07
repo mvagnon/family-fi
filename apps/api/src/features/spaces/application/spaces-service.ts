@@ -6,6 +6,7 @@ import {
 import type {
   SpaceSummary,
   UpdateDefaultSpaceInput,
+  UpdateSpaceCurrencyInput,
   UserSettings,
 } from "../domain/spaces.js";
 
@@ -45,6 +46,22 @@ export class SpacesService {
     await this.assertUserCanAccessSpace(userId, defaultSpaceId);
 
     return this.repository.setDefaultSpaceId(userId, defaultSpaceId);
+  }
+
+  async updateSpaceCurrency(
+    userId: string,
+    spaceId: string,
+    input: UpdateSpaceCurrencyInput,
+  ): Promise<SpaceSummary> {
+    const normalizedSpaceId = requireText(spaceId, "Space is required.");
+
+    await this.assertUserCanAccessSpace(userId, normalizedSpaceId);
+
+    return this.repository.setSpaceCurrency(
+      userId,
+      normalizedSpaceId,
+      input.currencyCode,
+    );
   }
 
   async assertUserCanAccessSpace(

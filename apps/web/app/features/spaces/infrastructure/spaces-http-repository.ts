@@ -43,6 +43,19 @@ export function createSpacesHttpRepository(
     return parseSpacesResponse(await response.json());
   }
 
+  async function readSpaceResponse(response: {
+    json: () => Promise<unknown>;
+    ok: boolean;
+  }): Promise<SpaceSummary> {
+    if (!response.ok) {
+      throw new SpacesApiError(await getErrorMessage(response));
+    }
+
+    const [space] = parseSpacesResponse([await response.json()]);
+
+    return space;
+  }
+
   async function readUserSettingsResponse(response: {
     json: () => Promise<unknown>;
     ok: boolean;
@@ -61,6 +74,13 @@ export function createSpacesHttpRepository(
     updateDefaultSpace: async (input) =>
       readUserSettingsResponse(
         await client.api.me.settings["default-space"].$put({ json: input }),
+      ),
+    updateSpaceCurrency: async (spaceId, input) =>
+      readSpaceResponse(
+        await client.api.spaces[":spaceId"].settings.currency.$put({
+          json: input,
+          param: { spaceId },
+        }),
       ),
   };
 }

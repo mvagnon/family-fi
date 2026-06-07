@@ -15,6 +15,7 @@ import type {
   FamilyMember,
 } from "../domain/family";
 import { participationLineInputSchema } from "../domain/family";
+import { useFamilyFormat } from "./use-family-format";
 
 interface ParticipationLineFormValidationMessages {
   amountNonZero: string;
@@ -111,6 +112,7 @@ export function FamilyParticipationLineModal({
   open,
 }: FamilyParticipationLineModalProps) {
   const { i18n, t } = useTranslation();
+  const familyFormat = useFamilyFormat();
   const formSchema = useMemo(
     () =>
       createParticipationLineFormSchema(
@@ -153,6 +155,10 @@ export function FamilyParticipationLineModal({
         month: "long",
       }),
     [i18n.language, i18n.resolvedLanguage],
+  );
+  const amountSlotProps = useMemo(
+    () => getAmountSlotProps(familyFormat.currencySymbol),
+    [familyFormat.currencySymbol],
   );
 
   function handleValidSubmit(values: ParticipationLineFormValues) {
@@ -317,11 +323,15 @@ function getFieldErrorMessage(error: { message?: unknown } | undefined) {
   return typeof error?.message === "string" ? error.message : undefined;
 }
 
-const amountSlotProps = {
-  htmlInput: {
-    inputMode: "decimal",
-  },
-  input: {
-    startAdornment: <InputAdornment position="start">€</InputAdornment>,
-  },
-} as const;
+function getAmountSlotProps(currencySymbol: string) {
+  return {
+    htmlInput: {
+      inputMode: "decimal",
+    },
+    input: {
+      startAdornment: (
+        <InputAdornment position="start">{currencySymbol}</InputAdornment>
+      ),
+    },
+  } as const;
+}

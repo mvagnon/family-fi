@@ -271,6 +271,10 @@ function LineEditDialogForm({
   const { ref: amountRef, ...amountField } = register("amount");
   const { ref: minAmountRef, ...minAmountField } = register("minAmount");
   const { ref: maxAmountRef, ...maxAmountField } = register("maxAmount");
+  const amountSlotProps = useMemo(
+    () => getAmountSlotProps(familyFormat.currencySymbol),
+    [familyFormat.currencySymbol],
+  );
 
   function handleValidSubmit(values: LineFormValues) {
     return onSave({ ...line, ...values });
@@ -570,11 +574,15 @@ function getFieldErrorMessage(error: { message?: unknown } | undefined) {
   return typeof error?.message === "string" ? error.message : undefined;
 }
 
-const amountSlotProps = {
-  htmlInput: {
-    inputMode: "decimal",
-  },
-  input: {
-    startAdornment: <InputAdornment position="start">€</InputAdornment>,
-  },
-} as const;
+function getAmountSlotProps(currencySymbol: string) {
+  return {
+    htmlInput: {
+      inputMode: "decimal",
+    },
+    input: {
+      startAdornment: (
+        <InputAdornment position="start">{currencySymbol}</InputAdornment>
+      ),
+    },
+  } as const;
+}

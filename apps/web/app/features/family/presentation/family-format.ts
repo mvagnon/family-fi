@@ -1,18 +1,28 @@
 import type { TFunction } from "i18next";
 
+import type { SupportedCurrency } from "../../spaces/domain/spaces";
 import type { RecurringLine } from "../domain/family";
 
-export function formatCurrency(value: number, locale: string): string {
-  return getCurrencyFormatter(locale).format(value);
+export function formatCurrency(
+  value: number,
+  locale: string,
+  currencyCode: SupportedCurrency,
+): string {
+  return getCurrencyFormatter(locale, currencyCode).format(value);
 }
 
 export function formatLineAmount(
   line: RecurringLine,
   locale: string,
   t: TFunction,
+  currencyCode: SupportedCurrency,
 ): string {
   if (!line.isEstimate) {
-    return formatCurrency(getSignedAmount(line, line.amount), locale);
+    return formatCurrency(
+      getSignedAmount(line, line.amount),
+      locale,
+      currencyCode,
+    );
   }
 
   const minAmount = getSignedAmount(line, line.minAmount ?? line.amount);
@@ -23,6 +33,7 @@ export function formatLineAmount(
     Math.max(minAmount, maxAmount),
     locale,
     t,
+    currencyCode,
   );
 }
 
@@ -31,11 +42,23 @@ export function formatAmountRange(
   maxAmount: number,
   locale: string,
   t: TFunction,
+  currencyCode: SupportedCurrency,
 ): string {
   return t("family.format.amountRange", {
-    max: formatCurrency(maxAmount, locale),
-    min: formatCurrency(minAmount, locale),
+    max: formatCurrency(maxAmount, locale, currencyCode),
+    min: formatCurrency(minAmount, locale, currencyCode),
   });
+}
+
+export function formatCurrencySymbol(
+  locale: string,
+  currencyCode: SupportedCurrency,
+): string {
+  const currencyPart = getCurrencyFormatter(locale, currencyCode)
+    .formatToParts(0)
+    .find((part) => part.type === "currency");
+
+  return currencyPart?.value ?? currencyCode;
 }
 
 export function formatRecurrence(months: number, t: TFunction): string {
@@ -56,21 +79,25 @@ function getSignedAmount(line: RecurringLine, amount: number): number {
   return line.movement === "positive" ? amount : -amount;
 }
 
-function getCurrencyFormatter(locale: string): Intl.NumberFormat {
+function getCurrencyFormatter(
+  locale: string,
+  currencyCode: SupportedCurrency,
+): Intl.NumberFormat {
   const formatterLocale = getFormatterLocale(locale);
-  const formatter = currencyFormatters.get(formatterLocale);
+  const formatterKey = `${formatterLocale}:${currencyCode}`;
+  const formatter = currencyFormatters.get(formatterKey);
 
   if (formatter) {
     return formatter;
   }
 
   const nextFormatter = new Intl.NumberFormat(formatterLocale, {
-    currency: "EUR",
+    currency: currencyCode,
     maximumFractionDigits: 0,
     style: "currency",
   });
 
-  currencyFormatters.set(formatterLocale, nextFormatter);
+  currencyFormatters.set(formatterKey, nextFormatter);
 
   return nextFormatter;
 }

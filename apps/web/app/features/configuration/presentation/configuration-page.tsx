@@ -1,14 +1,22 @@
+import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import Stack from "@mui/material/Stack";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import type { SxProps, Theme } from "@mui/material/styles";
 import { SectionPanel } from "@repo/ui/section-panel";
-import type { ChangeEvent } from "react";
+import {
+  useState,
+  type ChangeEvent,
+  type ReactNode,
+  type SyntheticEvent,
+} from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -16,6 +24,7 @@ import {
   AppShellHeader,
 } from "../../app-shell/presentation/app-shell-layout";
 import type { SpaceRepository } from "../../spaces/domain/space-repository";
+import { CurrencySettings } from "../../spaces/presentation/currency-settings";
 import { DefaultSpaceSettings } from "../../spaces/presentation/default-space-settings";
 import { parseSupportedLanguage } from "../domain/language-preference";
 import {
@@ -27,6 +36,7 @@ import { useLanguagePreference } from "./language-preference-provider";
 const browserLanguageChoice = "browser";
 
 type LanguageChoice = SupportedLanguage | typeof browserLanguageChoice;
+type ConfigurationTab = "user" | "space";
 
 interface ConfigurationPageProps {
   spaceRepository: SpaceRepository;
@@ -41,6 +51,7 @@ export function ConfigurationPage({ spaceRepository }: ConfigurationPageProps) {
     resetLanguage,
     setLanguage,
   } = useLanguagePreference();
+  const [activeTab, setActiveTab] = useState<ConfigurationTab>("user");
   const browserLanguageLabel = t(
     `configuration.languages.${browserLanguage}.label`,
   );
@@ -61,6 +72,12 @@ export function ConfigurationPage({ spaceRepository }: ConfigurationPageProps) {
     }
   }
 
+  function handleTabChange(_: SyntheticEvent, value: string) {
+    if (value === "user" || value === "space") {
+      setActiveTab(value);
+    }
+  }
+
   return (
     <>
       <AppShellHeader
@@ -69,50 +86,118 @@ export function ConfigurationPage({ spaceRepository }: ConfigurationPageProps) {
       />
       <AppShellContent>
         <Stack spacing={2.5}>
-          <SectionPanel
-            contentSx={{ p: { md: 2.5, xs: 2 }, pt: 0 }}
-            subtitle={t("configuration.language.description")}
-            title={t("configuration.language.title")}
-            titleId="configuration-language-title"
+          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+            <Tabs
+              aria-label={t("configuration.tabs.ariaLabel")}
+              onChange={handleTabChange}
+              value={activeTab}
+              variant="scrollable"
+            >
+              <Tab
+                aria-controls="configuration-user-settings-panel"
+                id="configuration-user-settings-tab"
+                label={t("configuration.tabs.user")}
+                value="user"
+              />
+              <Tab
+                aria-controls="configuration-space-settings-panel"
+                id="configuration-space-settings-tab"
+                label={t("configuration.tabs.space")}
+                value="space"
+              />
+            </Tabs>
+          </Box>
+
+          <ConfigurationTabPanel
+            activeTab={activeTab}
+            labelledBy="configuration-user-settings-tab"
+            panelId="configuration-user-settings-panel"
+            tab="user"
           >
-            <FormControl component="fieldset" fullWidth>
-              <RadioGroup
-                aria-label={t("configuration.language.ariaLabel")}
-                name="configuration-language"
-                onChange={handleLanguageChange}
-                sx={{ gap: 1 }}
-                value={selectedLanguageChoice}
-              >
-                <FormControlLabel
-                  control={<Radio />}
-                  label={
-                    <BrowserLanguageOptionLabel
-                      browserLanguageLabel={browserLanguageLabel}
-                    />
-                  }
-                  sx={getLanguageOptionSx(
-                    selectedLanguageChoice === browserLanguageChoice,
-                  )}
-                  value={browserLanguageChoice}
-                />
-                {supportedLanguages.map((language) => (
+            <SectionPanel
+              contentSx={{ p: { md: 2.5, xs: 2 }, pt: 0 }}
+              subtitle={t("configuration.language.description")}
+              title={t("configuration.language.title")}
+              titleId="configuration-language-title"
+            >
+              <FormControl component="fieldset" fullWidth>
+                <RadioGroup
+                  aria-label={t("configuration.language.ariaLabel")}
+                  name="configuration-language"
+                  onChange={handleLanguageChange}
+                  sx={{ gap: 1 }}
+                  value={selectedLanguageChoice}
+                >
                   <FormControlLabel
                     control={<Radio />}
-                    key={language}
-                    label={<LanguageOptionLabel language={language} />}
+                    label={
+                      <BrowserLanguageOptionLabel
+                        browserLanguageLabel={browserLanguageLabel}
+                      />
+                    }
                     sx={getLanguageOptionSx(
-                      selectedLanguageChoice === language,
+                      selectedLanguageChoice === browserLanguageChoice,
                     )}
-                    value={language}
+                    value={browserLanguageChoice}
                   />
-                ))}
-              </RadioGroup>
-            </FormControl>
-          </SectionPanel>
-          <DefaultSpaceSettings repository={spaceRepository} />
+                  {supportedLanguages.map((language) => (
+                    <FormControlLabel
+                      control={<Radio />}
+                      key={language}
+                      label={<LanguageOptionLabel language={language} />}
+                      sx={getLanguageOptionSx(
+                        selectedLanguageChoice === language,
+                      )}
+                      value={language}
+                    />
+                  ))}
+                </RadioGroup>
+              </FormControl>
+            </SectionPanel>
+            <DefaultSpaceSettings repository={spaceRepository} />
+          </ConfigurationTabPanel>
+
+          <ConfigurationTabPanel
+            activeTab={activeTab}
+            labelledBy="configuration-space-settings-tab"
+            panelId="configuration-space-settings-panel"
+            tab="space"
+          >
+            <Alert severity="info" variant="outlined">
+              {t("configuration.spaceSettings.scope")}
+            </Alert>
+            <CurrencySettings repository={spaceRepository} />
+          </ConfigurationTabPanel>
         </Stack>
       </AppShellContent>
     </>
+  );
+}
+
+function ConfigurationTabPanel({
+  activeTab,
+  children,
+  labelledBy,
+  panelId,
+  tab,
+}: {
+  activeTab: ConfigurationTab;
+  children: ReactNode;
+  labelledBy: string;
+  panelId: string;
+  tab: ConfigurationTab;
+}) {
+  const isActive = activeTab === tab;
+
+  return (
+    <Box
+      aria-labelledby={labelledBy}
+      hidden={!isActive}
+      id={panelId}
+      role="tabpanel"
+    >
+      {isActive ? <Stack spacing={2.5}>{children}</Stack> : null}
+    </Box>
   );
 }
 
