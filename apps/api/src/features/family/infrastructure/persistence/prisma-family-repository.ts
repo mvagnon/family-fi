@@ -329,18 +329,83 @@ export class PrismaFamilyRepository implements FamilyRepository {
   }
 
   async saveFamily(family: FamilySnapshot): Promise<FamilySnapshot> {
-    const updatedFamily = await this.prisma.family.update({
-      data: {
-        categories: toJsonValue(family.categories),
-        members: toJsonValue(family.members),
-      },
-      include: familyInclude,
-      where: {
-        id: family.id,
-      },
-    });
+    return this.prisma.$transaction(async (prisma) => {
+      await prisma.loanRepaymentLine.deleteMany({
+        where: {
+          familyId: family.id,
+        },
+      });
+      await prisma.loan.deleteMany({
+        where: {
+          familyId: family.id,
+        },
+      });
+      await prisma.participationLine.deleteMany({
+        where: {
+          familyId: family.id,
+        },
+      });
+      await prisma.recurringLine.deleteMany({
+        where: {
+          familyId: family.id,
+        },
+      });
 
-    return toFamilySnapshot(updatedFamily);
+      await prisma.family.update({
+        data: {
+          categories: toJsonValue(family.categories),
+          members: toJsonValue(family.members),
+        },
+        where: {
+          id: family.id,
+        },
+      });
+
+      for (const loan of family.loans) {
+        await prisma.loan.create({
+          data: {
+            ...toLoanCreateInput(loan),
+            familyId: family.id,
+          },
+        });
+      }
+
+      for (const line of family.loanRepaymentLines) {
+        await prisma.loanRepaymentLine.create({
+          data: {
+            ...toLoanRepaymentLineCreateInput(line),
+            familyId: family.id,
+          },
+        });
+      }
+
+      for (const line of family.recurringLines) {
+        await prisma.recurringLine.create({
+          data: {
+            ...toRecurringLineCreateInput(line),
+            familyId: family.id,
+          },
+        });
+      }
+
+      for (const line of family.participationLines) {
+        await prisma.participationLine.create({
+          data: {
+            ...toParticipationLineCreateInput(line),
+            familyId: family.id,
+          },
+        });
+      }
+
+      const updatedFamily = await prisma.family.findUniqueOrThrow({
+        include: familyInclude,
+        where: {
+          id: family.id,
+        },
+      });
+
+      return toFamilySnapshot(updatedFamily);
+    });
   }
 
   async updateRecurringLine(

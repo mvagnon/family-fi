@@ -1,11 +1,26 @@
+import type { ReactNode } from "react";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import { useTranslation } from "react-i18next";
 
-export function FamilyBudgetEmptyState() {
+interface FamilyBudgetEmptyStateProps {
+  description?: string;
+  icon?: ReactNode;
+  title?: string;
+  width?: number;
+}
+
+export function FamilyBudgetEmptyState({
+  description,
+  icon,
+  title,
+  width = 240,
+}: FamilyBudgetEmptyStateProps = {}) {
   const { t } = useTranslation();
+  const emptyTitle = title ?? t("family.budget.empty.title");
+  const emptyDescription = description ?? t("family.budget.empty.description");
 
   return (
     <Box
@@ -31,17 +46,17 @@ export function FamilyBudgetEmptyState() {
           width: 48,
         })}
       >
-        <ReceiptLongIcon />
+        {icon ?? <ReceiptLongIcon />}
       </Box>
       <Typography sx={{ mt: 1.5 }} variant="h4">
-        {t("family.budget.empty.title")}
+        {emptyTitle}
       </Typography>
       <Typography
         color="text.secondary"
-        sx={{ maxWidth: 240, mt: 0.5 }}
+        sx={{ maxWidth: width, mt: 0.5 }}
         variant="body2"
       >
-        {t("family.budget.empty.description")}
+        {emptyDescription}
       </Typography>
     </Box>
   );
