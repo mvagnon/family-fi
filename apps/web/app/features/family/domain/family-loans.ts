@@ -45,6 +45,7 @@ export interface FamilyLoanProjection {
 export interface FamilyLoanProjectionInput {
   currentMonthIndex: number;
   currentYear: number;
+  visibleLoanIds?: ReadonlySet<string>;
   year: number;
 }
 
@@ -65,16 +66,18 @@ export function getFamilyLoanProjection(
   }));
   const activeLoans = balances.filter((balance) => balance.remainingAmount > 0);
   const pastLoans = balances.filter((balance) => balance.remainingAmount <= 0);
-  const visibleLoanIds = new Set(
-    balances
-      .filter((balance) => !balance.loan.isHidden)
-      .map((balance) => balance.loan.id),
-  );
+  const visibleLoanIds = getVisibleLoanIds(family, input);
   const lines = getVisibleLoanRepaymentLines(family, visibleLoanIds, input);
 
   return {
     activeLoans,
-    monthGroups: buildMonthGroups(family, lines, activeLoans, input),
+    monthGroups: buildMonthGroups(
+      family,
+      lines,
+      activeLoans,
+      visibleLoanIds,
+      input,
+    ),
     pastLoans,
     summary: getLoanSummary(family, visibleLoanIds, input),
   };
@@ -175,6 +178,7 @@ function buildMonthGroups(
   family: Family,
   lines: FamilyLoanRepaymentLine[],
   activeLoans: FamilyLoanBalance[],
+  visibleLoanIds: ReadonlySet<string>,
   input: FamilyLoanProjectionInput,
 ): FamilyLoanMonthGroup[] {
   return getVisibleMonthIndexes(input).map((monthIndex) => {
@@ -195,7 +199,7 @@ function buildMonthGroups(
         0,
       ),
       remainingAmount: activeLoans
-        .filter((balance) => !balance.loan.isHidden)
+        .filter((balance) => visibleLoanIds.has(balance.loan.id))
         .reduce(
           (total, balance) =>
             total +
@@ -247,6 +251,23 @@ function getLoanSummary(
       ),
     ),
   };
+}
+
+function getVisibleLoanIds(
+  family: Family,
+  input: FamilyLoanProjectionInput,
+): ReadonlySet<string> {
+  if (!input.visibleLoanIds) {
+    return new Set(family.loans.map((loan) => loan.id));
+  }
+
+  const inputVisibleLoanIds = input.visibleLoanIds;
+
+  return new Set(
+    family.loans
+      .filter((loan) => inputVisibleLoanIds.has(loan.id))
+      .map((loan) => loan.id),
+  );
 }
 
 function getProjectionDate(

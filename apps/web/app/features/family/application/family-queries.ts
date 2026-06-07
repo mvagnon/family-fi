@@ -11,7 +11,6 @@ import type {
   Family,
   UpdateLoanInput,
   UpdateLoanRepaymentLineInput,
-  UpdateLoanVisibilityInput,
   UpdateFamilyMemberInput,
   UpdateParticipationLineInput,
   UpdateRecurringLineInput,
@@ -126,49 +125,6 @@ export function useUpdateFamilyLoan(
       loanId: string;
     }) => repository.updateLoan(spaceId, loanId, input),
     onSuccess: (family) => setFamilyCache(queryClient, spaceId, family),
-  });
-}
-
-export function useUpdateFamilyLoanVisibility(
-  repository: FamilyRepository,
-  spaceId: string,
-) {
-  const queryClient = useQueryClient();
-  const queryKey = familyQueryKeys.detail(spaceId);
-
-  return useMutation({
-    mutationFn: ({
-      input,
-      loanId,
-    }: {
-      input: UpdateLoanVisibilityInput;
-      loanId: string;
-    }) => repository.updateLoanVisibility(spaceId, loanId, input),
-    onMutate: async ({ input, loanId }) => {
-      await queryClient.cancelQueries({ queryKey });
-
-      const previousFamily = queryClient.getQueryData<Family>(queryKey);
-
-      queryClient.setQueryData<Family>(queryKey, (family) =>
-        family
-          ? setFamilyLoanVisibility(family, loanId, input.isHidden)
-          : family,
-      );
-
-      return { previousFamily };
-    },
-    onError: (_error, _variables, context) => {
-      if (context?.previousFamily) {
-        setFamilyCache(queryClient, spaceId, context.previousFamily);
-      }
-    },
-    onSuccess: (family, { input, loanId }) => {
-      queryClient.setQueryData<Family>(queryKey, (currentFamily) =>
-        currentFamily
-          ? setFamilyLoanVisibility(currentFamily, loanId, input.isHidden)
-          : family,
-      );
-    },
   });
 }
 
@@ -322,27 +278,4 @@ function setFamilyCache(
   family: Family,
 ) {
   queryClient.setQueryData(familyQueryKeys.detail(spaceId), family);
-}
-
-function setFamilyLoanVisibility(
-  family: Family,
-  loanId: string,
-  isHidden: boolean,
-): Family {
-  const loanIndex = family.loans.findIndex((loan) => loan.id === loanId);
-
-  if (loanIndex < 0 || family.loans[loanIndex].isHidden === isHidden) {
-    return family;
-  }
-
-  const loans = [...family.loans];
-  loans[loanIndex] = {
-    ...loans[loanIndex],
-    isHidden,
-  };
-
-  return {
-    ...family,
-    loans,
-  };
 }

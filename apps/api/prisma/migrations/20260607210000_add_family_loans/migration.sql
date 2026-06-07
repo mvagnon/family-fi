@@ -4,7 +4,6 @@ CREATE TABLE "loans" (
   "title" TEXT NOT NULL,
   "initial_amount_cents" INTEGER NOT NULL,
   "annual_interest_rate" DOUBLE PRECISION NOT NULL,
-  "is_hidden" BOOLEAN NOT NULL DEFAULT false,
   "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updated_at" TIMESTAMP(3) NOT NULL,
 

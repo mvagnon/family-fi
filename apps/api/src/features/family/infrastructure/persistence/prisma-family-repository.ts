@@ -484,28 +484,6 @@ export class PrismaFamilyRepository implements FamilyRepository {
     return this.getFamilyById(familyId);
   }
 
-  async updateLoanVisibility(
-    familyId: string,
-    loanId: string,
-    isHidden: boolean,
-  ): Promise<FamilySnapshot | null> {
-    const result = await this.prisma.loan.updateMany({
-      data: {
-        isHidden,
-      },
-      where: {
-        familyId,
-        id: loanId,
-      },
-    });
-
-    if (result.count === 0) {
-      return null;
-    }
-
-    return this.getFamilyById(familyId);
-  }
-
   private async getFamilyById(familyId: string): Promise<FamilySnapshot> {
     const family = await this.prisma.family.findUniqueOrThrow({
       include: familyInclude,
@@ -569,7 +547,6 @@ function toLoanCreateInput(loan: Loan) {
     createdAt: new Date(loan.createdAt),
     id: loan.id,
     initialAmountCents: toCents(loan.initialAmount),
-    isHidden: loan.isHidden,
     title: loan.title,
   };
 }
@@ -578,7 +555,6 @@ function toLoanUpdateInput(loan: Loan) {
   return {
     annualInterestRate: loan.annualInterestRate,
     initialAmountCents: toCents(loan.initialAmount),
-    isHidden: loan.isHidden,
     title: loan.title,
   };
 }
@@ -589,7 +565,6 @@ function toLoan(loan: LoanRecord): Loan {
     createdAt: loan.createdAt.toISOString(),
     id: loan.id,
     initialAmount: fromCents(loan.initialAmountCents),
-    isHidden: loan.isHidden,
     title: loan.title,
   };
 }

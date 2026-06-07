@@ -53,7 +53,6 @@ export const loanSchema = z
     createdAt: z.string(),
     id: z.string(),
     initialAmount: z.number().positive(),
-    isHidden: z.boolean(),
     title: z.string(),
   })
   .meta({ id: "Loan" });
@@ -118,19 +117,13 @@ export type UpdateParticipationLineInput = CreateParticipationLineInput;
 export interface CreateLoanInput {
   annualInterestRate: number;
   initialAmount: number;
-  isHidden?: boolean;
   title: string;
 }
 
 export interface UpdateLoanInput {
   annualInterestRate: number;
   initialAmount: number;
-  isHidden: boolean;
   title: string;
-}
-
-export interface UpdateLoanVisibilityInput {
-  isHidden: boolean;
 }
 
 export type CreateLoanRepaymentLineInput = Omit<
@@ -263,22 +256,13 @@ export const loanInputSchema = z
       "Loan interest rate is invalid.",
     ),
     initialAmount: positiveNumberSchema("Loan initial amount is required."),
-    isHidden: z.boolean({ error: "Loan visibility is invalid." }).optional(),
     title: requiredTextSchema("Loan title is required."),
   })
   .meta({ id: "LoanInput" });
 
-export const updateLoanInputSchema = loanInputSchema
-  .extend({
-    isHidden: z.boolean({ error: "Loan visibility is invalid." }),
-  })
-  .meta({ id: "UpdateLoanInput" });
-
-export const loanVisibilityInputSchema = z
-  .object({
-    isHidden: z.boolean({ error: "Loan visibility is invalid." }),
-  })
-  .meta({ id: "LoanVisibilityInput" });
+export const updateLoanInputSchema = loanInputSchema.meta({
+  id: "UpdateLoanInput",
+});
 
 export const loanRepaymentLineInputSchema = z
   .object({

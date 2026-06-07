@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ConfirmationDialog } from "@repo/ui/confirmation-dialog";
 import { FeedbackSnackbar } from "@repo/ui/feedback-snackbar";
 import { useTranslation } from "react-i18next";
@@ -16,7 +16,6 @@ import type {
   LoanRepaymentLine,
   UpdateLoanInput,
   UpdateLoanRepaymentLineInput,
-  UpdateLoanVisibilityInput,
 } from "../domain/family";
 import {
   type FamilyLoanBalance,
@@ -25,6 +24,7 @@ import {
 } from "../domain/family-loans";
 import { FamilyLoanModal } from "./family-loan-modal";
 import { FamilyLoanRepaymentLineModal } from "./family-loan-repayment-line-modal";
+import { useFamilyVisibility } from "./family-member-visibility-provider";
 import { FamilyLoansSidebar } from "./family-loans-sidebar";
 import { FamilyLoansTable } from "./family-loans-table";
 import { FamilyLoansTop } from "./family-loans-top";
@@ -45,10 +45,6 @@ interface FamilyLoansDashboardProps {
     loanId: string,
     input: UpdateLoanInput,
   ) => Promise<void> | void;
-  onUpdateLoanVisibility: (
-    loanId: string,
-    input: UpdateLoanVisibilityInput,
-  ) => Promise<void> | void;
   onUpdateRepaymentLine: (
     lineId: string,
     input: UpdateLoanRepaymentLineInput,
@@ -65,10 +61,10 @@ export function FamilyLoansDashboard({
   onDeleteLoan,
   onDeleteRepaymentLine,
   onUpdateLoan,
-  onUpdateLoanVisibility,
   onUpdateRepaymentLine,
 }: FamilyLoansDashboardProps) {
   const { t } = useTranslation();
+  const { isLoanVisible, toggleLoanVisibility } = useFamilyVisibility();
   const currentDate = new Date();
   const currentMonthIndex = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
@@ -94,13 +90,23 @@ export function FamilyLoansDashboard({
     message: string;
     revision: number;
   } | null>(null);
+  const visibleLoanIds = useMemo(
+    () =>
+      new Set(
+        family.loans
+          .filter((loan) => isLoanVisible(loan.id))
+          .map((loan) => loan.id),
+      ),
+    [family.loans, isLoanVisible],
+  );
   const projection = getFamilyLoanProjection(family, {
     currentMonthIndex,
     currentYear,
+    visibleLoanIds,
     year,
   });
   const repaymentLoans = projection.activeLoans
-    .filter((loan) => !loan.loan.isHidden)
+    .filter((loan) => visibleLoanIds.has(loan.loan.id))
     .map((loan) => loan.loan);
   const lineModalDefaultLoanId =
     selectedLine?.loanId ?? repaymentLoans[0]?.id ?? "";
@@ -180,15 +186,9 @@ export function FamilyLoansDashboard({
     }
   }
 
-  async function handleToggleLoanVisibility(loan: FamilyLoanBalance) {
-    try {
-      await onUpdateLoanVisibility(loan.loan.id, {
-        isHidden: !loan.loan.isHidden,
-      });
-      setLocalError(null);
-    } catch {
-      return;
-    }
+  function handleToggleLoanVisibility(loan: FamilyLoanBalance) {
+    toggleLoanVisibility(loan.loan.id);
+    setLocalError(null);
   }
 
   async function handleConfirmDeleteLoan() {
@@ -280,6 +280,7 @@ export function FamilyLoansDashboard({
         ) : null}
         <FamilyPastLoansDialog
           disabled={isSaving}
+          isLoanVisible={isLoanVisible}
           loans={projection.pastLoans}
           onClose={() => setIsPastLoansDialogOpen(false)}
           onDeleteLoan={setLoanPendingDeletion}
@@ -315,6 +316,7 @@ export function FamilyLoansDashboard({
       <AppShellWidgets>
         <FamilyLoansSidebar
           disabled={isSaving}
+          isLoanVisible={isLoanVisible}
           loans={projection.activeLoans}
           onAddLoan={handleAddLoan}
           onDeleteLoan={setLoanPendingDeletion}

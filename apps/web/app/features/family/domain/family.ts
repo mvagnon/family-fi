@@ -1,7 +1,6 @@
 export {
   loanInputSchema,
   loanRepaymentLineInputSchema,
-  loanVisibilityInputSchema,
   participationLineInputSchema,
   recurringLineInputSchema,
   updateLoanInputSchema,
@@ -24,7 +23,6 @@ export type {
   RecurringLine,
   UpdateLoanInput,
   UpdateLoanRepaymentLineInput,
-  UpdateLoanVisibilityInput,
   UpdateFamilyMemberInput,
   UpdateParticipationLineInput,
   UpdateRecurringLineInput,

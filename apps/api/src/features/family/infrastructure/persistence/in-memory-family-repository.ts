@@ -280,23 +280,6 @@ export function createInMemoryFamilyRepository(): FamilyRepository {
 
       return cloneFamily(updatedFamily);
     },
-
-    async updateLoanVisibility(familyId, loanId, isHidden) {
-      const family = getFamily(families, familyId);
-      const loanIndex = family.loans.findIndex((item) => item.id === loanId);
-
-      if (loanIndex === -1) {
-        return null;
-      }
-
-      const loans = [...family.loans];
-      loans[loanIndex] = { ...loans[loanIndex], isHidden };
-
-      const updatedFamily = { ...family, loans };
-      families.set(familyId, updatedFamily);
-
-      return cloneFamily(updatedFamily);
-    },
   };
 }
 

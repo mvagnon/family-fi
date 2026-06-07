@@ -115,7 +115,6 @@ test("family routes manage loans and repayment lines", async () => {
   assert.ok(loan);
   assert.equal(loan.initialAmount, 1200);
   assert.equal(loan.annualInterestRate, 3.5);
-  assert.equal(loan.isHidden, false);
 
   const repaymentResponse = await authenticatedRequest(
     app,
@@ -142,25 +141,6 @@ test("family routes manage loans and repayment lines", async () => {
   assert.equal(repaymentLine.paidAmount, 100);
   assert.equal(repaymentLine.feesAmount, 3.5);
 
-  const visibilityResponse = await authenticatedRequest(
-    app,
-    `${familyPath}/loans/${loan.id}/visibility`,
-    {
-      body: JSON.stringify({ isHidden: true }),
-      headers: { "Content-Type": "application/json" },
-      method: "PUT",
-    },
-  );
-  const familyWithHiddenLoan = await visibilityResponse.json();
-
-  assert.equal(visibilityResponse.status, 200);
-  assert.equal(
-    familyWithHiddenLoan.loans.find(
-      (item: { id: string }) => item.id === loan.id,
-    )?.isHidden,
-    true,
-  );
-
   const updateLoanResponse = await authenticatedRequest(
     app,
     `${familyPath}/loans/${loan.id}`,
@@ -168,7 +148,6 @@ test("family routes manage loans and repayment lines", async () => {
       body: JSON.stringify({
         annualInterestRate: 4,
         initialAmount: 1300,
-        isHidden: true,
         title: "Saxophone Yamaha",
       }),
       headers: { "Content-Type": "application/json" },
@@ -184,7 +163,6 @@ test("family routes manage loans and repayment lines", async () => {
   assert.equal(updatedLoan?.title, "Saxophone Yamaha");
   assert.equal(updatedLoan?.initialAmount, 1300);
   assert.equal(updatedLoan?.annualInterestRate, 4);
-  assert.equal(updatedLoan?.isHidden, true);
 
   const updateLineResponse = await authenticatedRequest(
     app,

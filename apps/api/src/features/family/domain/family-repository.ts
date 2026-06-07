@@ -60,9 +60,4 @@ export interface FamilyRepository {
     familyId: string,
     line: LoanRepaymentLine,
   ): Promise<FamilySnapshot | null>;
-  updateLoanVisibility(
-    familyId: string,
-    loanId: string,
-    isHidden: boolean,
-  ): Promise<FamilySnapshot | null>;
 }

@@ -28,7 +28,6 @@ import type {
   RecurringLine,
   UpdateLoanInput,
   UpdateLoanRepaymentLineInput,
-  UpdateLoanVisibilityInput,
   UpdateFamilyMemberInput,
   UpdateParticipationLineInput,
   UpdateRecurringLineInput,
@@ -336,7 +335,6 @@ export class FamilyService {
         input.title,
         family.loans.map((item) => item.id),
       ),
-      isHidden: input.isHidden ?? false,
     });
 
     return this.repository.createLoan(family.id, loan);
@@ -361,25 +359,6 @@ export class FamilyService {
         createdAt: existingLoan.createdAt,
         id: existingLoan.id,
       }),
-    );
-
-    if (!updatedFamily) {
-      throw new LoanNotFoundError(loanId);
-    }
-
-    return updatedFamily;
-  }
-
-  async updateLoanVisibility(
-    request: FamilyRequest,
-    loanId: string,
-    input: UpdateLoanVisibilityInput,
-  ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
-    const updatedFamily = await this.repository.updateLoanVisibility(
-      family.id,
-      loanId,
-      input.isHidden,
     );
 
     if (!updatedFamily) {

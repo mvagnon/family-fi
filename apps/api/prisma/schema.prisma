@@ -173,7 +173,6 @@ model Loan {
   title              String
   initialAmountCents Int                 @map("initial_amount_cents")
   annualInterestRate Float               @map("annual_interest_rate")
-  isHidden           Boolean             @default(false) @map("is_hidden")
   repaymentLines     LoanRepaymentLine[]
   createdAt          DateTime            @default(now()) @map("created_at")
   updatedAt          DateTime            @updatedAt @map("updated_at")

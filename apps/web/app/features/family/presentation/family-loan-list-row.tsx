@@ -13,6 +13,7 @@ import { useFamilyFormat } from "./use-family-format";
 
 interface FamilyLoanListRowProps {
   disabled: boolean;
+  isVisible: boolean;
   loan: FamilyLoanBalance;
   onDeleteLoan: (loan: FamilyLoanBalance) => void;
   onEditLoan: (loan: FamilyLoanBalance) => void;
@@ -21,6 +22,7 @@ interface FamilyLoanListRowProps {
 
 export function FamilyLoanListRow({
   disabled,
+  isVisible,
   loan,
   onDeleteLoan,
   onEditLoan,
@@ -34,7 +36,7 @@ export function FamilyLoanListRow({
       sx={{
         display: "grid",
         gap: 0.75,
-        opacity: loan.loan.isHidden ? 0.58 : 1,
+        opacity: isVisible ? 1 : 0.58,
         py: 1.25,
       }}
     >
@@ -66,24 +68,22 @@ export function FamilyLoanListRow({
           <ActionIconButton
             disabled={disabled}
             icon={
-              loan.loan.isHidden ? (
-                <VisibilityOffIcon fontSize="small" />
-              ) : (
+              isVisible ? (
                 <VisibilityIcon fontSize="small" />
+              ) : (
+                <VisibilityOffIcon fontSize="small" />
               )
             }
             label={t(
-              loan.loan.isHidden
-                ? "loans.sidebar.showLabel"
-                : "loans.sidebar.hideLabel",
+              isVisible ? "loans.sidebar.hideLabel" : "loans.sidebar.showLabel",
               { title: loan.loan.title },
             )}
             onClick={() => onToggleLoanVisibility(loan)}
             size="small"
             tooltip={t(
-              loan.loan.isHidden
-                ? "loans.sidebar.showTooltip"
-                : "loans.sidebar.hideTooltip",
+              isVisible
+                ? "loans.sidebar.hideTooltip"
+                : "loans.sidebar.showTooltip",
             )}
           />
           <ActionIconButton

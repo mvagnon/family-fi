@@ -17,7 +17,6 @@ import {
   familySchema,
   loanInputSchema,
   loanRepaymentLineInputSchema,
-  loanVisibilityInputSchema,
   participationLineInputSchema,
   recurringLineInputSchema,
   updateLoanInputSchema,
@@ -258,28 +257,6 @@ const updateLoanRoute = createRoute({
   },
 });
 
-const updateLoanVisibilityRoute = createRoute({
-  method: "put",
-  path: "/loans/{id}/visibility",
-  request: {
-    body: {
-      content: {
-        "application/json": {
-          schema: loanVisibilityInputSchema,
-        },
-      },
-    },
-    params: familyEntityRouteParamsSchema,
-  },
-  responses: {
-    200: familyJsonResponse,
-    400: validationErrorResponse,
-    401: unauthenticatedResponse,
-    403: accessDeniedResponse,
-    404: notFoundResponse,
-  },
-});
-
 const deleteLoanRoute = createRoute({
   method: "delete",
   path: "/loans/{id}",
@@ -503,15 +480,6 @@ export function createFamilyRouter(
     })
     .openapi(updateLoanRoute, async (context) => {
       const family = await service.updateLoan(
-        await getFamilyRouteRequest(context, authProvider),
-        context.req.param("id"),
-        context.req.valid("json"),
-      );
-
-      return context.json(family, 200);
-    })
-    .openapi(updateLoanVisibilityRoute, async (context) => {
-      const family = await service.updateLoanVisibility(
         await getFamilyRouteRequest(context, authProvider),
         context.req.param("id"),
         context.req.valid("json"),

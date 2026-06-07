@@ -13,6 +13,7 @@ import { FamilyLoanListRow } from "./family-loan-list-row";
 
 interface FamilyLoansSidebarProps {
   disabled: boolean;
+  isLoanVisible: (loanId: string) => boolean;
   loans: FamilyLoanBalance[];
   onAddLoan: () => void;
   onDeleteLoan: (loan: FamilyLoanBalance) => void;
@@ -24,6 +25,7 @@ interface FamilyLoansSidebarProps {
 
 export function FamilyLoansSidebar({
   disabled,
+  isLoanVisible,
   loans,
   onAddLoan,
   onDeleteLoan,
@@ -59,6 +61,7 @@ export function FamilyLoansSidebar({
             {loans.map((loan) => (
               <FamilyLoanListRow
                 disabled={disabled}
+                isVisible={isLoanVisible(loan.loan.id)}
                 key={loan.loan.id}
                 loan={loan}
                 onDeleteLoan={onDeleteLoan}

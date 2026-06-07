@@ -175,15 +175,6 @@ export function createFamilyHttpRepository(
           param: { id: lineId, spaceId },
         }),
       ),
-    updateLoanVisibility: async (spaceId, loanId, input) =>
-      readFamilyResponse(
-        await client.api.spaces[":spaceId"].family.loans[":id"].visibility.$put(
-          {
-            json: input,
-            param: { id: loanId, spaceId },
-          },
-        ),
-      ),
   };
 }
 

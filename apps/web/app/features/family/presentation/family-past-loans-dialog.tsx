@@ -13,6 +13,7 @@ import { FamilyLoanListRow } from "./family-loan-list-row";
 
 interface FamilyPastLoansDialogProps {
   disabled: boolean;
+  isLoanVisible: (loanId: string) => boolean;
   loans: FamilyLoanBalance[];
   onClose: () => void;
   onDeleteLoan: (loan: FamilyLoanBalance) => void;
@@ -23,6 +24,7 @@ interface FamilyPastLoansDialogProps {
 
 export function FamilyPastLoansDialog({
   disabled,
+  isLoanVisible,
   loans,
   onClose,
   onDeleteLoan,
@@ -41,6 +43,7 @@ export function FamilyPastLoansDialog({
             {loans.map((loan) => (
               <FamilyLoanListRow
                 disabled={disabled}
+                isVisible={isLoanVisible(loan.loan.id)}
                 key={loan.loan.id}
                 loan={loan}
                 onDeleteLoan={onDeleteLoan}

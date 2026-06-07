@@ -102,10 +102,7 @@ export function FamilyLoanModal({
     register("annualInterestRate");
 
   function handleValidSubmit(values: LoanFormValues) {
-    return onSave({
-      ...values,
-      isHidden: initialLoan?.isHidden ?? false,
-    });
+    return onSave(values);
   }
 
   return (

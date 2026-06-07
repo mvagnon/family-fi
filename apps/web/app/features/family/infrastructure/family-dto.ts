@@ -44,7 +44,6 @@ function parseLoan(value: unknown): Loan {
     createdAt: getDateString(loan, "createdAt"),
     id: getString(loan, "id"),
     initialAmount: getPositiveNumber(loan, "initialAmount"),
-    isHidden: getBoolean(loan, "isHidden"),
     title: getString(loan, "title"),
   };
 }
