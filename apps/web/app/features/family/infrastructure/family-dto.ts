@@ -2,6 +2,8 @@ import type {
   Family,
   FamilyCategory,
   FamilyMember,
+  Loan,
+  LoanRepaymentLine,
   Movement,
   ParticipationLine,
   RecurringLine,
@@ -22,11 +24,41 @@ export function parseFamilyResponse(value: unknown): Family {
   return {
     categories: getArray(family, "categories").map(parseCategory),
     id: getString(family, "id"),
+    loanRepaymentLines: getOptionalArray(family, "loanRepaymentLines").map(
+      parseLoanRepaymentLine,
+    ),
+    loans: getOptionalArray(family, "loans").map(parseLoan),
     members: getArray(family, "members").map(parseMember),
     participationLines: getOptionalArray(family, "participationLines").map(
       parseParticipationLine,
     ),
     recurringLines: getArray(family, "recurringLines").map(parseRecurringLine),
+  };
+}
+
+function parseLoan(value: unknown): Loan {
+  const loan = getRecord(value);
+
+  return {
+    annualInterestRate: getNonNegativeNumber(loan, "annualInterestRate"),
+    createdAt: getDateString(loan, "createdAt"),
+    id: getString(loan, "id"),
+    initialAmount: getPositiveNumber(loan, "initialAmount"),
+    title: getString(loan, "title"),
+  };
+}
+
+function parseLoanRepaymentLine(value: unknown): LoanRepaymentLine {
+  const line = getRecord(value);
+
+  return {
+    createdAt: getDateString(line, "createdAt"),
+    feesAmount: getNonNegativeNumber(line, "feesAmount"),
+    id: getString(line, "id"),
+    loanId: getString(line, "loanId"),
+    month: getMonth(line),
+    paidAmount: getPositiveNumber(line, "paidAmount"),
+    year: getPositiveInteger(line, "year"),
   };
 }
 
@@ -244,6 +276,19 @@ function getPositiveNumber(
   const item = getFiniteNumber(value, key);
 
   if (item > 0) {
+    return item;
+  }
+
+  throw new FamilyApiError(invalidFamilyMessage);
+}
+
+function getNonNegativeNumber(
+  value: Record<string, unknown>,
+  key: string,
+): number {
+  const item = getFiniteNumber(value, key);
+
+  if (item >= 0) {
     return item;
   }
 

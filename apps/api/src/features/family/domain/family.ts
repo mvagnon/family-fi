@@ -12,14 +12,21 @@ export {
   familyCategorySchema,
   familyMemberSchema,
   familySchema,
+  loanInputSchema,
+  loanRepaymentLineInputSchema,
+  loanRepaymentLineSchema,
+  loanSchema,
   participationLineInputSchema,
   participationLineSchema,
   recurringLineInputSchema,
   recurringLineSchema,
+  updateLoanInputSchema,
   updateFamilyMemberInputSchema,
 } from "@repo/api-contracts/family";
 
 export type {
+  CreateLoanInput,
+  CreateLoanRepaymentLineInput,
   CreateParticipationLineInput,
   CreateFamilyCategoryInput,
   CreateFamilyMemberInput,
@@ -27,9 +34,13 @@ export type {
   Family as FamilySnapshot,
   FamilyCategory,
   FamilyMember,
+  Loan,
+  LoanRepaymentLine,
   Movement,
   ParticipationLine,
   RecurringLine,
+  UpdateLoanInput,
+  UpdateLoanRepaymentLineInput,
   UpdateParticipationLineInput,
   UpdateFamilyMemberInput,
   UpdateRecurringLineInput,
@@ -74,5 +85,19 @@ export class ParticipationLineNotFoundError extends FamilyEntityNotFoundError {
   constructor(lineId: string) {
     super(`Participation line ${lineId} was not found.`);
     this.name = "ParticipationLineNotFoundError";
+  }
+}
+
+export class LoanNotFoundError extends FamilyEntityNotFoundError {
+  constructor(loanId: string) {
+    super(`Loan ${loanId} was not found.`);
+    this.name = "LoanNotFoundError";
+  }
+}
+
+export class LoanRepaymentLineNotFoundError extends FamilyEntityNotFoundError {
+  constructor(lineId: string) {
+    super(`Loan repayment line ${lineId} was not found.`);
+    this.name = "LoanRepaymentLineNotFoundError";
   }
 }

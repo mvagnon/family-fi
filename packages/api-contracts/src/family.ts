@@ -47,10 +47,34 @@ export const participationLineSchema = z
   })
   .meta({ id: "ParticipationLine" });
 
+export const loanSchema = z
+  .object({
+    annualInterestRate: z.number().nonnegative(),
+    createdAt: z.string(),
+    id: z.string(),
+    initialAmount: z.number().positive(),
+    title: z.string(),
+  })
+  .meta({ id: "Loan" });
+
+export const loanRepaymentLineSchema = z
+  .object({
+    createdAt: z.string(),
+    feesAmount: z.number().nonnegative(),
+    id: z.string(),
+    loanId: z.string(),
+    month: z.number().int().min(1).max(12),
+    paidAmount: z.number().positive(),
+    year: z.number().int().positive(),
+  })
+  .meta({ id: "LoanRepaymentLine" });
+
 export const familySchema = z
   .object({
     categories: z.array(familyCategorySchema),
     id: z.string(),
+    loanRepaymentLines: z.array(loanRepaymentLineSchema),
+    loans: z.array(loanSchema),
     members: z.array(familyMemberSchema),
     participationLines: z.array(participationLineSchema),
     recurringLines: z.array(recurringLineSchema),
@@ -62,6 +86,8 @@ export type FamilyMember = z.infer<typeof familyMemberSchema>;
 export type FamilyCategory = z.infer<typeof familyCategorySchema>;
 export type RecurringLine = z.infer<typeof recurringLineSchema>;
 export type ParticipationLine = z.infer<typeof participationLineSchema>;
+export type Loan = z.infer<typeof loanSchema>;
+export type LoanRepaymentLine = z.infer<typeof loanRepaymentLineSchema>;
 export type Family = z.infer<typeof familySchema>;
 
 export interface CreateFamilyMemberInput {
@@ -87,6 +113,25 @@ export type CreateParticipationLineInput = Omit<
 >;
 
 export type UpdateParticipationLineInput = CreateParticipationLineInput;
+
+export interface CreateLoanInput {
+  annualInterestRate: number;
+  initialAmount: number;
+  title: string;
+}
+
+export interface UpdateLoanInput {
+  annualInterestRate: number;
+  initialAmount: number;
+  title: string;
+}
+
+export type CreateLoanRepaymentLineInput = Omit<
+  LoanRepaymentLine,
+  "createdAt" | "id"
+>;
+
+export type UpdateLoanRepaymentLineInput = CreateLoanRepaymentLineInput;
 
 const familyMemberNameInputSchema = z.string({
   error: "name must be a string.",
@@ -205,6 +250,41 @@ export const participationLineInputSchema = z.object({
     .positive({ message: "Participation year is invalid." }),
 });
 
+export const loanInputSchema = z
+  .object({
+    annualInterestRate: nonNegativeNumberSchema(
+      "Loan interest rate is invalid.",
+    ),
+    initialAmount: positiveNumberSchema("Loan initial amount is required."),
+    title: requiredTextSchema("Loan title is required."),
+  })
+  .meta({ id: "LoanInput" });
+
+export const updateLoanInputSchema = loanInputSchema.meta({
+  id: "UpdateLoanInput",
+});
+
+export const loanRepaymentLineInputSchema = z
+  .object({
+    feesAmount: nonNegativeNumberSchema("Loan fees amount is invalid."),
+    loanId: requiredTextSchema("Loan is required."),
+    month: z
+      .number({ error: "Loan repayment month is invalid." })
+      .int({ message: "Loan repayment month is invalid." })
+      .min(1, { message: "Loan repayment month is invalid." })
+      .max(12, { message: "Loan repayment month is invalid." }),
+    paidAmount: positiveNumberSchema("Loan paid amount is required."),
+    year: z
+      .number({ error: "Loan repayment year is invalid." })
+      .int({ message: "Loan repayment year is invalid." })
+      .positive({ message: "Loan repayment year is invalid." }),
+  })
+  .refine((line) => line.feesAmount <= line.paidAmount, {
+    message: "Loan fees cannot exceed the paid amount.",
+    path: ["feesAmount"],
+  })
+  .meta({ id: "LoanRepaymentLineInput" });
+
 function requiredTextSchema(message: string) {
   return z.string({ error: message }).trim().min(1, { message });
 }
@@ -217,6 +297,10 @@ function nonZeroNumberSchema(message: string) {
   return z
     .number({ error: message })
     .refine((value) => value !== 0, { message });
+}
+
+function nonNegativeNumberSchema(message: string) {
+  return z.number({ error: message }).nonnegative({ message });
 }
 
 function optionalPositiveNumberSchema(message: string) {

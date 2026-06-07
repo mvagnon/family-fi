@@ -26,7 +26,7 @@ import { SpaceSwitcher } from "../../spaces/presentation/space-switcher";
 const sidebarNavigationItems: SidebarNavigationItem[] = [
   { icon: DashboardIcon, labelKey: "dashboard", to: "/dashboard" },
   { icon: ReceiptLongIcon, labelKey: "recurringBudget", to: "/family" },
-  { icon: AccountBalanceIcon, labelKey: "loans" },
+  { icon: AccountBalanceIcon, labelKey: "loans", to: "/loans" },
   { icon: GroupsIcon, labelKey: "participations", to: "/participations" },
   { icon: CallSplitIcon, labelKey: "distribution" },
   { icon: SettingsIcon, labelKey: "settings", to: "/configuration" },
@@ -119,6 +119,7 @@ function SidebarNavigationRow({ item }: { item: SidebarNavigationItem }) {
           end={
             item.to === "/dashboard" ||
             item.to === "/family" ||
+            item.to === "/loans" ||
             item.to === "/participations"
           }
           sx={navigationRowSx}

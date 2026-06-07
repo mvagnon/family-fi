@@ -6,12 +6,26 @@ import type {
   FamilyCategory,
   FamilyMember,
   FamilySnapshot,
+  Loan,
+  LoanRepaymentLine,
   ParticipationLine,
   RecurringLine,
 } from "../../domain/family.js";
 import type { FamilyRepository } from "../../domain/family-repository.js";
 
 const familyInclude = {
+  loanRepaymentLines: {
+    orderBy: [
+      { year: "asc" as const },
+      { month: "asc" as const },
+      { createdAt: "asc" as const },
+    ],
+  },
+  loans: {
+    orderBy: {
+      createdAt: "asc" as const,
+    },
+  },
   participationLines: {
     orderBy: [
       { year: "asc" as const },
@@ -34,6 +48,10 @@ type RecurringLineRecord = FamilyRecord["recurringLines"][number];
 
 type ParticipationLineRecord = FamilyRecord["participationLines"][number];
 
+type LoanRecord = FamilyRecord["loans"][number];
+
+type LoanRepaymentLineRecord = FamilyRecord["loanRepaymentLines"][number];
+
 export class PrismaFamilyRepository implements FamilyRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
@@ -46,6 +64,12 @@ export class PrismaFamilyRepository implements FamilyRepository {
         categories: toJsonValue(family.categories),
         id: family.id,
         members: toJsonValue(family.members),
+        loans: {
+          create: family.loans.map(toLoanCreateInput),
+        },
+        loanRepaymentLines: {
+          create: family.loanRepaymentLines.map(toLoanRepaymentLineCreateInput),
+        },
         recurringLines: {
           create: family.recurringLines.map(toRecurringLineCreateInput),
         },
@@ -84,6 +108,67 @@ export class PrismaFamilyRepository implements FamilyRepository {
         familyId,
       },
     });
+
+    return this.getFamilyById(familyId);
+  }
+
+  async createLoan(familyId: string, loan: Loan): Promise<FamilySnapshot> {
+    await this.prisma.loan.create({
+      data: {
+        ...toLoanCreateInput(loan),
+        familyId,
+      },
+    });
+
+    return this.getFamilyById(familyId);
+  }
+
+  async createLoanRepaymentLine(
+    familyId: string,
+    line: LoanRepaymentLine,
+  ): Promise<FamilySnapshot> {
+    await this.prisma.loanRepaymentLine.create({
+      data: {
+        ...toLoanRepaymentLineCreateInput(line),
+        familyId,
+      },
+    });
+
+    return this.getFamilyById(familyId);
+  }
+
+  async deleteLoan(
+    familyId: string,
+    loanId: string,
+  ): Promise<FamilySnapshot | null> {
+    const result = await this.prisma.loan.deleteMany({
+      where: {
+        familyId,
+        id: loanId,
+      },
+    });
+
+    if (result.count === 0) {
+      return null;
+    }
+
+    return this.getFamilyById(familyId);
+  }
+
+  async deleteLoanRepaymentLine(
+    familyId: string,
+    lineId: string,
+  ): Promise<FamilySnapshot | null> {
+    const result = await this.prisma.loanRepaymentLine.deleteMany({
+      where: {
+        familyId,
+        id: lineId,
+      },
+    });
+
+    if (result.count === 0) {
+      return null;
+    }
 
     return this.getFamilyById(familyId);
   }
@@ -244,18 +329,83 @@ export class PrismaFamilyRepository implements FamilyRepository {
   }
 
   async saveFamily(family: FamilySnapshot): Promise<FamilySnapshot> {
-    const updatedFamily = await this.prisma.family.update({
-      data: {
-        categories: toJsonValue(family.categories),
-        members: toJsonValue(family.members),
-      },
-      include: familyInclude,
-      where: {
-        id: family.id,
-      },
-    });
+    return this.prisma.$transaction(async (prisma) => {
+      await prisma.loanRepaymentLine.deleteMany({
+        where: {
+          familyId: family.id,
+        },
+      });
+      await prisma.loan.deleteMany({
+        where: {
+          familyId: family.id,
+        },
+      });
+      await prisma.participationLine.deleteMany({
+        where: {
+          familyId: family.id,
+        },
+      });
+      await prisma.recurringLine.deleteMany({
+        where: {
+          familyId: family.id,
+        },
+      });
 
-    return toFamilySnapshot(updatedFamily);
+      await prisma.family.update({
+        data: {
+          categories: toJsonValue(family.categories),
+          members: toJsonValue(family.members),
+        },
+        where: {
+          id: family.id,
+        },
+      });
+
+      for (const loan of family.loans) {
+        await prisma.loan.create({
+          data: {
+            ...toLoanCreateInput(loan),
+            familyId: family.id,
+          },
+        });
+      }
+
+      for (const line of family.loanRepaymentLines) {
+        await prisma.loanRepaymentLine.create({
+          data: {
+            ...toLoanRepaymentLineCreateInput(line),
+            familyId: family.id,
+          },
+        });
+      }
+
+      for (const line of family.recurringLines) {
+        await prisma.recurringLine.create({
+          data: {
+            ...toRecurringLineCreateInput(line),
+            familyId: family.id,
+          },
+        });
+      }
+
+      for (const line of family.participationLines) {
+        await prisma.participationLine.create({
+          data: {
+            ...toParticipationLineCreateInput(line),
+            familyId: family.id,
+          },
+        });
+      }
+
+      const updatedFamily = await prisma.family.findUniqueOrThrow({
+        include: familyInclude,
+        where: {
+          id: family.id,
+        },
+      });
+
+      return toFamilySnapshot(updatedFamily);
+    });
   }
 
   async updateRecurringLine(
@@ -283,6 +433,44 @@ export class PrismaFamilyRepository implements FamilyRepository {
   ): Promise<FamilySnapshot | null> {
     const result = await this.prisma.participationLine.updateMany({
       data: toParticipationLineUpdateInput(line),
+      where: {
+        familyId,
+        id: line.id,
+      },
+    });
+
+    if (result.count === 0) {
+      return null;
+    }
+
+    return this.getFamilyById(familyId);
+  }
+
+  async updateLoan(
+    familyId: string,
+    loan: Loan,
+  ): Promise<FamilySnapshot | null> {
+    const result = await this.prisma.loan.updateMany({
+      data: toLoanUpdateInput(loan),
+      where: {
+        familyId,
+        id: loan.id,
+      },
+    });
+
+    if (result.count === 0) {
+      return null;
+    }
+
+    return this.getFamilyById(familyId);
+  }
+
+  async updateLoanRepaymentLine(
+    familyId: string,
+    line: LoanRepaymentLine,
+  ): Promise<FamilySnapshot | null> {
+    const result = await this.prisma.loanRepaymentLine.updateMany({
+      data: toLoanRepaymentLineUpdateInput(line),
       where: {
         familyId,
         id: line.id,
@@ -345,9 +533,73 @@ function toFamilySnapshot(family: FamilyRecord): FamilySnapshot {
   return {
     categories: parseCategories(family.categories),
     id: family.id,
+    loanRepaymentLines: family.loanRepaymentLines.map(toLoanRepaymentLine),
+    loans: family.loans.map(toLoan),
     members: parseMembers(family.members),
     participationLines: family.participationLines.map(toParticipationLine),
     recurringLines: family.recurringLines.map(toRecurringLine),
+  };
+}
+
+function toLoanCreateInput(loan: Loan) {
+  return {
+    annualInterestRate: loan.annualInterestRate,
+    createdAt: new Date(loan.createdAt),
+    id: loan.id,
+    initialAmountCents: toCents(loan.initialAmount),
+    title: loan.title,
+  };
+}
+
+function toLoanUpdateInput(loan: Loan) {
+  return {
+    annualInterestRate: loan.annualInterestRate,
+    initialAmountCents: toCents(loan.initialAmount),
+    title: loan.title,
+  };
+}
+
+function toLoan(loan: LoanRecord): Loan {
+  return {
+    annualInterestRate: loan.annualInterestRate,
+    createdAt: loan.createdAt.toISOString(),
+    id: loan.id,
+    initialAmount: fromCents(loan.initialAmountCents),
+    title: loan.title,
+  };
+}
+
+function toLoanRepaymentLineCreateInput(line: LoanRepaymentLine) {
+  return {
+    createdAt: new Date(line.createdAt),
+    feesCents: toCents(line.feesAmount),
+    id: line.id,
+    loanId: line.loanId,
+    month: line.month,
+    paidCents: toCents(line.paidAmount),
+    year: line.year,
+  };
+}
+
+function toLoanRepaymentLineUpdateInput(line: LoanRepaymentLine) {
+  return {
+    feesCents: toCents(line.feesAmount),
+    loanId: line.loanId,
+    month: line.month,
+    paidCents: toCents(line.paidAmount),
+    year: line.year,
+  };
+}
+
+function toLoanRepaymentLine(line: LoanRepaymentLineRecord): LoanRepaymentLine {
+  return {
+    createdAt: line.createdAt.toISOString(),
+    feesAmount: fromCents(line.feesCents),
+    id: line.id,
+    loanId: line.loanId,
+    month: line.month,
+    paidAmount: fromCents(line.paidCents),
+    year: line.year,
   };
 }
 

@@ -1,5 +1,7 @@
 import type {
   FamilySnapshot,
+  Loan,
+  LoanRepaymentLine,
   ParticipationLine,
   RecurringLine,
 } from "./family.js";
@@ -17,6 +19,16 @@ export interface FamilyRepository {
     familyId: string,
     line: ParticipationLine,
   ): Promise<FamilySnapshot>;
+  createLoan(familyId: string, loan: Loan): Promise<FamilySnapshot>;
+  createLoanRepaymentLine(
+    familyId: string,
+    line: LoanRepaymentLine,
+  ): Promise<FamilySnapshot>;
+  deleteLoan(familyId: string, loanId: string): Promise<FamilySnapshot | null>;
+  deleteLoanRepaymentLine(
+    familyId: string,
+    lineId: string,
+  ): Promise<FamilySnapshot | null>;
   deleteParticipationLine(
     familyId: string,
     lineId: string,
@@ -42,5 +54,10 @@ export interface FamilyRepository {
   updateParticipationLine(
     familyId: string,
     line: ParticipationLine,
+  ): Promise<FamilySnapshot | null>;
+  updateLoan(familyId: string, loan: Loan): Promise<FamilySnapshot | null>;
+  updateLoanRepaymentLine(
+    familyId: string,
+    line: LoanRepaymentLine,
   ): Promise<FamilySnapshot | null>;
 }

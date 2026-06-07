@@ -17,6 +17,8 @@ model Family {
   space              Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   members            Json
   categories         Json
+  loans              Loan[]
+  loanRepaymentLines LoanRepaymentLine[]
   recurringLines     RecurringLine[]
   participationLines ParticipationLine[]
   createdAt          DateTime            @default(now()) @map("created_at")
@@ -91,7 +93,7 @@ model Verification {
 model Space {
   id           String            @id
   name         String
-  currencyCode  String            @default("EUR") @map("currency_code")
+  currencyCode String            @default("EUR") @map("currency_code")
   createdAt    DateTime          @default(now()) @map("created_at")
   updatedAt    DateTime          @updatedAt @map("updated_at")
   family       Family?
@@ -162,4 +164,37 @@ model ParticipationLine {
   @@index([familyId])
   @@index([familyId, memberId])
   @@map("participation_lines")
+}
+
+model Loan {
+  id                 String              @id
+  familyId           String              @map("family_id")
+  family             Family              @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  title              String
+  initialAmountCents Int                 @map("initial_amount_cents")
+  annualInterestRate Float               @map("annual_interest_rate")
+  repaymentLines     LoanRepaymentLine[]
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+
+  @@index([familyId])
+  @@map("loans")
+}
+
+model LoanRepaymentLine {
+  id        String   @id
+  familyId  String   @map("family_id")
+  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  loanId    String   @map("loan_id")
+  loan      Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  paidCents Int      @map("paid_cents")
+  feesCents Int      @map("fees_cents")
+  year      Int
+  month     Int
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([familyId])
+  @@index([familyId, loanId])
+  @@map("loan_repayment_lines")
 }

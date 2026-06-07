@@ -8,8 +8,8 @@ import Stack from "@mui/material/Stack";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import Typography from "@mui/material/Typography";
-import { alpha } from "@mui/material/styles";
 import type { SxProps, Theme } from "@mui/material/styles";
+import { alpha } from "@mui/material/styles";
 import { SectionPanel } from "@repo/ui/section-panel";
 import {
   useState,
@@ -163,7 +163,7 @@ export function ConfigurationPage({ spaceRepository }: ConfigurationPageProps) {
             panelId="configuration-space-settings-panel"
             tab="space"
           >
-            <Alert severity="info" variant="outlined">
+            <Alert severity="info" variant="standard">
               {t("configuration.spaceSettings.scope")}
             </Alert>
             <CurrencySettings repository={spaceRepository} />

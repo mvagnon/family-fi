@@ -144,6 +144,8 @@ function createFamily(): Family {
   return {
     categories: [],
     id: "family",
+    loanRepaymentLines: [],
+    loans: [],
     members: [
       { id: "lea", isActive: true, name: "Lea" },
       { id: "marc", isActive: false, name: "Marc" },

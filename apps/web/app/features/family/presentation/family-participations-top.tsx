@@ -1,15 +1,10 @@
-import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
-import Paper from "@mui/material/Paper";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 import { MetricSummaryCard } from "@repo/ui/metric-summary-card";
 import { useTranslation } from "react-i18next";
 
 import type { FamilyParticipationSummary } from "../domain/family-participations";
 import { useFamilyFormat } from "./use-family-format";
+import { FamilyYearSelectorCard } from "./family-year-selector-card";
 
 interface FamilyParticipationsTopProps {
   currentYear: number;
@@ -38,67 +33,15 @@ export function FamilyParticipationsTop({
         },
       }}
     >
-      <Paper
-        component="section"
-        sx={{
-          bgcolor: "background.paper",
-          display: "grid",
-          justifyItems: "center",
-          justifySelf: { md: "start", xs: "stretch" },
-          maxWidth: "100%",
-          px: { md: 3, xs: 2.5 },
-          py: { md: 2.5, xs: 2 },
-          textAlign: "center",
-          width: { md: "fit-content", xs: "100%" },
-        }}
-      >
-        <Typography
-          color="text.secondary"
-          sx={{ justifySelf: "start", textAlign: "left" }}
-          variant="overline"
-        >
-          {t("participations.top.selection")}
-        </Typography>
-        <Stack
-          spacing={1.5}
-          sx={{
-            alignItems: "center",
-            mt: 1,
-          }}
-        >
-          <Stack
-            aria-label={t("participations.top.yearAriaLabel")}
-            direction="row"
-            spacing={0.5}
-            sx={{ alignItems: "center", justifyContent: "center" }}
-          >
-            <IconButton
-              aria-label={t("participations.top.previousYear")}
-              onClick={() => onYearChange(year - 1)}
-            >
-              <KeyboardArrowLeftIcon />
-            </IconButton>
-            <Typography
-              sx={{
-                fontSize: "1.25rem",
-                fontWeight: 700,
-                minWidth: 72,
-                textAlign: "center",
-              }}
-              variant="h2"
-            >
-              {year}
-            </Typography>
-            <IconButton
-              aria-label={t("participations.top.nextYear")}
-              disabled={year >= currentYear}
-              onClick={() => onYearChange(year + 1)}
-            >
-              <KeyboardArrowRightIcon />
-            </IconButton>
-          </Stack>
-        </Stack>
-      </Paper>
+      <FamilyYearSelectorCard
+        currentYear={currentYear}
+        label={t("participations.top.selection")}
+        nextLabel={t("participations.top.nextYear")}
+        onYearChange={onYearChange}
+        previousLabel={t("participations.top.previousYear")}
+        year={year}
+        yearAriaLabel={t("participations.top.yearAriaLabel")}
+      />
 
       <MetricSummaryCard
         label={t("participations.top.keyFigures")}
