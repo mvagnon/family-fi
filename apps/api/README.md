@@ -24,7 +24,13 @@ The API uses Prisma with PostgreSQL. `DATABASE_URL` and
 - `OPENAPI_SERVER_URL`: server URL advertised in the generated OpenAPI spec,
   default request origin.
 - `ENABLE_DEV_SEED=true`: creates `test@test.com` / `Test2026!`, a personal
-  space, default-space settings, and the seed family budget.
+  space, default-space settings, and the seed family budget. This is strictly
+  for local development and the API refuses to start with this flag when
+  `NODE_ENV=production`.
+
+Production deployments must set `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
+`WEB_ORIGIN`, and the web build's `VITE_API_BASE_URL` for the deployed origins.
+Do not set `ENABLE_DEV_SEED=true` in production.
 
 Family budget routes are scoped under `/api/spaces/:spaceId/family`.
 

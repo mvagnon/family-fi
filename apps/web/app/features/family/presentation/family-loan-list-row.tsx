@@ -15,8 +15,8 @@ interface FamilyLoanListRowProps {
   disabled: boolean;
   isVisible: boolean;
   loan: FamilyLoanBalance;
-  onDeleteLoan: (loan: FamilyLoanBalance) => void;
-  onEditLoan: (loan: FamilyLoanBalance) => void;
+  onDeleteLoan?: (loan: FamilyLoanBalance) => void;
+  onEditLoan?: (loan: FamilyLoanBalance) => void;
   onToggleLoanVisibility: (loan: FamilyLoanBalance) => void;
 }
 
@@ -57,14 +57,16 @@ export function FamilyLoanListRow({
           spacing={0.25}
           sx={{ flexShrink: 0, justifyContent: "flex-end" }}
         >
-          <ActionIconButton
-            disabled={disabled}
-            icon={<EditIcon fontSize="small" />}
-            label={t("loans.sidebar.editLabel", { title: loan.loan.title })}
-            onClick={() => onEditLoan(loan)}
-            size="small"
-            tooltip={t("loans.sidebar.editTooltip")}
-          />
+          {onEditLoan ? (
+            <ActionIconButton
+              disabled={disabled}
+              icon={<EditIcon fontSize="small" />}
+              label={t("loans.sidebar.editLabel", { title: loan.loan.title })}
+              onClick={() => onEditLoan(loan)}
+              size="small"
+              tooltip={t("loans.sidebar.editTooltip")}
+            />
+          ) : null}
           <ActionIconButton
             disabled={disabled}
             icon={
@@ -86,14 +88,16 @@ export function FamilyLoanListRow({
                 : "loans.sidebar.showTooltip",
             )}
           />
-          <ActionIconButton
-            disabled={disabled}
-            icon={<DeleteIcon fontSize="small" />}
-            label={t("loans.sidebar.deleteLabel", { title: loan.loan.title })}
-            onClick={() => onDeleteLoan(loan)}
-            size="small"
-            tooltip={t("loans.sidebar.deleteTooltip")}
-          />
+          {onDeleteLoan ? (
+            <ActionIconButton
+              disabled={disabled}
+              icon={<DeleteIcon fontSize="small" />}
+              label={t("loans.sidebar.deleteLabel", { title: loan.loan.title })}
+              onClick={() => onDeleteLoan(loan)}
+              size="small"
+              tooltip={t("loans.sidebar.deleteTooltip")}
+            />
+          ) : null}
         </Stack>
       </Box>
       <Box sx={{ display: "grid", gap: 0.5, minWidth: 0 }}>

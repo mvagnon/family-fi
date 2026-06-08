@@ -36,6 +36,7 @@ import { FamilySidebarMembers } from "./family-sidebar-members";
 import { useFamilyFormat } from "./use-family-format";
 
 interface FamilyDistributionsDashboardProps {
+  canWrite?: boolean;
   family: Family;
   isSaving?: boolean;
   mutationError?: string;
@@ -57,6 +58,7 @@ interface FamilyDistributionsDashboardProps {
 }
 
 export function FamilyDistributionsDashboard({
+  canWrite = true,
   family,
   isSaving = false,
   mutationError,
@@ -119,6 +121,10 @@ export function FamilyDistributionsDashboard({
   }
 
   function handleAddLine() {
+    if (!canWrite) {
+      return;
+    }
+
     if (!projection.activeMembers.length) {
       showLocalError(t("distributions.creation.errors.noActiveMember"));
       return;
@@ -130,22 +136,38 @@ export function FamilyDistributionsDashboard({
   }
 
   function handleEditLine(line: FamilyDistributionLine) {
+    if (!canWrite) {
+      return;
+    }
+
     setLineDialogMode("edit");
     setSelectedLine(line.line);
     setIsLineModalOpen(true);
   }
 
   function handleRequestAddMember() {
+    if (!canWrite) {
+      return;
+    }
+
     setSelectedMember(null);
     setIsMemberModalOpen(true);
   }
 
   function handleRequestEditMember(member: FamilyMember) {
+    if (!canWrite) {
+      return;
+    }
+
     setSelectedMember(member);
     setIsMemberModalOpen(true);
   }
 
   async function handleSaveMember(input: UpdateFamilyMemberInput) {
+    if (!canWrite) {
+      return;
+    }
+
     const ignoredCategoryIds = selectedMember
       ? getFamilyMemberLinkedCategoryIds(family.categories, selectedMember.id)
       : [];
@@ -185,6 +207,10 @@ export function FamilyDistributionsDashboard({
   }
 
   async function handleSaveLine(input: CreateDistributionLineInput) {
+    if (!canWrite) {
+      return;
+    }
+
     if (lineDialogMode === "edit" && !selectedLine) {
       return;
     }
@@ -206,7 +232,7 @@ export function FamilyDistributionsDashboard({
   }
 
   async function handleConfirmDeleteLine() {
-    if (!linePendingDeletion) {
+    if (!canWrite || !linePendingDeletion) {
       return;
     }
 
@@ -219,7 +245,7 @@ export function FamilyDistributionsDashboard({
   }
 
   async function handleConfirmDeleteMember() {
-    if (!memberPendingDeletion) {
+    if (!canWrite || !memberPendingDeletion) {
       return;
     }
 
@@ -257,6 +283,7 @@ export function FamilyDistributionsDashboard({
           onAddLine={handleAddLine}
           onDeleteLine={setLinePendingDeletion}
           onEditLine={handleEditLine}
+          readonly={!canWrite}
         />
         <FeedbackSnackbar
           key={localError ? `local-${localError.revision}` : mutationErrorKey}
@@ -343,9 +370,9 @@ export function FamilyDistributionsDashboard({
           }}
           isMemberVisible={isMemberVisible}
           members={family.members}
-          onAddMember={handleRequestAddMember}
-          onDeleteMember={setMemberPendingDeletion}
-          onEditMember={handleRequestEditMember}
+          onAddMember={canWrite ? handleRequestAddMember : undefined}
+          onDeleteMember={canWrite ? setMemberPendingDeletion : undefined}
+          onEditMember={canWrite ? handleRequestEditMember : undefined}
           onToggleMemberVisibility={(member) =>
             toggleMemberVisibility(member.id)
           }

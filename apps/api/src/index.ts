@@ -16,6 +16,8 @@ const authProvider = createBetterAuthProvider(prisma, {
   trustedOrigins: [webOrigin],
 });
 
+assertDevSeedIsAllowed();
+
 if (process.env.ENABLE_DEV_SEED === "true") {
   await seedDevData(prisma);
 }
@@ -46,4 +48,15 @@ function getBetterAuthSecret(): string {
   }
 
   return secret;
+}
+
+function assertDevSeedIsAllowed(): void {
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.ENABLE_DEV_SEED === "true"
+  ) {
+    throw new Error(
+      "ENABLE_DEV_SEED=true is forbidden when NODE_ENV=production.",
+    );
+  }
 }

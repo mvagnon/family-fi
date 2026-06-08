@@ -31,6 +31,7 @@ import { FamilyLoansTop } from "./family-loans-top";
 import { FamilyPastLoansDialog } from "./family-past-loans-dialog";
 
 interface FamilyLoansDashboardProps {
+  canWrite?: boolean;
   family: Family;
   isSaving?: boolean;
   mutationError?: string;
@@ -52,6 +53,7 @@ interface FamilyLoansDashboardProps {
 }
 
 export function FamilyLoansDashboard({
+  canWrite = true,
   family,
   isSaving = false,
   mutationError,
@@ -121,18 +123,30 @@ export function FamilyLoansDashboard({
   }
 
   function handleAddLoan() {
+    if (!canWrite) {
+      return;
+    }
+
     setLoanDialogMode("create");
     setSelectedLoan(null);
     setIsLoanModalOpen(true);
   }
 
   function handleEditLoan(loan: FamilyLoanBalance) {
+    if (!canWrite) {
+      return;
+    }
+
     setLoanDialogMode("edit");
     setSelectedLoan(loan.loan);
     setIsLoanModalOpen(true);
   }
 
   function handleAddLine() {
+    if (!canWrite) {
+      return;
+    }
+
     if (!repaymentLoans.length || !lineModalDefaultLoanId) {
       showLocalError(t("loans.repaymentModal.errors.noActiveLoan"));
       return;
@@ -144,12 +158,20 @@ export function FamilyLoansDashboard({
   }
 
   function handleEditLine(line: FamilyLoanRepaymentLine) {
+    if (!canWrite) {
+      return;
+    }
+
     setLineDialogMode("edit");
     setSelectedLine(line.line);
     setIsLineModalOpen(true);
   }
 
   async function handleSaveLoan(input: UpdateLoanInput) {
+    if (!canWrite) {
+      return;
+    }
+
     try {
       if (loanDialogMode === "create") {
         await onCreateLoan(input);
@@ -166,6 +188,10 @@ export function FamilyLoansDashboard({
   }
 
   async function handleSaveLine(input: CreateLoanRepaymentLineInput) {
+    if (!canWrite) {
+      return;
+    }
+
     if (lineDialogMode === "edit" && !selectedLine) {
       return;
     }
@@ -192,7 +218,7 @@ export function FamilyLoansDashboard({
   }
 
   async function handleConfirmDeleteLoan() {
-    if (!loanPendingDeletion) {
+    if (!canWrite || !loanPendingDeletion) {
       return;
     }
 
@@ -205,7 +231,7 @@ export function FamilyLoansDashboard({
   }
 
   async function handleConfirmDeleteLine() {
-    if (!linePendingDeletion) {
+    if (!canWrite || !linePendingDeletion) {
       return;
     }
 
@@ -243,6 +269,7 @@ export function FamilyLoansDashboard({
           onAddLine={handleAddLine}
           onDeleteLine={setLinePendingDeletion}
           onEditLine={handleEditLine}
+          readonly={!canWrite}
         />
         <FeedbackSnackbar
           key={localError ? `local-${localError.revision}` : mutationErrorKey}
@@ -283,8 +310,8 @@ export function FamilyLoansDashboard({
           isLoanVisible={isLoanVisible}
           loans={projection.pastLoans}
           onClose={() => setIsPastLoansDialogOpen(false)}
-          onDeleteLoan={setLoanPendingDeletion}
-          onEditLoan={handleEditLoan}
+          onDeleteLoan={canWrite ? setLoanPendingDeletion : undefined}
+          onEditLoan={canWrite ? handleEditLoan : undefined}
           onToggleLoanVisibility={handleToggleLoanVisibility}
           open={isPastLoansDialogOpen}
         />
@@ -318,9 +345,9 @@ export function FamilyLoansDashboard({
           disabled={isSaving}
           isLoanVisible={isLoanVisible}
           loans={projection.activeLoans}
-          onAddLoan={handleAddLoan}
-          onDeleteLoan={setLoanPendingDeletion}
-          onEditLoan={handleEditLoan}
+          onAddLoan={canWrite ? handleAddLoan : undefined}
+          onDeleteLoan={canWrite ? setLoanPendingDeletion : undefined}
+          onEditLoan={canWrite ? handleEditLoan : undefined}
           onToggleLoanVisibility={handleToggleLoanVisibility}
           onViewPastLoans={() => setIsPastLoansDialogOpen(true)}
           pastLoanCount={projection.pastLoans.length}

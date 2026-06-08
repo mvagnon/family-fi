@@ -37,6 +37,7 @@ import { FamilyParticipationsTable } from "./family-participations-table";
 import { FamilyParticipationsTop } from "./family-participations-top";
 
 interface FamilyParticipationsDashboardProps {
+  canWrite?: boolean;
   family: Family;
   isSaving?: boolean;
   mutationError?: string;
@@ -58,6 +59,7 @@ interface FamilyParticipationsDashboardProps {
 }
 
 export function FamilyParticipationsDashboard({
+  canWrite = true,
   family,
   isSaving = false,
   mutationError,
@@ -119,6 +121,10 @@ export function FamilyParticipationsDashboard({
   }
 
   function handleAddLine() {
+    if (!canWrite) {
+      return;
+    }
+
     if (!projection.activeMembers.length || !defaultCreationMember) {
       showLocalError(t("participations.creation.errors.noActiveMember"));
       return;
@@ -130,26 +136,46 @@ export function FamilyParticipationsDashboard({
   }
 
   function handleEditLine(line: FamilyParticipationLine) {
+    if (!canWrite) {
+      return;
+    }
+
     setLineDialogMode("edit");
     setSelectedLine(line.line);
     setIsLineModalOpen(true);
   }
 
   function handleRequestDeleteLine(line: FamilyParticipationLine) {
+    if (!canWrite) {
+      return;
+    }
+
     setLinePendingDeletion(line.line);
   }
 
   function handleRequestAddMember() {
+    if (!canWrite) {
+      return;
+    }
+
     setSelectedMember(null);
     setIsMemberModalOpen(true);
   }
 
   function handleRequestEditMember(member: FamilyMember) {
+    if (!canWrite) {
+      return;
+    }
+
     setSelectedMember(member);
     setIsMemberModalOpen(true);
   }
 
   async function handleSaveMember(input: UpdateFamilyMemberInput) {
+    if (!canWrite) {
+      return;
+    }
+
     const ignoredCategoryIds = selectedMember
       ? getFamilyMemberLinkedCategoryIds(family.categories, selectedMember.id)
       : [];
@@ -189,6 +215,10 @@ export function FamilyParticipationsDashboard({
   }
 
   async function handleSaveLine(input: CreateParticipationLineInput) {
+    if (!canWrite) {
+      return;
+    }
+
     if (lineDialogMode === "edit" && !selectedLine) {
       return;
     }
@@ -217,7 +247,7 @@ export function FamilyParticipationsDashboard({
   }
 
   async function handleConfirmDeleteLine() {
-    if (!linePendingDeletion) {
+    if (!canWrite || !linePendingDeletion) {
       return;
     }
 
@@ -230,7 +260,7 @@ export function FamilyParticipationsDashboard({
   }
 
   async function handleConfirmDeleteMember() {
-    if (!memberPendingDeletion) {
+    if (!canWrite || !memberPendingDeletion) {
       return;
     }
 
@@ -267,6 +297,7 @@ export function FamilyParticipationsDashboard({
           onAddLine={handleAddLine}
           onDeleteLine={handleRequestDeleteLine}
           onEditLine={handleEditLine}
+          readonly={!canWrite}
         />
         <FeedbackSnackbar
           key={localError ? `local-${localError.revision}` : mutationErrorKey}
@@ -333,9 +364,9 @@ export function FamilyParticipationsDashboard({
           disabled={isSaving}
           isMemberVisible={isMemberVisible}
           members={family.members}
-          onAddMember={handleRequestAddMember}
-          onDeleteMember={setMemberPendingDeletion}
-          onEditMember={handleRequestEditMember}
+          onAddMember={canWrite ? handleRequestAddMember : undefined}
+          onDeleteMember={canWrite ? setMemberPendingDeletion : undefined}
+          onEditMember={canWrite ? handleRequestEditMember : undefined}
           onToggleMemberVisibility={(member) =>
             toggleMemberVisibility(member.id)
           }

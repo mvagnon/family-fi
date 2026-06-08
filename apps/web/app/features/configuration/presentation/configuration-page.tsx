@@ -26,6 +26,7 @@ import {
 import type { SpaceRepository } from "../../spaces/domain/space-repository";
 import { CurrencySettings } from "../../spaces/presentation/currency-settings";
 import { DefaultSpaceSettings } from "../../spaces/presentation/default-space-settings";
+import { SpaceUsersSettings } from "../../spaces/presentation/space-users-settings";
 import { parseSupportedLanguage } from "../domain/language-preference";
 import {
   supportedLanguages,
@@ -167,6 +168,7 @@ export function ConfigurationPage({ spaceRepository }: ConfigurationPageProps) {
               {t("configuration.spaceSettings.scope")}
             </Alert>
             <CurrencySettings repository={spaceRepository} />
+            <SpaceUsersSettings repository={spaceRepository} />
           </ConfigurationTabPanel>
         </Stack>
       </AppShellContent>

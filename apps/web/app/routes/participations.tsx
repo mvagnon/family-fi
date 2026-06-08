@@ -36,6 +36,7 @@ export default function ParticipationsRoute() {
 
   return (
     <FamilyParticipationsPage
+      canWrite={activeSpace.permissions.canWrite}
       repository={familyHttpRepository}
       spaceId={activeSpace.activeSpaceId}
     />

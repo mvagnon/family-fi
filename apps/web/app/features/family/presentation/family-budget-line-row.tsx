@@ -26,6 +26,7 @@ interface FamilyBudgetLineRowProps {
   onToggleGeneratedLine: (line: GeneratedFamilyBudgetLine) => void;
   onViewBudgetLine?: (line: FamilyBudgetLine) => void;
   onViewLine?: (line: RecurringLine) => void;
+  readonly?: boolean;
 }
 
 export function FamilyBudgetLineRow({
@@ -36,6 +37,7 @@ export function FamilyBudgetLineRow({
   onToggleGeneratedLine,
   onViewBudgetLine,
   onViewLine,
+  readonly = false,
 }: FamilyBudgetLineRowProps) {
   const { t } = useTranslation();
   const familyFormat = useFamilyFormat();
@@ -111,7 +113,7 @@ export function FamilyBudgetLineRow({
               py: 1.5,
             }}
           >
-            {isGenerated ? (
+            {readonly ? null : isGenerated ? (
               <ActionIconButton
                 component="span"
                 disabled={disabled}

@@ -34,6 +34,7 @@ interface FamilyParticipationsTableProps {
   onAddLine: () => void;
   onDeleteLine: (line: FamilyParticipationLine) => void;
   onEditLine: (line: FamilyParticipationLine) => void;
+  readonly?: boolean;
 }
 
 export function FamilyParticipationsTable({
@@ -42,6 +43,7 @@ export function FamilyParticipationsTable({
   onAddLine,
   onDeleteLine,
   onEditLine,
+  readonly = false,
 }: FamilyParticipationsTableProps) {
   const { t } = useTranslation();
   const hasLines = monthGroups.some((group) => group.lines.length > 0);
@@ -50,14 +52,16 @@ export function FamilyParticipationsTable({
   return (
     <FamilyBudgetMonthTable
       action={
-        <LoadingButton
-          disabled={disabled}
-          onClick={onAddLine}
-          startIcon={<AddIcon />}
-          variant="contained"
-        >
-          {t("participations.table.addLine")}
-        </LoadingButton>
+        readonly ? undefined : (
+          <LoadingButton
+            disabled={disabled}
+            onClick={onAddLine}
+            startIcon={<AddIcon />}
+            variant="contained"
+          >
+            {t("participations.table.addLine")}
+          </LoadingButton>
+        )
       }
       ariaLabel={t("participations.table.ariaLabel")}
       columns={[
@@ -89,6 +93,7 @@ export function FamilyParticipationsTable({
           monthLabel={monthLabel}
           onDeleteLine={onDeleteLine}
           onEditLine={onEditLine}
+          readonly={readonly}
           onToggle={onToggle}
         />
       )}
@@ -107,6 +112,7 @@ function ParticipationMonthGroup({
   monthLabel,
   onDeleteLine,
   onEditLine,
+  readonly,
   onToggle,
 }: {
   collapsed: boolean;
@@ -117,6 +123,7 @@ function ParticipationMonthGroup({
   monthLabel: string;
   onDeleteLine: (line: FamilyParticipationLine) => void;
   onEditLine: (line: FamilyParticipationLine) => void;
+  readonly: boolean;
   onToggle: () => void;
 }) {
   const { t } = useTranslation();
@@ -159,6 +166,7 @@ function ParticipationMonthGroup({
                 key={memberGroup.id}
                 onDeleteLine={onDeleteLine}
                 onEditLine={onEditLine}
+                readonly={readonly}
               />
             ))}
           </Collapse>
@@ -174,12 +182,14 @@ function ParticipationMemberGroup({
   group,
   onDeleteLine,
   onEditLine,
+  readonly,
 }: {
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
   group: FamilyParticipationMemberMonthGroup;
   onDeleteLine: (line: FamilyParticipationLine) => void;
   onEditLine: (line: FamilyParticipationLine) => void;
+  readonly: boolean;
 }) {
   const familyFormat = useFamilyFormat();
 
@@ -241,6 +251,7 @@ function ParticipationMemberGroup({
             line={line}
             onDeleteLine={onDeleteLine}
             onEditLine={onEditLine}
+            readonly={readonly}
           />
         ))
       ) : (
@@ -281,12 +292,14 @@ function ParticipationLineRow({
   line,
   onDeleteLine,
   onEditLine,
+  readonly,
 }: {
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
   line: FamilyParticipationLine;
   onDeleteLine: (line: FamilyParticipationLine) => void;
   onEditLine: (line: FamilyParticipationLine) => void;
+  readonly: boolean;
 }) {
   const { t } = useTranslation();
   const lineLabel = `${line.member.name} ${createdAtFormatter.format(
@@ -316,17 +329,21 @@ function ParticipationLineRow({
         tone="negative"
         value={line.line.amount < 0 ? Math.abs(line.line.amount) : null}
       />
-      <FamilyBudgetLineActions
-        deleteLabel={t("participations.line.deleteLabel", {
-          label: lineLabel,
-        })}
-        deleteTooltip={t("participations.line.deleteTooltip")}
-        disabled={disabled}
-        editLabel={t("participations.line.editLabel", { label: lineLabel })}
-        editTooltip={t("participations.line.editTooltip")}
-        onDelete={() => onDeleteLine(line)}
-        onEdit={() => onEditLine(line)}
-      />
+      {readonly ? (
+        <Box aria-hidden="true" />
+      ) : (
+        <FamilyBudgetLineActions
+          deleteLabel={t("participations.line.deleteLabel", {
+            label: lineLabel,
+          })}
+          deleteTooltip={t("participations.line.deleteTooltip")}
+          disabled={disabled}
+          editLabel={t("participations.line.editLabel", { label: lineLabel })}
+          editTooltip={t("participations.line.editTooltip")}
+          onDelete={() => onDeleteLine(line)}
+          onEdit={() => onEditLine(line)}
+        />
+      )}
     </Box>
   );
 }

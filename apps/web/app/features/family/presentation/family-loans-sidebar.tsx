@@ -15,9 +15,9 @@ interface FamilyLoansSidebarProps {
   disabled: boolean;
   isLoanVisible: (loanId: string) => boolean;
   loans: FamilyLoanBalance[];
-  onAddLoan: () => void;
-  onDeleteLoan: (loan: FamilyLoanBalance) => void;
-  onEditLoan: (loan: FamilyLoanBalance) => void;
+  onAddLoan?: () => void;
+  onDeleteLoan?: (loan: FamilyLoanBalance) => void;
+  onEditLoan?: (loan: FamilyLoanBalance) => void;
   onToggleLoanVisibility: (loan: FamilyLoanBalance) => void;
   onViewPastLoans: () => void;
   pastLoanCount: number;
@@ -39,12 +39,14 @@ export function FamilyLoansSidebar({
   return (
     <SectionPanel
       action={
-        <ActionIconButton
-          disabled={disabled}
-          icon={<AddIcon />}
-          label={t("loans.sidebar.addLabel")}
-          onClick={onAddLoan}
-        />
+        onAddLoan ? (
+          <ActionIconButton
+            disabled={disabled}
+            icon={<AddIcon />}
+            label={t("loans.sidebar.addLabel")}
+            onClick={onAddLoan}
+          />
+        ) : undefined
       }
       contentSx={{ pb: { md: 2, xs: 1.5 }, px: { md: 2, xs: 1.5 } }}
       headerSx={{ p: { md: 2, xs: 1.5 } }}

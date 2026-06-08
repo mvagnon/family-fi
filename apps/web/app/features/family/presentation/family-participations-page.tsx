@@ -15,11 +15,13 @@ import { FamilyParticipationsDashboard } from "./family-participations-dashboard
 import { useTranslation } from "react-i18next";
 
 interface FamilyParticipationsPageProps {
+  canWrite: boolean;
   repository: FamilyRepository;
   spaceId: string;
 }
 
 export function FamilyParticipationsPage({
+  canWrite,
   repository,
   spaceId,
 }: FamilyParticipationsPageProps) {
@@ -74,6 +76,7 @@ export function FamilyParticipationsPage({
 
   return (
     <FamilyParticipationsDashboard
+      canWrite={canWrite}
       family={familyQuery.data}
       isSaving={isSaving}
       mutationError={mutationError?.message}

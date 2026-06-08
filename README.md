@@ -62,6 +62,13 @@ docker build \
   -t family-fi-web .
 ```
 
+## Production Env Checklist
+
+- Set `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `WEB_ORIGIN`, and
+  `VITE_API_BASE_URL` for the production origins.
+- Do not set `ENABLE_DEV_SEED=true` in production. The API refuses to start when
+  `NODE_ENV=production` and dev seed is enabled.
+
 ## Checks
 
 ```bash

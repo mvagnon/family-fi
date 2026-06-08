@@ -53,7 +53,8 @@ interface FamilyRequest {
 }
 
 interface SpaceAccessAuthorizer {
-  assertUserCanAccessSpace(userId: string, spaceId: string): Promise<void>;
+  assertUserCanReadSpace(userId: string, spaceId: string): Promise<void>;
+  assertUserCanWriteSpace(userId: string, spaceId: string): Promise<void>;
 }
 
 export class FamilyService {
@@ -70,6 +71,11 @@ export class FamilyService {
   }
 
   async getFamilyForSpace(request: FamilyRequest): Promise<FamilySnapshot> {
+    await this.spaceAccess.assertUserCanReadSpace(
+      request.userId,
+      request.spaceId,
+    );
+
     return this.getOrCreateFamily(request);
   }
 
@@ -77,7 +83,7 @@ export class FamilyService {
     request: FamilyRequest,
     input: CreateFamilyMemberInput,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const name = requireText(input.name, "Member name is required.");
 
     assertUniqueMemberName(family.members, name);
@@ -119,7 +125,7 @@ export class FamilyService {
     memberId: string,
     input: UpdateFamilyMemberInput,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const existingMember = family.members.find(
       (member) => member.id === memberId,
     );
@@ -155,7 +161,7 @@ export class FamilyService {
     request: FamilyRequest,
     input: CreateFamilyCategoryInput,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const label = requireText(input.label, "Category label is required.");
 
     assertUniqueCategoryLabel(family.categories, label);
@@ -182,7 +188,7 @@ export class FamilyService {
     request: FamilyRequest,
     memberId: string,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const hasMember = family.members.some((item) => item.id === memberId);
 
     if (!hasMember) {
@@ -205,7 +211,7 @@ export class FamilyService {
     request: FamilyRequest,
     categoryId: string,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const category = family.categories.find((item) => item.id === categoryId);
 
     if (!category) {
@@ -232,7 +238,7 @@ export class FamilyService {
     request: FamilyRequest,
     input: CreateRecurringLineInput,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const line = normalizeRecurringLine({
       ...input,
       id: this.createUniqueId(
@@ -249,7 +255,7 @@ export class FamilyService {
     request: FamilyRequest,
     input: CreateParticipationLineInput,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const createdAt = this.now();
     const participationLine = normalizeParticipationLineInput(
       family,
@@ -278,7 +284,7 @@ export class FamilyService {
     lineId: string,
     input: UpdateParticipationLineInput,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const existingLine = family.participationLines.find(
       (line) => line.id === lineId,
     );
@@ -315,7 +321,7 @@ export class FamilyService {
     request: FamilyRequest,
     lineId: string,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const updatedFamily = await this.repository.deleteParticipationLine(
       family.id,
       lineId,
@@ -332,7 +338,7 @@ export class FamilyService {
     request: FamilyRequest,
     input: CreateDistributionLineInput,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const createdAt = this.now();
     const distributionLine = normalizeDistributionLineInput(
       family,
@@ -361,7 +367,7 @@ export class FamilyService {
     lineId: string,
     input: UpdateDistributionLineInput,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const existingLine = family.distributionLines.find(
       (line) => line.id === lineId,
     );
@@ -398,7 +404,7 @@ export class FamilyService {
     request: FamilyRequest,
     lineId: string,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const updatedFamily = await this.repository.deleteDistributionLine(
       family.id,
       lineId,
@@ -415,7 +421,7 @@ export class FamilyService {
     request: FamilyRequest,
     input: CreateLoanInput,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const createdAt = this.now();
     const loan = normalizeLoanInput({
       ...input,
@@ -435,7 +441,7 @@ export class FamilyService {
     loanId: string,
     input: UpdateLoanInput,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const existingLoan = family.loans.find((loan) => loan.id === loanId);
 
     if (!existingLoan) {
@@ -462,7 +468,7 @@ export class FamilyService {
     request: FamilyRequest,
     loanId: string,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const updatedFamily = await this.repository.deleteLoan(family.id, loanId);
 
     if (!updatedFamily) {
@@ -476,7 +482,7 @@ export class FamilyService {
     request: FamilyRequest,
     input: CreateLoanRepaymentLineInput,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const createdAt = this.now();
     const repaymentLine = normalizeLoanRepaymentLineInput(
       family,
@@ -500,7 +506,7 @@ export class FamilyService {
     lineId: string,
     input: UpdateLoanRepaymentLineInput,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const existingLine = family.loanRepaymentLines.find(
       (line) => line.id === lineId,
     );
@@ -533,7 +539,7 @@ export class FamilyService {
     request: FamilyRequest,
     lineId: string,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const updatedFamily = await this.repository.deleteLoanRepaymentLine(
       family.id,
       lineId,
@@ -551,7 +557,7 @@ export class FamilyService {
     lineId: string,
     input: UpdateRecurringLineInput,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const line = normalizeRecurringLine({ ...input, id: lineId });
     const updatedFamily = await this.repository.updateRecurringLine(
       family.id,
@@ -569,7 +575,7 @@ export class FamilyService {
     request: FamilyRequest,
     input: UpdateGeneratedRecurringLineSettingInput,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const setting = normalizeGeneratedRecurringLineSetting(family, input);
 
     return this.repository.updateGeneratedRecurringLineSetting(
@@ -582,7 +588,7 @@ export class FamilyService {
     request: FamilyRequest,
     lineId: string,
   ): Promise<FamilySnapshot> {
-    const family = await this.getOrCreateFamily(request);
+    const family = await this.getWritableFamily(request);
     const updatedFamily = await this.repository.deleteRecurringLine(
       family.id,
       lineId,
@@ -598,11 +604,6 @@ export class FamilyService {
   private async getOrCreateFamily(
     request: FamilyRequest,
   ): Promise<FamilySnapshot> {
-    await this.spaceAccess.assertUserCanAccessSpace(
-      request.userId,
-      request.spaceId,
-    );
-
     const existingFamily = await this.repository.findBySpaceId(request.spaceId);
 
     if (existingFamily) {
@@ -613,6 +614,17 @@ export class FamilyService {
       request.spaceId,
       createSeedFamily(createFamilyId(request.spaceId)),
     );
+  }
+
+  private async getWritableFamily(
+    request: FamilyRequest,
+  ): Promise<FamilySnapshot> {
+    await this.spaceAccess.assertUserCanWriteSpace(
+      request.userId,
+      request.spaceId,
+    );
+
+    return this.getOrCreateFamily(request);
   }
 
   private createUniqueId(

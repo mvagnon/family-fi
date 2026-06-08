@@ -64,6 +64,7 @@ export const resources = {
           error: "Space currency settings could not be loaded.",
           label: "Currency",
           loading: "Loading currency settings",
+          ownerOnly: "Only space owners can change the currency.",
           saveError: "Currency could not be saved.",
           title: "Currency",
         },
@@ -110,6 +111,29 @@ export const resources = {
         spaceSettings: {
           scope:
             "These settings apply only to the current personal space. They do not change other spaces you can access.",
+        },
+        spaceUsers: {
+          activeSpaceError: "The active space could not be loaded.",
+          add: "Add user",
+          description:
+            "Add existing users to the active space and choose whether they can edit or only read family data.",
+          empty: "No active space is available.",
+          error: "Space users could not be loaded.",
+          loading: "Loading space users",
+          member: "User",
+          membersAriaLabel: "Space users",
+          membersEmpty: "No users belong to this space yet.",
+          ownerOnly: "Only space owners can manage users.",
+          removeLabel: "Remove {{name}}",
+          removeTooltip: "Remove user",
+          role: "Role",
+          saveError: "Space users could not be saved.",
+          searchEmpty: "No matching user.",
+          searchError: "Users could not be searched.",
+          searchLabel: "Search by email or name",
+          searchLoading: "Searching users",
+          searchMinLength: "Type at least 4 characters.",
+          title: "Users",
         },
         tabs: {
           ariaLabel: "Configuration sections",
@@ -533,13 +557,15 @@ export const resources = {
       },
       spaces: {
         roles: {
-          member: "Member",
           owner: "Owner",
+          read: "Read",
+          write: "Write",
         },
         switcher: {
           empty: "No spaces available.",
           error: "Spaces could not be loaded.",
           externalSpace: "Space of {{email}}",
+          externalSpaceWithRole: "Space of {{email}} - {{role}}",
           label: "Space",
           loading: "Loading spaces",
           ownerIndicator: "You own this space",
@@ -602,6 +628,8 @@ export const resources = {
           error: "Les réglages de devise n'ont pas pu être chargés.",
           label: "Devise",
           loading: "Chargement des réglages de devise",
+          ownerOnly:
+            "Seuls les propriétaires de l'espace peuvent changer la devise.",
           saveError: "La devise n'a pas pu être enregistrée.",
           title: "Devise",
         },
@@ -649,6 +677,31 @@ export const resources = {
         spaceSettings: {
           scope:
             "Ces réglages s'appliquent uniquement à l'espace personnel courant. Ils ne modifient pas les autres espaces auxquels vous avez accès.",
+        },
+        spaceUsers: {
+          activeSpaceError: "L'espace actif n'a pas pu être chargé.",
+          add: "Ajouter l'utilisateur",
+          description:
+            "Ajoutez des utilisateurs existants à l'espace actif et choisissez s'ils peuvent modifier les données famille ou seulement les consulter.",
+          empty: "Aucun espace actif n'est disponible.",
+          error: "Les utilisateurs de l'espace n'ont pas pu être chargés.",
+          loading: "Chargement des utilisateurs de l'espace",
+          member: "Utilisateur",
+          membersAriaLabel: "Utilisateurs de l'espace",
+          membersEmpty: "Aucun utilisateur n'appartient encore à cet espace.",
+          ownerOnly:
+            "Seuls les propriétaires de l'espace peuvent gérer les utilisateurs.",
+          removeLabel: "Retirer {{name}}",
+          removeTooltip: "Retirer l'utilisateur",
+          role: "Rôle",
+          saveError:
+            "Les utilisateurs de l'espace n'ont pas pu être enregistrés.",
+          searchEmpty: "Aucun utilisateur correspondant.",
+          searchError: "La recherche d'utilisateurs a échoué.",
+          searchLabel: "Rechercher par email ou nom",
+          searchLoading: "Recherche d'utilisateurs",
+          searchMinLength: "Saisissez au moins 4 caractères.",
+          title: "Utilisateurs",
         },
         tabs: {
           ariaLabel: "Sections de configuration",
@@ -1076,13 +1129,15 @@ export const resources = {
       },
       spaces: {
         roles: {
-          member: "Membre",
           owner: "Propriétaire",
+          read: "Lecture",
+          write: "Écriture",
         },
         switcher: {
           empty: "Aucun espace disponible.",
           error: "Les espaces n'ont pas pu être chargés.",
           externalSpace: "Espace de {{email}}",
+          externalSpaceWithRole: "Espace de {{email}} - {{role}}",
           label: "Espace",
           loading: "Chargement des espaces",
           ownerIndicator: "Vous êtes propriétaire de cet espace",
@@ -1145,6 +1200,7 @@ export const resources = {
           error: "通貨設定を読み込めませんでした。",
           label: "通貨",
           loading: "通貨設定を読み込み中",
+          ownerOnly: "スペースのオーナーのみ通貨を変更できます。",
           saveError: "通貨を保存できませんでした。",
           title: "通貨",
         },
@@ -1191,6 +1247,29 @@ export const resources = {
         spaceSettings: {
           scope:
             "この設定は現在の個人スペースにのみ適用されます。アクセスできる他のスペースは変更されません。",
+        },
+        spaceUsers: {
+          activeSpaceError: "有効なスペースを読み込めませんでした。",
+          add: "ユーザーを追加",
+          description:
+            "既存ユーザーを有効なスペースに追加し、家族データを編集できるか閲覧のみかを選びます。",
+          empty: "有効なスペースはありません。",
+          error: "スペースのユーザーを読み込めませんでした。",
+          loading: "スペースのユーザーを読み込み中",
+          member: "ユーザー",
+          membersAriaLabel: "スペースのユーザー",
+          membersEmpty: "このスペースにはまだユーザーがいません。",
+          ownerOnly: "スペースのオーナーのみユーザーを管理できます。",
+          removeLabel: "{{name}}を削除",
+          removeTooltip: "ユーザーを削除",
+          role: "ロール",
+          saveError: "スペースのユーザーを保存できませんでした。",
+          searchEmpty: "一致するユーザーはいません。",
+          searchError: "ユーザーを検索できませんでした。",
+          searchLabel: "メールまたは名前で検索",
+          searchLoading: "ユーザーを検索中",
+          searchMinLength: "4文字以上入力してください。",
+          title: "ユーザー",
         },
         tabs: {
           ariaLabel: "設定セクション",
@@ -1604,13 +1683,15 @@ export const resources = {
       },
       spaces: {
         roles: {
-          member: "メンバー",
           owner: "オーナー",
+          read: "閲覧",
+          write: "編集",
         },
         switcher: {
           empty: "利用できるスペースはありません。",
           error: "スペースを読み込めませんでした。",
           externalSpace: "{{email}} のスペース",
+          externalSpaceWithRole: "{{email}} のスペース - {{role}}",
           label: "スペース",
           loading: "スペースを読み込み中",
           ownerIndicator: "このスペースのオーナーです",

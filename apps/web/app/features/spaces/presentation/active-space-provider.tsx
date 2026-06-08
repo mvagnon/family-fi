@@ -11,6 +11,10 @@ import {
   hasAccessibleSpace,
   resolveActiveSpaceId,
 } from "../application/active-space";
+import {
+  getSpacePermissions,
+  type SpacePermissions,
+} from "../application/space-permissions";
 import { useSpaces, useUserSettings } from "../application/space-queries";
 import type { SpaceRepository } from "../domain/space-repository";
 import type { SpaceSummary } from "../domain/spaces";
@@ -29,6 +33,7 @@ interface ActiveSpaceContextValue {
   isPending: boolean;
   refetch: () => void;
   selectSpace: (spaceId: string) => void;
+  permissions: SpacePermissions;
   spaces: SpaceSummary[];
 }
 
@@ -81,6 +86,7 @@ export function ActiveSpaceProvider({
       isPending: spacesQuery.isPending || settingsQuery.isPending,
       refetch,
       selectSpace,
+      permissions: getSpacePermissions(activeSpace),
       spaces,
     };
   }, [

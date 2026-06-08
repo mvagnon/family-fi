@@ -12,8 +12,8 @@ interface FamilySidebarCategoriesProps {
   disabled: boolean;
   professionalCategories: FamilyCategory[];
   sharedCategories: FamilyCategory[];
-  onAddCategory: () => void;
-  onDeleteCategory: (category: FamilyCategory) => void;
+  onAddCategory?: () => void;
+  onDeleteCategory?: (category: FamilyCategory) => void;
 }
 
 export function FamilySidebarCategories({
@@ -28,12 +28,14 @@ export function FamilySidebarCategories({
   return (
     <SectionPanel
       action={
-        <ActionIconButton
-          disabled={disabled}
-          icon={<AddIcon />}
-          label={t("family.sidebar.categories.addLabel")}
-          onClick={onAddCategory}
-        />
+        onAddCategory ? (
+          <ActionIconButton
+            disabled={disabled}
+            icon={<AddIcon />}
+            label={t("family.sidebar.categories.addLabel")}
+            onClick={onAddCategory}
+          />
+        ) : undefined
       }
       contentSx={{ pb: { md: 2, xs: 1.5 }, px: { md: 2, xs: 1.5 } }}
       headerSx={{ p: { md: 2, xs: 1.5 } }}
@@ -48,7 +50,9 @@ export function FamilySidebarCategories({
             disabled={disabled}
             key={category.id}
             label={category.label}
-            onDelete={() => onDeleteCategory(category)}
+            onDelete={
+              onDeleteCategory ? () => onDeleteCategory(category) : undefined
+            }
             sx={{
               "& .MuiChip-deleteIcon": {
                 color: "text.secondary",

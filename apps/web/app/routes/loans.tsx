@@ -36,6 +36,7 @@ export default function LoansRoute() {
 
   return (
     <FamilyLoansPage
+      canWrite={activeSpace.permissions.canWrite}
       repository={familyHttpRepository}
       spaceId={activeSpace.activeSpaceId}
     />

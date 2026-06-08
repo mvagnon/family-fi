@@ -7,9 +7,16 @@ import {
   normalizeApiBaseUrl,
 } from "~/infrastructure/api-client";
 import type { SpaceRepository } from "../domain/space-repository";
-import type { SpaceSummary, UserSettings } from "../domain/spaces";
+import type {
+  SpaceMember,
+  SpaceSummary,
+  SpaceUserSearchResult,
+  UserSettings,
+} from "../domain/spaces";
 import {
+  parseSpaceMembersResponse,
   parseSpacesResponse,
+  parseSpaceUserSearchResponse,
   parseUserSettingsResponse,
   SpacesApiError,
 } from "./spaces-dto";
@@ -67,13 +74,86 @@ export function createSpacesHttpRepository(
     return parseUserSettingsResponse(await response.json());
   }
 
+  async function readSpaceMembersResponse(response: {
+    json: () => Promise<unknown>;
+    ok: boolean;
+  }): Promise<SpaceMember[]> {
+    if (!response.ok) {
+      throw new SpacesApiError(await getErrorMessage(response));
+    }
+
+    return parseSpaceMembersResponse(await response.json());
+  }
+
+  async function readSpaceMemberResponse(response: {
+    json: () => Promise<unknown>;
+    ok: boolean;
+  }): Promise<SpaceMember> {
+    if (!response.ok) {
+      throw new SpacesApiError(await getErrorMessage(response));
+    }
+
+    const [member] = parseSpaceMembersResponse([await response.json()]);
+
+    return member;
+  }
+
+  async function readSpaceUserSearchResponse(response: {
+    json: () => Promise<unknown>;
+    ok: boolean;
+  }): Promise<SpaceUserSearchResult[]> {
+    if (!response.ok) {
+      throw new SpacesApiError(await getErrorMessage(response));
+    }
+
+    return parseSpaceUserSearchResponse(await response.json());
+  }
+
   return {
+    addSpaceMember: async (spaceId, input) =>
+      readSpaceMemberResponse(
+        await client.api.spaces[":spaceId"].members.$post({
+          json: input,
+          param: { spaceId },
+        }),
+      ),
     getUserSettings: async () =>
       readUserSettingsResponse(await client.api.me.settings.$get()),
+    listSpaceMembers: async (spaceId) =>
+      readSpaceMembersResponse(
+        await client.api.spaces[":spaceId"].members.$get({
+          param: { spaceId },
+        }),
+      ),
     listSpaces: async () => readSpacesResponse(await client.api.spaces.$get()),
+    removeSpaceMember: async (spaceId, userId) => {
+      const response = await client.api.spaces[":spaceId"].members[
+        ":userId"
+      ].$delete({
+        param: { spaceId, userId },
+      });
+
+      if (!response.ok) {
+        throw new SpacesApiError(await getErrorMessage(response));
+      }
+    },
+    searchSpaceUsers: async (spaceId, input) =>
+      readSpaceUserSearchResponse(
+        await client.api.spaces[":spaceId"].users.search.$get({
+          param: { spaceId },
+          query: input,
+        }),
+      ),
     updateDefaultSpace: async (input) =>
       readUserSettingsResponse(
         await client.api.me.settings["default-space"].$put({ json: input }),
+      ),
+    updateSpaceMember: async (spaceId, userId, input) =>
+      readSpaceMemberResponse(
+        await client.api.spaces[":spaceId"].members[":userId"].$put({
+          json: input,
+          param: { spaceId, userId },
+        }),
       ),
     updateSpaceCurrency: async (spaceId, input) =>
       readSpaceResponse(

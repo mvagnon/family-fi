@@ -7,6 +7,9 @@ import { createInMemorySpacesRepository } from "../../../../spaces/infrastructur
 import { createInMemoryFamilyRepository } from "../../persistence/in-memory-family-repository.js";
 
 const TEST_USER_ID = "test-user";
+const WRITE_USER_ID = "write-user";
+const READ_USER_ID = "read-user";
+const CANDIDATE_USER_ID = "candidate-user";
 const TEST_SPACE_ID = "test-space";
 const familyPath = `/api/spaces/${TEST_SPACE_ID}/family`;
 
@@ -715,6 +718,137 @@ test("family routes reject spaces without membership", async () => {
   assert.deepEqual(body, { message: "Space is not accessible." });
 });
 
+test("family routes allow read users to view and reject write mutations", async () => {
+  const app = createTestApp();
+
+  const getResponse = await authenticatedRequest(
+    app,
+    familyPath,
+    {},
+    READ_USER_ID,
+  );
+  const postResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/categories`,
+    {
+      body: JSON.stringify({ label: "Readonly" }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+    READ_USER_ID,
+  );
+  const postBody = await postResponse.json();
+
+  assert.equal(getResponse.status, 200);
+  assert.equal(postResponse.status, 403);
+  assert.deepEqual(postBody, { message: "Space is not accessible." });
+});
+
+test("family routes allow write users to mutate family data", async () => {
+  const app = createTestApp();
+
+  const response = await authenticatedRequest(
+    app,
+    `${familyPath}/categories`,
+    {
+      body: JSON.stringify({ label: "Épargne" }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+    WRITE_USER_ID,
+  );
+  const family = await response.json();
+
+  assert.equal(response.status, 201);
+  assert.equal(
+    family.categories.some(
+      (category: { label: string }) => category.label === "Épargne",
+    ),
+    true,
+  );
+});
+
+test("space routes reserve settings and members to owners", async () => {
+  const app = createTestApp();
+
+  const membersResponse = await authenticatedRequest(
+    app,
+    `/api/spaces/${TEST_SPACE_ID}/members`,
+    {},
+    WRITE_USER_ID,
+  );
+  const currencyResponse = await authenticatedRequest(
+    app,
+    `/api/spaces/${TEST_SPACE_ID}/settings/currency`,
+    {
+      body: JSON.stringify({ currencyCode: "USD" }),
+      headers: { "Content-Type": "application/json" },
+      method: "PUT",
+    },
+    WRITE_USER_ID,
+  );
+
+  assert.equal(membersResponse.status, 403);
+  assert.equal(currencyResponse.status, 403);
+});
+
+test("space routes let owners search and manage existing users", async () => {
+  const app = createTestApp();
+
+  const searchResponse = await authenticatedRequest(
+    app,
+    `/api/spaces/${TEST_SPACE_ID}/users/search?query=cami`,
+  );
+  const users = await searchResponse.json();
+
+  assert.equal(searchResponse.status, 200);
+  assert.deepEqual(users, [
+    {
+      email: "camille@example.com",
+      id: CANDIDATE_USER_ID,
+      name: "Camille",
+    },
+  ]);
+
+  const addResponse = await authenticatedRequest(
+    app,
+    `/api/spaces/${TEST_SPACE_ID}/members`,
+    {
+      body: JSON.stringify({ role: "read", userId: CANDIDATE_USER_ID }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
+  const addedMember = await addResponse.json();
+
+  assert.equal(addResponse.status, 201);
+  assert.equal(addedMember.role, "read");
+
+  const updateResponse = await authenticatedRequest(
+    app,
+    `/api/spaces/${TEST_SPACE_ID}/members/${CANDIDATE_USER_ID}`,
+    {
+      body: JSON.stringify({ role: "write" }),
+      headers: { "Content-Type": "application/json" },
+      method: "PUT",
+    },
+  );
+  const updatedMember = await updateResponse.json();
+
+  assert.equal(updateResponse.status, 200);
+  assert.equal(updatedMember.role, "write");
+
+  const removeResponse = await authenticatedRequest(
+    app,
+    `/api/spaces/${TEST_SPACE_ID}/members/${CANDIDATE_USER_ID}`,
+    {
+      method: "DELETE",
+    },
+  );
+
+  assert.equal(removeResponse.status, 204);
+});
+
 function createTestApp(
   familyServiceOptions?: Parameters<
     typeof createApiApp
@@ -731,12 +865,44 @@ function createTestApp(
           spaceId: TEST_SPACE_ID,
           userId: TEST_USER_ID,
         },
+        {
+          role: "write",
+          spaceId: TEST_SPACE_ID,
+          userId: WRITE_USER_ID,
+        },
+        {
+          role: "read",
+          spaceId: TEST_SPACE_ID,
+          userId: READ_USER_ID,
+        },
       ],
       settings: new Map([[TEST_USER_ID, TEST_SPACE_ID]]),
       spaces: [
         {
           id: TEST_SPACE_ID,
           name: "Test space",
+        },
+      ],
+      users: [
+        {
+          email: "test@test.com",
+          id: TEST_USER_ID,
+          name: "Test User",
+        },
+        {
+          email: "write@example.com",
+          id: WRITE_USER_ID,
+          name: "Write User",
+        },
+        {
+          email: "read@example.com",
+          id: READ_USER_ID,
+          name: "Read User",
+        },
+        {
+          email: "camille@example.com",
+          id: CANDIDATE_USER_ID,
+          name: "Camille",
         },
       ],
     }),
@@ -768,9 +934,10 @@ function authenticatedRequest(
   app: ReturnType<typeof createApiApp>,
   path: string,
   init: RequestInit = {},
+  userId = TEST_USER_ID,
 ) {
   const headers = new Headers(init.headers);
-  headers.set("x-user-id", TEST_USER_ID);
+  headers.set("x-user-id", userId);
 
   return app.request(path, {
     ...init,

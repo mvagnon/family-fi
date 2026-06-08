@@ -34,6 +34,7 @@ interface FamilyBudgetTableProps {
   onToggleGeneratedLine: (line: GeneratedFamilyBudgetLine) => void;
   onViewLine?: (line: RecurringLine) => void;
   onViewBudgetLine?: (line: FamilyBudgetLine) => void;
+  readonly?: boolean;
 }
 
 export function FamilyBudgetTable({
@@ -46,6 +47,7 @@ export function FamilyBudgetTable({
   onToggleGeneratedLine,
   onViewBudgetLine,
   onViewLine,
+  readonly = false,
 }: FamilyBudgetTableProps) {
   const { t } = useTranslation();
   const categoryGroups = getCategoryGroups(categories, lines);
@@ -54,14 +56,16 @@ export function FamilyBudgetTable({
   return (
     <SectionPanel
       action={
-        <LoadingButton
-          disabled={disabled}
-          onClick={onAddLine}
-          startIcon={<AddIcon />}
-          variant="contained"
-        >
-          {t("family.budget.addLine")}
-        </LoadingButton>
+        readonly ? undefined : (
+          <LoadingButton
+            disabled={disabled}
+            onClick={onAddLine}
+            startIcon={<AddIcon />}
+            variant="contained"
+          >
+            {t("family.budget.addLine")}
+          </LoadingButton>
+        )
       }
       contentSx={{ p: 0 }}
       headerSx={{
@@ -126,6 +130,7 @@ export function FamilyBudgetTable({
                 onToggleGeneratedLine={onToggleGeneratedLine}
                 onViewBudgetLine={onViewBudgetLine}
                 onViewLine={onViewLine}
+                readonly={readonly}
               />
             ))}
           </TableBody>
