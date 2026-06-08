@@ -5,9 +5,9 @@
     "./app": "./src/app.ts"
   },
   "scripts": {
-    "dev": "docker compose --project-directory ../.. -f ../../docker-compose.yml up --build api",
+    "dev": "bun run prisma:generate && tsx watch src/index.ts",
     "test": "node --import tsx --test \"src/**/*.test.ts\"",
-    "build": "bun run prisma generate && bun run tsc",
+    "build": "bun run prisma:generate && tsc",
     "check-types": "bun run prisma generate && bun run tsc --noEmit",
     "prisma:deploy": "bun run prisma migrate deploy",
     "prisma:generate": "bun run prisma generate",
