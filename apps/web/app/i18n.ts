@@ -148,6 +148,8 @@ export const resources = {
         },
         page: {
           title: "Dashboard",
+          workInProgressMessage: "This dashboard will be implemented later.",
+          workInProgressTitle: "Work in progress",
         },
       },
       family: {
@@ -283,8 +285,9 @@ export const resources = {
         },
         summary: {
           annual: "Annual",
+          annualAverage: "Annual average",
           ariaLabel: "Household summary",
-          avg: "Avg.",
+          avg: "Average",
           max: "Max.",
           min: "Min.",
           monthly: "Monthly",
@@ -716,6 +719,9 @@ export const resources = {
         },
         page: {
           title: "Tableau de bord",
+          workInProgressMessage:
+            "Ce tableau de bord sera implémenté plus tard.",
+          workInProgressTitle: "Work in progress",
         },
       },
       family: {
@@ -851,8 +857,9 @@ export const resources = {
         },
         summary: {
           annual: "Annuel",
+          annualAverage: "Moyenne annuelle",
           ariaLabel: "Résumé du foyer",
-          avg: "Moy.",
+          avg: "Moyenne",
           max: "Max.",
           min: "Min.",
           monthly: "Mensuel",
@@ -1284,6 +1291,8 @@ export const resources = {
         },
         page: {
           title: "ダッシュボード",
+          workInProgressMessage: "このダッシュボードは後で実装されます。",
+          workInProgressTitle: "作業中",
         },
       },
       family: {
@@ -1415,6 +1424,7 @@ export const resources = {
         },
         summary: {
           annual: "年次",
+          annualAverage: "年間平均",
           ariaLabel: "世帯サマリー",
           avg: "平均",
           max: "最大",

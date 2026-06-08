@@ -13,7 +13,7 @@ export interface GeneratedFamilyBudgetLine {
   sourceId: string;
 }
 
-const generatedLineCategoryId = "generated-recurring-lines";
+export const generatedRecurringLineCategoryId = "generated-recurring-lines";
 
 export function getGeneratedRecurringLines(
   family: Family,
@@ -28,13 +28,13 @@ export function getGeneratedRecurringLines(
 export function getGeneratedRecurringLineCategoryId(
   _source: GeneratedRecurringLineSource,
 ): string {
-  return generatedLineCategoryId;
+  return generatedRecurringLineCategoryId;
 }
 
 export function isGeneratedRecurringLineCategoryId(
   categoryId: string,
 ): boolean {
-  return categoryId === generatedLineCategoryId;
+  return categoryId === generatedRecurringLineCategoryId;
 }
 
 function getLoanGeneratedRecurringLines(

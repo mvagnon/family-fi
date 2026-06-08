@@ -18,8 +18,24 @@ export function FamilySummaryStrip({ lines }: FamilySummaryStripProps) {
   const familyFormat = useFamilyFormat();
   const summary = getFamilyBudgetSummary(getActiveBudgetRecurringLines(lines));
   const summaryCards = [
-    { label: t("family.summary.monthly"), totals: summary.monthly },
-    { label: t("family.summary.annual"), totals: summary.annual },
+    {
+      id: "monthly",
+      label: t("family.summary.monthly"),
+      metrics: [
+        { label: t("family.summary.min"), value: summary.monthly.min },
+        { label: t("family.summary.max"), value: summary.monthly.max },
+        { label: t("family.summary.avg"), value: summary.monthly.avg },
+      ],
+    },
+    {
+      id: "average",
+      metrics: [
+        {
+          label: t("family.summary.annualAverage"),
+          value: summary.annual.avg,
+        },
+      ],
+    },
   ];
 
   return (
@@ -29,24 +45,29 @@ export function FamilySummaryStrip({ lines }: FamilySummaryStripProps) {
         display: "grid",
         gap: 1.5,
         gridTemplateColumns: {
-          md: "repeat(2, minmax(0, 1fr))",
+          md: "minmax(0, 1fr) max-content",
           xs: "minmax(0, 1fr)",
         },
       }}
     >
       {summaryCards.map((item) => (
         <MetricSummaryCard
-          key={item.label}
+          key={item.id}
           label={item.label}
-          metrics={[
-            { label: t("family.summary.min"), value: item.totals.min },
-            { label: t("family.summary.max"), value: item.totals.max },
-            { label: t("family.summary.avg"), value: item.totals.avg },
-          ].map((metric) => ({
+          metrics={item.metrics.map((metric) => ({
             label: metric.label,
             value: familyFormat.formatCurrency(metric.value),
             valueTone: getSummaryValueTone(metric.value),
           }))}
+          sx={
+            item.id === "average"
+              ? {
+                  alignContent: "center",
+                  display: "grid",
+                  minWidth: { md: 220 },
+                }
+              : undefined
+          }
         />
       ))}
     </Box>

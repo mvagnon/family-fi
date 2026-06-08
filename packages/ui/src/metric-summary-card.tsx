@@ -25,6 +25,8 @@ export function MetricSummaryCard({
   metrics,
   sx,
 }: MetricSummaryCardProps) {
+  const metricColumnCount = Math.min(Math.max(metrics.length, 1), 3);
+
   return (
     <Paper
       component={component}
@@ -68,10 +70,10 @@ export function MetricSummaryCard({
           display: "grid",
           gap: 1.5,
           gridTemplateColumns: {
-            sm: "repeat(3, minmax(0, 1fr))",
+            sm: `repeat(${metricColumnCount}, minmax(0, 1fr))`,
             xs: "minmax(0, 1fr)",
           },
-          mt: 1,
+          mt: label || action ? 1 : 0,
         }}
       >
         {metrics.map((metric, index) => (

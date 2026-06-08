@@ -7,6 +7,7 @@ import { SectionPanel } from "@repo/ui/section-panel";
 import { useTranslation } from "react-i18next";
 
 import type { FamilyCategory } from "../domain/family";
+import { generatedRecurringLineCategoryId } from "../domain/family-generated-recurring-lines";
 
 interface FamilySidebarCategoriesProps {
   disabled: boolean;
@@ -24,6 +25,16 @@ export function FamilySidebarCategories({
   onDeleteCategory,
 }: FamilySidebarCategoriesProps) {
   const { t } = useTranslation();
+  const immutableCategories = [
+    ...professionalCategories.map((category) => ({
+      key: getCategoryChipKey(category),
+      label: category.label,
+    })),
+    {
+      key: generatedRecurringLineCategoryId,
+      label: t("family.budget.generatedCategory"),
+    },
+  ];
 
   return (
     <SectionPanel
@@ -71,10 +82,10 @@ export function FamilySidebarCategories({
       </Box>
 
       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
-        {professionalCategories.map((category) => (
+        {immutableCategories.map((category) => (
           <Chip
             color="primary"
-            key={getCategoryChipKey(category)}
+            key={category.key}
             label={category.label}
           />
         ))}

@@ -55,6 +55,7 @@ export function getCategoryGroups(
     return [
       {
         id: category.id,
+        isGenerated: isGeneratedRecurringLineCategoryId(category.id),
         label: category.label,
         lines: categoryLines,
       },
@@ -77,7 +78,7 @@ export function getCategoryGroups(
     },
   );
 
-  return [...knownGroups, ...orphanGroups];
+  return moveGeneratedCategoryGroupsLast([...knownGroups, ...orphanGroups]);
 }
 
 export function getFamilyBudgetSummary(
@@ -157,4 +158,13 @@ function multiplyTotals(
     max: totals.max * multiplier,
     min: totals.min * multiplier,
   };
+}
+
+function moveGeneratedCategoryGroupsLast(
+  groups: FamilyCategoryGroup[],
+): FamilyCategoryGroup[] {
+  return [
+    ...groups.filter((group) => !group.isGenerated),
+    ...groups.filter((group) => group.isGenerated),
+  ];
 }
