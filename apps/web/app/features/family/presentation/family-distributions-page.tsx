@@ -15,11 +15,13 @@ import { getFamilyMutationError } from "./family-mutation-error";
 import { useTranslation } from "react-i18next";
 
 interface FamilyDistributionsPageProps {
+  canWrite: boolean;
   repository: FamilyRepository;
   spaceId: string;
 }
 
 export function FamilyDistributionsPage({
+  canWrite,
   repository,
   spaceId,
 }: FamilyDistributionsPageProps) {
@@ -74,6 +76,7 @@ export function FamilyDistributionsPage({
 
   return (
     <FamilyDistributionsDashboard
+      canWrite={canWrite}
       family={familyQuery.data}
       isSaving={isSaving}
       mutationError={mutationError?.message}

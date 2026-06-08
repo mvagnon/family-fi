@@ -30,6 +30,7 @@ interface FamilyBudgetCategoryGroupProps {
   onToggleGeneratedLine: (line: GeneratedFamilyBudgetLine) => void;
   onViewBudgetLine?: (line: FamilyBudgetLine) => void;
   onViewLine?: (line: RecurringLine) => void;
+  readonly?: boolean;
 }
 
 export function FamilyBudgetCategoryGroup({
@@ -40,6 +41,7 @@ export function FamilyBudgetCategoryGroup({
   onToggleGeneratedLine,
   onViewBudgetLine,
   onViewLine,
+  readonly = false,
 }: FamilyBudgetCategoryGroupProps) {
   const { t } = useTranslation();
   const familyFormat = useFamilyFormat();
@@ -89,6 +91,7 @@ export function FamilyBudgetCategoryGroup({
           onToggleGeneratedLine={onToggleGeneratedLine}
           onViewBudgetLine={onViewBudgetLine}
           onViewLine={onViewLine}
+          readonly={readonly}
         />
       ))}
     </Fragment>

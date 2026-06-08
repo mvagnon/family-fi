@@ -41,8 +41,9 @@ function getSpaceLabel(space: SpaceSummary, t: TFunction): string {
     return t("spaces.switcher.personalSpace");
   }
 
-  return t("spaces.switcher.externalSpace", {
+  return t("spaces.switcher.externalSpaceWithRole", {
     email: space.ownerEmail,
+    role: t(`spaces.roles.${space.role}`),
   });
 }
 

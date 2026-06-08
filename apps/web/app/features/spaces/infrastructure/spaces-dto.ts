@@ -1,10 +1,12 @@
 import type {
+  SpaceMember,
   SpaceRole,
   SpaceSummary,
+  SpaceUserSearchResult,
   SupportedCurrency,
   UserSettings,
 } from "../domain/spaces";
-import { supportedCurrencySchema } from "../domain/spaces";
+import { spaceRoleSchema, supportedCurrencySchema } from "../domain/spaces";
 
 export class SpacesApiError extends Error {
   constructor(message: string) {
@@ -34,6 +36,26 @@ export function parseUserSettingsResponse(value: unknown): UserSettings {
   };
 }
 
+export function parseSpaceMembersResponse(value: unknown): SpaceMember[] {
+  if (!Array.isArray(value)) {
+    throw new SpacesApiError(
+      "Les membres de l'espace n'ont pas pu être chargés.",
+    );
+  }
+
+  return value.map(parseSpaceMember);
+}
+
+export function parseSpaceUserSearchResponse(
+  value: unknown,
+): SpaceUserSearchResult[] {
+  if (!Array.isArray(value)) {
+    throw new SpacesApiError("Les utilisateurs n'ont pas pu être chargés.");
+  }
+
+  return value.map(parseSpaceUserSearchResult);
+}
+
 function parseSpaceSummary(value: unknown): SpaceSummary {
   const space = getRecord(value);
 
@@ -46,9 +68,36 @@ function parseSpaceSummary(value: unknown): SpaceSummary {
   };
 }
 
+function parseSpaceMember(value: unknown): SpaceMember {
+  const member = getRecord(value);
+
+  return {
+    email: getString(member, "email"),
+    name: getString(member, "name"),
+    role: parseSpaceRole(getString(member, "role")),
+    userId: getString(member, "userId"),
+  };
+}
+
+function parseSpaceUserSearchResult(value: unknown): SpaceUserSearchResult {
+  const user = getRecord(value);
+
+  return {
+    email: getString(user, "email"),
+    id: getString(user, "id"),
+    name: getString(user, "name"),
+  };
+}
+
 function parseSpaceRole(value: string): SpaceRole {
-  if (value === "owner" || value === "member") {
-    return value;
+  if (value === "member") {
+    return "write";
+  }
+
+  const role = spaceRoleSchema.safeParse(value);
+
+  if (role.success) {
+    return role.data;
   }
 
   throw new SpacesApiError("Les espaces n'ont pas pu être chargés.");

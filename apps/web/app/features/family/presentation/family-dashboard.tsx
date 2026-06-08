@@ -50,6 +50,7 @@ import { LineEditDialog } from "./line-edit-dialog";
 import { LineSummaryDialog } from "./line-summary-dialog";
 
 interface FamilyDashboardProps {
+  canWrite?: boolean;
   family: Family;
   isSaving?: boolean;
   mutationError?: string;
@@ -76,6 +77,7 @@ interface FamilyDashboardProps {
 }
 
 export function FamilyDashboard({
+  canWrite = true,
   family,
   isSaving = false,
   mutationError,
@@ -138,6 +140,10 @@ export function FamilyDashboard({
   ];
 
   function handleAddLine() {
+    if (!canWrite) {
+      return;
+    }
+
     setLineDialogMode("create");
     setSelectedLine(
       createDraftRecurringLine(
@@ -148,6 +154,10 @@ export function FamilyDashboard({
   }
 
   function handleEditLine(line: RecurringLine) {
+    if (!canWrite) {
+      return;
+    }
+
     setLineDialogMode("edit");
     setSelectedLine(line);
   }
@@ -161,16 +171,28 @@ export function FamilyDashboard({
   }
 
   function handleRequestAddMember() {
+    if (!canWrite) {
+      return;
+    }
+
     setSelectedMember(null);
     setIsMemberModalOpen(true);
   }
 
   function handleRequestEditMember(member: FamilyMember) {
+    if (!canWrite) {
+      return;
+    }
+
     setSelectedMember(member);
     setIsMemberModalOpen(true);
   }
 
   async function handleSaveCategory(input: CreateFamilyCategoryInput) {
+    if (!canWrite) {
+      return;
+    }
+
     const duplicateError = getDuplicateFamilyCategoryLabelError(
       family.categories,
       input.label,
@@ -191,6 +213,10 @@ export function FamilyDashboard({
   }
 
   async function handleSaveMember(input: UpdateFamilyMemberInput) {
+    if (!canWrite) {
+      return;
+    }
+
     const ignoredCategoryIds = selectedMember
       ? getFamilyMemberLinkedCategoryIds(family.categories, selectedMember.id)
       : [];
@@ -226,6 +252,10 @@ export function FamilyDashboard({
   }
 
   async function handleSaveLine(line: RecurringLine) {
+    if (!canWrite) {
+      return;
+    }
+
     try {
       if (lineDialogMode === "create") {
         await onCreateRecurringLine(toCreateRecurringLineInput(line));
@@ -240,10 +270,18 @@ export function FamilyDashboard({
   }
 
   function handleRequestDeleteLine(line: RecurringLine) {
+    if (!canWrite) {
+      return;
+    }
+
     setLinePendingDeletion(line);
   }
 
   async function handleToggleGeneratedLine(line: GeneratedFamilyBudgetLine) {
+    if (!canWrite) {
+      return;
+    }
+
     try {
       await onUpdateGeneratedRecurringLineSetting({
         isEnabled: !line.isEnabled,
@@ -256,15 +294,23 @@ export function FamilyDashboard({
   }
 
   function handleRequestDeleteMember(member: FamilyMember) {
+    if (!canWrite) {
+      return;
+    }
+
     setSidebarItemPendingDeletion({ item: member, type: "member" });
   }
 
   function handleRequestDeleteCategory(category: FamilyCategory) {
+    if (!canWrite) {
+      return;
+    }
+
     setSidebarItemPendingDeletion({ item: category, type: "category" });
   }
 
   async function handleConfirmDeleteLine() {
-    if (!linePendingDeletion) {
+    if (!canWrite || !linePendingDeletion) {
       return;
     }
 
@@ -277,7 +323,7 @@ export function FamilyDashboard({
   }
 
   async function handleConfirmDeleteSidebarItem() {
-    if (!sidebarItemPendingDeletion) {
+    if (!canWrite || !sidebarItemPendingDeletion) {
       return;
     }
 
@@ -317,6 +363,7 @@ export function FamilyDashboard({
           onToggleGeneratedLine={handleToggleGeneratedLine}
           onViewBudgetLine={handleViewBudgetLine}
           onViewLine={handleViewLine}
+          readonly={!canWrite}
         />
         <FeedbackSnackbar
           key={localError ? `local-${localError.revision}` : mutationErrorKey}
@@ -396,11 +443,13 @@ export function FamilyDashboard({
           disabled={isSaving}
           isMemberVisible={isMemberVisible}
           members={family.members}
-          onAddCategory={() => setIsCategoryModalOpen(true)}
-          onAddMember={handleRequestAddMember}
-          onDeleteCategory={handleRequestDeleteCategory}
-          onDeleteMember={handleRequestDeleteMember}
-          onEditMember={handleRequestEditMember}
+          onAddCategory={
+            canWrite ? () => setIsCategoryModalOpen(true) : undefined
+          }
+          onAddMember={canWrite ? handleRequestAddMember : undefined}
+          onDeleteCategory={canWrite ? handleRequestDeleteCategory : undefined}
+          onDeleteMember={canWrite ? handleRequestDeleteMember : undefined}
+          onEditMember={canWrite ? handleRequestEditMember : undefined}
           onToggleMemberVisibility={(member) =>
             toggleMemberVisibility(member.id)
           }

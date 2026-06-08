@@ -29,7 +29,7 @@ interface CurrencySettingsProps {
 
 export function CurrencySettings({ repository }: CurrencySettingsProps) {
   const { i18n, t } = useTranslation();
-  const { activeSpace, error, isFetching, isPending, refetch } =
+  const { activeSpace, error, isFetching, isPending, permissions, refetch } =
     useActiveSpace();
   const updateSpaceCurrency = useUpdateSpaceCurrency(repository);
   const persistedCurrencyCode =
@@ -99,6 +99,10 @@ export function CurrencySettings({ repository }: CurrencySettingsProps) {
         ) : !activeSpace ? (
           <Alert severity="info" variant="outlined">
             {t("configuration.currency.empty")}
+          </Alert>
+        ) : !permissions.canManageSpace ? (
+          <Alert severity="info" variant="outlined">
+            {t("configuration.currency.ownerOnly")}
           </Alert>
         ) : (
           <Box component="form" onSubmit={handleSubmit}>

@@ -35,6 +35,7 @@ interface FamilyDistributionsTableProps {
   onAddLine: () => void;
   onDeleteLine: (line: FamilyDistributionLine) => void;
   onEditLine: (line: FamilyDistributionLine) => void;
+  readonly?: boolean;
 }
 
 export function FamilyDistributionsTable({
@@ -44,6 +45,7 @@ export function FamilyDistributionsTable({
   onAddLine,
   onDeleteLine,
   onEditLine,
+  readonly = false,
 }: FamilyDistributionsTableProps) {
   const { t } = useTranslation();
   const hasLines = monthGroups.some((group) => group.lines.length > 0);
@@ -51,14 +53,16 @@ export function FamilyDistributionsTable({
   return (
     <FamilyBudgetMonthTable
       action={
-        <LoadingButton
-          disabled={disabled || !hasMembers}
-          onClick={onAddLine}
-          startIcon={<AddIcon />}
-          variant="contained"
-        >
-          {t("distributions.table.addLine")}
-        </LoadingButton>
+        readonly ? undefined : (
+          <LoadingButton
+            disabled={disabled || !hasMembers}
+            onClick={onAddLine}
+            startIcon={<AddIcon />}
+            variant="contained"
+          >
+            {t("distributions.table.addLine")}
+          </LoadingButton>
+        )
       }
       ariaLabel={t("distributions.table.ariaLabel")}
       columns={[
@@ -91,6 +95,7 @@ export function FamilyDistributionsTable({
           monthLabel={monthLabel}
           onDeleteLine={onDeleteLine}
           onEditLine={onEditLine}
+          readonly={readonly}
           onToggle={onToggle}
         />
       )}
@@ -109,6 +114,7 @@ function DistributionMonthGroup({
   monthLabel,
   onDeleteLine,
   onEditLine,
+  readonly,
   onToggle,
 }: {
   collapsed: boolean;
@@ -119,6 +125,7 @@ function DistributionMonthGroup({
   monthLabel: string;
   onDeleteLine: (line: FamilyDistributionLine) => void;
   onEditLine: (line: FamilyDistributionLine) => void;
+  readonly: boolean;
   onToggle: () => void;
 }) {
   const { t } = useTranslation();
@@ -166,6 +173,7 @@ function DistributionMonthGroup({
                 line={line}
                 onDeleteLine={onDeleteLine}
                 onEditLine={onEditLine}
+                readonly={readonly}
               />
             ))}
           </Collapse>
@@ -181,12 +189,14 @@ function DistributionLineRow({
   line,
   onDeleteLine,
   onEditLine,
+  readonly,
 }: {
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
   line: FamilyDistributionLine;
   onDeleteLine: (line: FamilyDistributionLine) => void;
   onEditLine: (line: FamilyDistributionLine) => void;
+  readonly: boolean;
 }) {
   const { t } = useTranslation();
   const familyFormat = useFamilyFormat();
@@ -238,17 +248,21 @@ function DistributionLineRow({
         }
         value={line.balanceDelta}
       />
-      <FamilyBudgetLineActions
-        deleteLabel={t("distributions.line.deleteLabel", {
-          label: lineLabel,
-        })}
-        deleteTooltip={t("distributions.line.deleteTooltip")}
-        disabled={disabled}
-        editLabel={t("distributions.line.editLabel", { label: lineLabel })}
-        editTooltip={t("distributions.line.editTooltip")}
-        onDelete={() => onDeleteLine(line)}
-        onEdit={() => onEditLine(line)}
-      />
+      {readonly ? (
+        <Box aria-hidden="true" />
+      ) : (
+        <FamilyBudgetLineActions
+          deleteLabel={t("distributions.line.deleteLabel", {
+            label: lineLabel,
+          })}
+          deleteTooltip={t("distributions.line.deleteTooltip")}
+          disabled={disabled}
+          editLabel={t("distributions.line.editLabel", { label: lineLabel })}
+          editTooltip={t("distributions.line.editTooltip")}
+          onDelete={() => onDeleteLine(line)}
+          onEdit={() => onEditLine(line)}
+        />
+      )}
     </Box>
   );
 }

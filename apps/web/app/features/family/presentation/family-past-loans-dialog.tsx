@@ -16,8 +16,8 @@ interface FamilyPastLoansDialogProps {
   isLoanVisible: (loanId: string) => boolean;
   loans: FamilyLoanBalance[];
   onClose: () => void;
-  onDeleteLoan: (loan: FamilyLoanBalance) => void;
-  onEditLoan: (loan: FamilyLoanBalance) => void;
+  onDeleteLoan?: (loan: FamilyLoanBalance) => void;
+  onEditLoan?: (loan: FamilyLoanBalance) => void;
   onToggleLoanVisibility: (loan: FamilyLoanBalance) => void;
   open: boolean;
 }

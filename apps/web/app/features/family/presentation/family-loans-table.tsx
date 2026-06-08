@@ -34,6 +34,7 @@ interface FamilyLoansTableProps {
   onAddLine: () => void;
   onDeleteLine: (line: FamilyLoanRepaymentLine) => void;
   onEditLine: (line: FamilyLoanRepaymentLine) => void;
+  readonly?: boolean;
 }
 
 export function FamilyLoansTable({
@@ -43,6 +44,7 @@ export function FamilyLoansTable({
   onAddLine,
   onDeleteLine,
   onEditLine,
+  readonly = false,
 }: FamilyLoansTableProps) {
   const { t } = useTranslation();
   const hasLines = monthGroups.some((group) => group.lines.length > 0);
@@ -50,14 +52,16 @@ export function FamilyLoansTable({
   return (
     <FamilyBudgetMonthTable
       action={
-        <LoadingButton
-          disabled={disabled || !hasLoans}
-          onClick={onAddLine}
-          startIcon={<AddIcon />}
-          variant="contained"
-        >
-          {t("loans.table.addLine")}
-        </LoadingButton>
+        readonly ? undefined : (
+          <LoadingButton
+            disabled={disabled || !hasLoans}
+            onClick={onAddLine}
+            startIcon={<AddIcon />}
+            variant="contained"
+          >
+            {t("loans.table.addLine")}
+          </LoadingButton>
+        )
       }
       ariaLabel={t("loans.table.ariaLabel")}
       columns={[
@@ -91,6 +95,7 @@ export function FamilyLoansTable({
           monthLabel={monthLabel}
           onDeleteLine={onDeleteLine}
           onEditLine={onEditLine}
+          readonly={readonly}
           onToggle={onToggle}
         />
       )}
@@ -109,6 +114,7 @@ function LoanMonthGroup({
   monthLabel,
   onDeleteLine,
   onEditLine,
+  readonly,
   onToggle,
 }: {
   collapsed: boolean;
@@ -119,6 +125,7 @@ function LoanMonthGroup({
   monthLabel: string;
   onDeleteLine: (line: FamilyLoanRepaymentLine) => void;
   onEditLine: (line: FamilyLoanRepaymentLine) => void;
+  readonly: boolean;
   onToggle: () => void;
 }) {
   const { t } = useTranslation();
@@ -163,6 +170,7 @@ function LoanMonthGroup({
                 line={line}
                 onDeleteLine={onDeleteLine}
                 onEditLine={onEditLine}
+                readonly={readonly}
               />
             ))}
           </Collapse>
@@ -178,12 +186,14 @@ function LoanLineRow({
   line,
   onDeleteLine,
   onEditLine,
+  readonly,
 }: {
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
   line: FamilyLoanRepaymentLine;
   onDeleteLine: (line: FamilyLoanRepaymentLine) => void;
   onEditLine: (line: FamilyLoanRepaymentLine) => void;
+  readonly: boolean;
 }) {
   const { t } = useTranslation();
   const lineLabel = `${line.loan.title} ${createdAtFormatter.format(
@@ -212,15 +222,19 @@ function LoanLineRow({
       <FamilyBudgetAmountCell value={line.feesAmount} />
       <FamilyBudgetAmountCell tone="positive" value={line.repaymentAmount} />
       <FamilyBudgetAmountCell value={line.remainingAfter} />
-      <FamilyBudgetLineActions
-        deleteLabel={t("loans.line.deleteLabel", { label: lineLabel })}
-        deleteTooltip={t("loans.line.deleteTooltip")}
-        disabled={disabled}
-        editLabel={t("loans.line.editLabel", { label: lineLabel })}
-        editTooltip={t("loans.line.editTooltip")}
-        onDelete={() => onDeleteLine(line)}
-        onEdit={() => onEditLine(line)}
-      />
+      {readonly ? (
+        <Box aria-hidden="true" />
+      ) : (
+        <FamilyBudgetLineActions
+          deleteLabel={t("loans.line.deleteLabel", { label: lineLabel })}
+          deleteTooltip={t("loans.line.deleteTooltip")}
+          disabled={disabled}
+          editLabel={t("loans.line.editLabel", { label: lineLabel })}
+          editTooltip={t("loans.line.editTooltip")}
+          onDelete={() => onDeleteLine(line)}
+          onEdit={() => onEditLine(line)}
+        />
+      )}
     </Box>
   );
 }

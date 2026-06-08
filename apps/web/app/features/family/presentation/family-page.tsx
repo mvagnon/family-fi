@@ -18,11 +18,12 @@ import { getFamilyMutationError } from "./family-mutation-error";
 import { useTranslation } from "react-i18next";
 
 interface FamilyPageProps {
+  canWrite: boolean;
   repository: FamilyRepository;
   spaceId: string;
 }
 
-export function FamilyPage({ repository, spaceId }: FamilyPageProps) {
+export function FamilyPage({ canWrite, repository, spaceId }: FamilyPageProps) {
   const { t } = useTranslation();
   const familyQuery = useFamily(repository, spaceId);
   const addMemberMutation = useAddFamilyMember(repository, spaceId);
@@ -78,6 +79,7 @@ export function FamilyPage({ repository, spaceId }: FamilyPageProps) {
 
   return (
     <FamilyDashboard
+      canWrite={canWrite}
       family={familyQuery.data}
       isSaving={isSaving}
       mutationError={mutationError?.message}

@@ -9,10 +9,10 @@ interface FamilySidebarProps {
   disabled?: boolean;
   isMemberVisible?: (memberId: string) => boolean;
   members: FamilyMember[];
-  onAddCategory: () => void;
-  onAddMember: () => void;
-  onDeleteCategory: (category: FamilyCategory) => void;
-  onDeleteMember: (member: FamilyMember) => void;
+  onAddCategory?: () => void;
+  onAddMember?: () => void;
+  onDeleteCategory?: (category: FamilyCategory) => void;
+  onDeleteMember?: (member: FamilyMember) => void;
   onEditMember?: (member: FamilyMember) => void;
   onToggleMemberVisibility?: (member: FamilyMember) => void;
 }

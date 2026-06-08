@@ -36,6 +36,7 @@ export default function DistributionRoute() {
 
   return (
     <FamilyDistributionsPage
+      canWrite={activeSpace.permissions.canWrite}
       repository={familyHttpRepository}
       spaceId={activeSpace.activeSpaceId}
     />

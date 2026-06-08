@@ -36,6 +36,7 @@ export default function FamilyRoute() {
 
   return (
     <FamilyPage
+      canWrite={activeSpace.permissions.canWrite}
       repository={familyHttpRepository}
       spaceId={activeSpace.activeSpaceId}
     />

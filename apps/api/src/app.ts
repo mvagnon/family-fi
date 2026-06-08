@@ -17,6 +17,10 @@ import type { SpaceRepository } from "./features/spaces/domain/space-repository.
 import {
   InvalidSpaceInputError,
   SpaceAccessDeniedError,
+  SpaceMemberAlreadyExistsError,
+  SpaceMemberNotFoundError,
+  SpaceOwnerRoleChangeError,
+  SpaceUserNotFoundError,
 } from "./features/spaces/domain/spaces.js";
 import {
   createMeRouter,
@@ -115,6 +119,13 @@ export function createApiApp({
       return context.json({ message: error.message }, 400);
     }
 
+    if (
+      error instanceof SpaceMemberAlreadyExistsError ||
+      error instanceof SpaceOwnerRoleChangeError
+    ) {
+      return context.json({ message: error.message }, 400);
+    }
+
     if (error instanceof UnauthenticatedError) {
       return context.json({ message: error.message }, 401);
     }
@@ -133,6 +144,13 @@ export function createApiApp({
     }
 
     if (error instanceof FamilyEntityNotFoundError) {
+      return context.json({ message: error.message }, 404);
+    }
+
+    if (
+      error instanceof SpaceMemberNotFoundError ||
+      error instanceof SpaceUserNotFoundError
+    ) {
       return context.json({ message: error.message }, 404);
     }
 

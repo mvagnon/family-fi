@@ -15,11 +15,16 @@ import { FamilyLoansDashboard } from "./family-loans-dashboard";
 import { useTranslation } from "react-i18next";
 
 interface FamilyLoansPageProps {
+  canWrite: boolean;
   repository: FamilyRepository;
   spaceId: string;
 }
 
-export function FamilyLoansPage({ repository, spaceId }: FamilyLoansPageProps) {
+export function FamilyLoansPage({
+  canWrite,
+  repository,
+  spaceId,
+}: FamilyLoansPageProps) {
   const { t } = useTranslation();
   const familyQuery = useFamily(repository, spaceId);
   const createLoanMutation = useCreateFamilyLoan(repository, spaceId);
@@ -71,6 +76,7 @@ export function FamilyLoansPage({ repository, spaceId }: FamilyLoansPageProps) {
 
   return (
     <FamilyLoansDashboard
+      canWrite={canWrite}
       family={familyQuery.data}
       isSaving={isSaving}
       mutationError={mutationError?.message}
