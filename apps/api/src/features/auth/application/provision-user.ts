@@ -10,7 +10,20 @@ export async function ensureUserIsProvisioned(
   prisma: PrismaClient,
   user: ProvisionUserInput,
 ): Promise<void> {
-  const spaceId = createPersonalSpaceId(user.id);
+  const existingOwnerMembership = await prisma.spaceMembership.findFirst({
+    orderBy: {
+      createdAt: "asc",
+    },
+    select: {
+      spaceId: true,
+    },
+    where: {
+      role: "owner",
+      userId: user.id,
+    },
+  });
+  const spaceId =
+    existingOwnerMembership?.spaceId ?? createPersonalSpaceId(user.id);
   const familyId = `family-${spaceId}`;
 
   await prisma.$transaction(async (transaction) => {
