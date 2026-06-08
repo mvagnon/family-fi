@@ -1,9 +1,11 @@
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import LoginIcon from "@mui/icons-material/Login";
 import LogoutIcon from "@mui/icons-material/Logout";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import Alert from "@mui/material/Alert";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 import ButtonBase from "@mui/material/ButtonBase";
 import CircularProgress from "@mui/material/CircularProgress";
 import ListItemIcon from "@mui/material/ListItemIcon";
@@ -25,10 +27,14 @@ import type { AuthUser } from "../domain/auth";
 import type { AuthRepository } from "../domain/auth-repository";
 
 interface AccountMenuProps {
+  loginFallbackUrl?: string | null;
   repository: AuthRepository;
 }
 
-export function AccountMenu({ repository }: AccountMenuProps) {
+export function AccountMenu({
+  loginFallbackUrl,
+  repository,
+}: AccountMenuProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const session = useAuthSession(repository);
@@ -44,6 +50,7 @@ export function AccountMenu({ repository }: AccountMenuProps) {
     return (
       <AccountMenuSessionError
         isRetrying={session.isRefetching}
+        loginFallbackUrl={loginFallbackUrl}
         onRetry={() => void session.refetch()}
       />
     );
@@ -154,11 +161,13 @@ function AccountMenuSkeleton() {
 
 interface AccountMenuSessionErrorProps {
   isRetrying: boolean;
+  loginFallbackUrl?: string | null;
   onRetry: () => void;
 }
 
 function AccountMenuSessionError({
   isRetrying,
+  loginFallbackUrl,
   onRetry,
 }: AccountMenuSessionErrorProps) {
   const { t } = useTranslation();
@@ -168,6 +177,18 @@ function AccountMenuSessionError({
       <Alert severity="warning" sx={{ mb: 1 }} variant="outlined">
         {t("auth.account.sessionError")}
       </Alert>
+      {loginFallbackUrl ? (
+        <Button
+          fullWidth
+          href={loginFallbackUrl}
+          size="small"
+          startIcon={<LoginIcon />}
+          sx={{ mb: 1 }}
+          variant="contained"
+        >
+          {t("auth.account.loginFallback")}
+        </Button>
+      ) : null}
       <LoadingButton
         fullWidth
         isLoading={isRetrying}

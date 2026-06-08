@@ -35,6 +35,7 @@ export const resources = {
       },
       auth: {
         account: {
+          loginFallback: "Open sign-in",
           openMenu: "Open account menu",
           sessionError: "Account connection could not be checked.",
           signOut: "Sign out",
@@ -598,6 +599,7 @@ export const resources = {
       },
       auth: {
         account: {
+          loginFallback: "Ouvrir la connexion",
           openMenu: "Ouvrir le menu du compte",
           sessionError: "La connexion au compte n'a pas pu être vérifiée.",
           signOut: "Déconnexion",
@@ -1170,6 +1172,7 @@ export const resources = {
       },
       auth: {
         account: {
+          loginFallback: "ログインを開く",
           openMenu: "アカウントメニューを開く",
           sessionError: "アカウント接続を確認できませんでした。",
           signOut: "ログアウト",

@@ -5,10 +5,12 @@ ENV TURBO_TELEMETRY_DISABLED=1
 
 FROM base AS development
 ARG VITE_API_BASE_URL=http://localhost:3000
+ARG VITE_LOGIN_FALLBACK_URL=
 ENV NODE_ENV=development
 ENV HOST=0.0.0.0
 ENV PORT=5173
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_LOGIN_FALLBACK_URL=$VITE_LOGIN_FALLBACK_URL
 COPY . .
 RUN bun install --frozen-lockfile
 WORKDIR /app/apps/web
@@ -26,7 +28,9 @@ RUN bun install --frozen-lockfile
 
 FROM dependencies AS builder
 ARG VITE_API_BASE_URL=http://localhost:3000
+ARG VITE_LOGIN_FALLBACK_URL=
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_LOGIN_FALLBACK_URL=$VITE_LOGIN_FALLBACK_URL
 COPY --from=pruner /app/out/full/ .
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY --from=dependencies /app/apps/web/node_modules ./apps/web/node_modules

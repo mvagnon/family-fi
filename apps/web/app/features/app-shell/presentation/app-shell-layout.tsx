@@ -21,12 +21,14 @@ interface AppShellHeaderProps {
 
 interface AppShellLayoutProps {
   authRepository: AuthRepository;
+  loginFallbackUrl?: string | null;
   showRouteContent?: boolean;
   showSpaceSwitcher?: boolean;
 }
 
 export function AppShellLayout({
   authRepository,
+  loginFallbackUrl,
   showRouteContent = true,
   showSpaceSwitcher = true,
 }: AppShellLayoutProps) {
@@ -34,10 +36,11 @@ export function AppShellLayout({
     () => (
       <AppSidebarNavigation
         authRepository={authRepository}
+        loginFallbackUrl={loginFallbackUrl}
         showSpaceSwitcher={showSpaceSwitcher}
       />
     ),
-    [authRepository, showSpaceSwitcher],
+    [authRepository, loginFallbackUrl, showSpaceSwitcher],
   );
 
   return (
