@@ -48,9 +48,7 @@ export async function ensureUserIsProvisioned(
         defaultSpaceId: spaceId,
         userId: user.id,
       },
-      update: {
-        defaultSpaceId: spaceId,
-      },
+      update: {},
       where: {
         userId: user.id,
       },
