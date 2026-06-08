@@ -4,8 +4,3 @@ export interface AuthUser {
   image?: string | null;
   name: string;
 }
-
-export interface SignInWithEmailInput {
-  email: string;
-  password: string;
-}

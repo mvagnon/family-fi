@@ -1,20 +1,15 @@
 import LoginIcon from "@mui/icons-material/Login";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { LoadingButton } from "@repo/ui/loading-button";
-import { type FormEvent, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
 
-import {
-  useAuthSession,
-  useSignInWithEmail,
-} from "../application/auth-session";
+import { useSignInWithHub } from "../application/auth-session";
 import type { AuthRepository } from "../domain/auth-repository";
 
 interface LoginPageProps {
@@ -23,45 +18,22 @@ interface LoginPageProps {
 
 export function LoginPage({ client }: LoginPageProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const session = useAuthSession(client);
-  const signInMutation = useSignInWithEmail(client);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [hasSubmitted, setHasSubmitted] = useState(false);
-  const trimmedEmail = email.trim();
-  const canSubmit = trimmedEmail.length > 0 && password.length > 0;
-  const showEmailError = hasSubmitted && !trimmedEmail;
-  const showPasswordError = hasSubmitted && !password;
+  const signInMutation = useSignInWithHub(client);
+  const { error, isPending, mutate, mutateAsync } = signInMutation;
+  const hasStartedRedirect = useRef(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setHasSubmitted(true);
-
-    if (!canSubmit) {
+  useEffect(() => {
+    if (hasStartedRedirect.current) {
       return;
     }
 
-    try {
-      await signInMutation.mutateAsync({
-        email: trimmedEmail,
-        password,
-      });
-    } catch {
-      return;
-    }
-
-    await session.refetch();
-    navigate("/family", { replace: true });
-  }
+    hasStartedRedirect.current = true;
+    mutate();
+  }, [mutate]);
 
   return (
     <Box component="main" sx={loginRootSx}>
-      <Paper
-        component="form"
-        onSubmit={(event) => void handleSubmit(event)}
-        sx={loginPanelSx}
-      >
+      <Paper aria-busy={isPending} sx={loginPanelSx}>
         <Stack spacing={3}>
           <Stack spacing={0.75}>
             <Typography variant="h1">{t("auth.login.title")}</Typography>
@@ -70,54 +42,27 @@ export function LoginPage({ client }: LoginPageProps) {
             </Typography>
           </Stack>
 
-          {signInMutation.error ? (
+          {error ? (
             <Alert severity="error" variant="outlined">
-              {t("auth.login.error")}
+              {t("auth.login.ssoError")}
             </Alert>
           ) : null}
 
-          <Stack spacing={1.25}>
-            <TextField
-              autoComplete="email"
-              autoFocus
-              error={showEmailError}
-              helperText={showEmailError ? t("auth.login.emailRequired") : null}
-              label={t("auth.login.email")}
-              onChange={(event) => setEmail(event.target.value)}
-              sx={loginTextFieldSx}
-              type="email"
-              value={email}
-            />
-            <TextField
-              autoComplete="current-password"
-              error={showPasswordError}
-              helperText={
-                showPasswordError ? t("auth.login.passwordRequired") : null
-              }
-              label={t("auth.login.password")}
-              onChange={(event) => setPassword(event.target.value)}
-              sx={loginTextFieldSx}
-              type="password"
-              value={password}
-            />
-
-            <Stack
-              direction={{ sm: "row", xs: "column" }}
-              spacing={1}
-              sx={loginActionsSx}
+          <Stack spacing={2} sx={{ alignItems: "center" }}>
+            {isPending ? (
+              <CircularProgress
+                aria-label={t("auth.login.redirecting")}
+                size={28}
+              />
+            ) : null}
+            <LoadingButton
+              isLoading={isPending}
+              onClick={() => void mutateAsync()}
+              startIcon={<LoginIcon />}
+              variant="contained"
             >
-              <LoadingButton
-                isLoading={signInMutation.isPending || session.isRefetching}
-                startIcon={<LoginIcon />}
-                type="submit"
-                variant="contained"
-              >
-                {t("auth.login.submit")}
-              </LoadingButton>
-              <Button disabled variant="outlined">
-                {t("auth.login.createAccount")}
-              </Button>
-            </Stack>
+              {t("auth.login.continueWithHub")}
+            </LoadingButton>
           </Stack>
         </Stack>
       </Paper>
@@ -138,17 +83,4 @@ const loginPanelSx = {
   mx: "auto",
   p: { md: 4, xs: 3 },
   width: "min(100%, 440px)",
-};
-
-const loginTextFieldSx = {
-  "& .MuiFormHelperText-root": {
-    mt: 0.5,
-  },
-};
-
-const loginActionsSx = {
-  pt: 0.25,
-  "& > *": {
-    flex: 1,
-  },
 };

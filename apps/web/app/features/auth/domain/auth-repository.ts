@@ -1,7 +1,7 @@
-import type { AuthUser, SignInWithEmailInput } from "./auth";
+import type { AuthUser } from "./auth";
 
 export interface AuthRepository {
   getSession(): Promise<AuthUser | null>;
-  signInWithEmail(input: SignInWithEmailInput): Promise<void>;
+  signInWithHub(): Promise<void>;
   signOut(): Promise<void>;
 }

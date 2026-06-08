@@ -3,34 +3,44 @@ bun install
 DATABASE_URL="postgresql://user:password@localhost:5432/family_fi" bun run prisma:migrate
 DATABASE_URL="postgresql://user:password@localhost:5432/family_fi" \
 BETTER_AUTH_SECRET="replace-with-a-32-character-secret" \
+IKI_OAUTH_CLIENT_SECRET="replace-with-iki-client-secret" \
 bun run dev
 ```
 
 ```bash
-open http://localhost:3000
+open http://localhost:3001
 ```
 
 OpenAPI documentation:
 
-- JSON spec: `http://localhost:3000/api/openapi.json`.
-- Swagger UI: `http://localhost:3000/api/docs` when `NODE_ENV` is not
+- JSON spec: `http://localhost:3001/api/openapi.json`.
+- Swagger UI: `http://localhost:3001/api/docs` when `NODE_ENV` is not
   `production`.
 
 The API uses Prisma with PostgreSQL. `DATABASE_URL` and
 `BETTER_AUTH_SECRET` are required at runtime. Optional auth settings:
 
-- `BETTER_AUTH_URL`: API origin used by Better Auth, default `http://localhost:3000`.
-- `WEB_ORIGIN`: credentialed CORS/trusted web origin, default `http://localhost:5173`.
+- `BETTER_AUTH_URL`: API origin used by Better Auth, default `http://localhost:3001`.
+- `WEB_ORIGIN`: credentialed CORS/trusted web origin, default `http://localhost:5174`.
+- `HUB_ORIGIN`: Iki hub origin trusted for auth redirects, default `http://localhost:5173`.
+- `IKI_AUTH_BROWSER_ORIGIN`: Iki API origin used for browser redirects, default
+  `http://localhost:3000`.
+- `IKI_AUTH_SERVER_ORIGIN`: Iki API origin used by the API server for token and
+  userinfo calls, default `IKI_AUTH_BROWSER_ORIGIN`.
+- `IKI_OAUTH_AUTHORIZATION_URL`: explicit Iki OAuth authorization URL.
+- `IKI_OAUTH_ISSUER`: explicit Iki OAuth issuer, default
+  `IKI_AUTH_BROWSER_ORIGIN` plus `/api/auth`.
+- `IKI_OAUTH_TOKEN_URL`: explicit Iki OAuth token URL.
+- `IKI_OAUTH_USER_INFO_URL`: explicit Iki OAuth userinfo URL.
+- `IKI_OAUTH_CLIENT_ID`: Iki OAuth client ID, default `family-fi`.
+- `IKI_OAUTH_CLIENT_SECRET`: Iki OAuth client secret. A dev default is used
+  outside production.
 - `OPENAPI_SERVER_URL`: server URL advertised in the generated OpenAPI spec,
   default request origin.
-- `ENABLE_DEV_SEED=true`: creates `test@test.com` / `Test2026!`, a personal
-  space, default-space settings, and the seed family budget. This is strictly
-  for local development and the API refuses to start with this flag when
-  `NODE_ENV=production`.
 
 Production deployments must set `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
-`WEB_ORIGIN`, and the web build's `VITE_API_BASE_URL` for the deployed origins.
-Do not set `ENABLE_DEV_SEED=true` in production.
+`WEB_ORIGIN`, `IKI_OAUTH_CLIENT_SECRET`, the Iki OAuth URLs, and the web build's
+`VITE_API_BASE_URL` for the deployed origins.
 
 Family budget routes are scoped under `/api/spaces/:spaceId/family`.
 
@@ -60,8 +70,9 @@ Build the production image from the repository root:
 docker build -f apps/api/Dockerfile -t family-fi-api .
 
 docker run --rm \
-  -p 3000:3000 \
+  -p 3001:3001 \
   -e BETTER_AUTH_SECRET="replace-with-a-32-character-secret" \
   -e DATABASE_URL="postgresql://user:password@host.docker.internal:5432/family_fi" \
+  -e IKI_OAUTH_CLIENT_SECRET="replace-with-iki-client-secret" \
   family-fi-api
 ```

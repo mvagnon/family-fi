@@ -8,10 +8,12 @@ React Router app for Family Fi.
 bun run --filter=web dev
 ```
 
-The app runs on `http://localhost:5173`.
-`/login` and protected app routes call `http://localhost:3000` by default.
+The app runs on `http://localhost:5174`.
+`/login` and protected app routes call `http://localhost:3001` by default.
 
 Override the API URL at build time with `VITE_API_BASE_URL`.
+Set `VITE_HUB_API_BASE_URL` to the Iki API origin, default
+`http://localhost:3000`.
 
 ## Frontend architecture
 
@@ -41,8 +43,8 @@ Build the production image from the repository root:
 ```bash
 docker build \
   -f apps/web/Dockerfile \
-  --build-arg VITE_API_BASE_URL=http://localhost:3000 \
+  --build-arg VITE_API_BASE_URL=http://localhost:3001 \
   -t family-fi-web .
 
-docker run --rm -p 5173:5173 family-fi-web
+docker run --rm -p 5174:5174 family-fi-web
 ```

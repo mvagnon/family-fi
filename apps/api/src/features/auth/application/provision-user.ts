@@ -1,0 +1,70 @@
+import { PrismaFamilyRepository } from "../../family/infrastructure/persistence/prisma-family-repository.js";
+import { createSeedFamily } from "../../family/domain/seed-family.js";
+import type { PrismaClient } from "../../../generated/prisma/client.js";
+
+interface ProvisionUserInput {
+  id: string;
+}
+
+export async function ensureUserIsProvisioned(
+  prisma: PrismaClient,
+  user: ProvisionUserInput,
+): Promise<void> {
+  const spaceId = createPersonalSpaceId(user.id);
+  const familyId = `family-${spaceId}`;
+
+  await prisma.$transaction(async (transaction) => {
+    await transaction.space.upsert({
+      create: {
+        id: spaceId,
+        name: "Personal space",
+      },
+      update: {},
+      where: {
+        id: spaceId,
+      },
+    });
+
+    await transaction.spaceMembership.upsert({
+      create: {
+        id: `owner-${user.id}-${spaceId}`,
+        role: "owner",
+        spaceId,
+        userId: user.id,
+      },
+      update: {
+        role: "owner",
+      },
+      where: {
+        spaceId_userId: {
+          spaceId,
+          userId: user.id,
+        },
+      },
+    });
+
+    await transaction.userSettings.upsert({
+      create: {
+        defaultSpaceId: spaceId,
+        userId: user.id,
+      },
+      update: {
+        defaultSpaceId: spaceId,
+      },
+      where: {
+        userId: user.id,
+      },
+    });
+  });
+
+  const familyRepository = new PrismaFamilyRepository(prisma);
+  const existingFamily = await familyRepository.findBySpaceId(spaceId);
+
+  if (!existingFamily) {
+    await familyRepository.createFamily(spaceId, createSeedFamily(familyId));
+  }
+}
+
+function createPersonalSpaceId(userId: string): string {
+  return `personal-space-${userId}`;
+}

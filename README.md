@@ -12,16 +12,18 @@ bun install
 bun run dev
 ```
 
-The web app runs on `http://localhost:5173`.
-The API runs on `http://localhost:3000`.
+The web app runs on `http://localhost:5174`.
+The API runs on `http://localhost:3001`.
+Run `../iki` on API `http://localhost:3000` and hub
+`http://localhost:5173` before signing in.
 Set `BETTER_AUTH_SECRET` to a 32+ character value before starting the API
 outside Docker.
 
-Run only one side:
+Run one package from its app directory when needed:
 
 ```bash
-bun run dev:api
-bun run dev:client
+cd apps/api && bun run dev
+cd apps/web && bun run dev
 ```
 
 ## Docker
@@ -33,8 +35,8 @@ bind-mounted source files:
 docker compose up --build
 ```
 
-Then open `http://localhost:5173/login` and sign in with the development user
-`test@test.com` / `Test2026!`.
+Run `../iki` on API `http://localhost:3000` and hub
+`http://localhost:5173`, then open `http://localhost:5174/login`.
 Changes in `apps/web`, `apps/api`, and shared packages are mounted into the
 containers and reload without rebuilding the images.
 
@@ -58,7 +60,7 @@ The web image bakes `VITE_API_BASE_URL` at build time:
 ```bash
 docker build \
   -f apps/web/Dockerfile \
-  --build-arg VITE_API_BASE_URL=http://localhost:3000 \
+  --build-arg VITE_API_BASE_URL=http://localhost:3001 \
   -t family-fi-web .
 ```
 
@@ -66,8 +68,10 @@ docker build \
 
 - Set `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `WEB_ORIGIN`, and
   `VITE_API_BASE_URL` for the production origins.
-- Do not set `ENABLE_DEV_SEED=true` in production. The API refuses to start when
-  `NODE_ENV=production` and dev seed is enabled.
+- Set `IKI_OAUTH_CLIENT_ID`, `IKI_OAUTH_CLIENT_SECRET`, and
+  the Iki OAuth endpoint URLs to the Iki OAuth client values.
+- Set `VITE_HUB_API_BASE_URL` so the web app can clear the Iki session on
+  sign-out.
 
 ## Checks
 

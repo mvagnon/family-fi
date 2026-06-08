@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { SignInWithEmailInput } from "../domain/auth";
 import type { AuthRepository } from "../domain/auth-repository";
 
 export const authQueryKeys = {
@@ -24,13 +23,11 @@ export function useAuthSession(repository: AuthRepository) {
   };
 }
 
-export function useSignInWithEmail(repository: AuthRepository) {
+export function useSignInWithHub(repository: AuthRepository) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: SignInWithEmailInput) => {
-      return repository.signInWithEmail(input);
-    },
+    mutationFn: () => repository.signInWithHub(),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: authQueryKeys.session(),

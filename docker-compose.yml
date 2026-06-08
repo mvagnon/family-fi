@@ -41,14 +41,18 @@ services:
       ]
     environment:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-development-only-better-auth-secret-32-chars}
-      BETTER_AUTH_URL: http://localhost:3000
+      BETTER_AUTH_URL: http://localhost:3001
       CHOKIDAR_USEPOLLING: "true"
       DATABASE_URL: postgresql://family_fi:family_fi@db:5432/family_fi
-      ENABLE_DEV_SEED: "true"
-      PORT: "3000"
-      WEB_ORIGIN: http://localhost:5173
+      HUB_ORIGIN: http://localhost:5173
+      IKI_AUTH_BROWSER_ORIGIN: http://localhost:3000
+      IKI_AUTH_SERVER_ORIGIN: http://host.docker.internal:3000
+      IKI_OAUTH_CLIENT_ID: family-fi
+      IKI_OAUTH_CLIENT_SECRET: development-only-family-fi-oauth-secret
+      PORT: "3001"
+      WEB_ORIGIN: http://localhost:5174
     ports:
-      - "3000:3000"
+      - "3001:3001"
     volumes:
       - .:/app
       - root-node-modules:/app/node_modules
@@ -66,20 +70,21 @@ services:
       dockerfile: apps/web/Dockerfile
       target: development
       args:
-        VITE_API_BASE_URL: http://localhost:3000
+        VITE_API_BASE_URL: http://localhost:3001
     command:
       [
         "sh",
         "-lc",
-        "cd /app && bun install --frozen-lockfile && cd /app/apps/web && bun run react-router dev --host 0.0.0.0 --port 5173",
+        "cd /app && bun install --frozen-lockfile && cd /app/apps/web && bun run react-router dev --host 0.0.0.0 --port 5174",
       ]
     environment:
       CHOKIDAR_USEPOLLING: "true"
       HOST: 0.0.0.0
-      PORT: "5173"
-      VITE_API_BASE_URL: http://localhost:3000
+      PORT: "5174"
+      VITE_API_BASE_URL: http://localhost:3001
+      VITE_HUB_API_BASE_URL: http://localhost:3000
     ports:
-      - "5173:5173"
+      - "5174:5174"
     volumes:
       - .:/app
       - root-node-modules:/app/node_modules

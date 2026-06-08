@@ -4,23 +4,35 @@ import { createApiApp } from "./app.js";
 import { createBetterAuthProvider } from "./features/auth/infrastructure/better-auth-provider.js";
 import { PrismaFamilyRepository } from "./features/family/infrastructure/persistence/prisma-family-repository.js";
 import { PrismaSpacesRepository } from "./features/spaces/infrastructure/persistence/prisma-spaces-repository.js";
-import { seedDevData } from "./infrastructure/dev-seed.js";
 import { prisma } from "./infrastructure/prisma.js";
 
-const port = Number.parseInt(process.env.PORT ?? "3000", 10);
-const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:5173";
+const port = Number.parseInt(process.env.PORT ?? "3001", 10);
+const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:5174";
+const hubOrigin = process.env.HUB_ORIGIN ?? "http://localhost:5173";
+const ikiAuthBrowserOrigin =
+  process.env.IKI_AUTH_BROWSER_ORIGIN ?? "http://localhost:3000";
+const ikiAuthServerOrigin =
+  process.env.IKI_AUTH_SERVER_ORIGIN ?? ikiAuthBrowserOrigin;
 const openApiServerUrl = process.env.OPENAPI_SERVER_URL;
 const authProvider = createBetterAuthProvider(prisma, {
   baseUrl: process.env.BETTER_AUTH_URL ?? `http://localhost:${port}`,
+  hubOrigin,
+  ikiOAuthAuthorizationUrl:
+    process.env.IKI_OAUTH_AUTHORIZATION_URL ??
+    `${ikiAuthBrowserOrigin}/api/auth/oauth2/authorize`,
+  ikiOAuthClientId: process.env.IKI_OAUTH_CLIENT_ID ?? "family-fi",
+  ikiOAuthClientSecret: getIkiOAuthClientSecret(),
+  ikiOAuthIssuer:
+    process.env.IKI_OAUTH_ISSUER ?? `${ikiAuthBrowserOrigin}/api/auth`,
+  ikiOAuthTokenUrl:
+    process.env.IKI_OAUTH_TOKEN_URL ??
+    `${ikiAuthServerOrigin}/api/auth/oauth2/token`,
+  ikiOAuthUserInfoUrl:
+    process.env.IKI_OAUTH_USER_INFO_URL ??
+    `${ikiAuthServerOrigin}/api/auth/oauth2/userinfo`,
   secret: getBetterAuthSecret(),
   trustedOrigins: [webOrigin],
 });
-
-assertDevSeedIsAllowed();
-
-if (process.env.ENABLE_DEV_SEED === "true") {
-  await seedDevData(prisma);
-}
 
 const app = createApiApp({
   authProvider,
@@ -50,13 +62,12 @@ function getBetterAuthSecret(): string {
   return secret;
 }
 
-function assertDevSeedIsAllowed(): void {
-  if (
-    process.env.NODE_ENV === "production" &&
-    process.env.ENABLE_DEV_SEED === "true"
-  ) {
-    throw new Error(
-      "ENABLE_DEV_SEED=true is forbidden when NODE_ENV=production.",
-    );
+function getIkiOAuthClientSecret(): string {
+  const secret = process.env.IKI_OAUTH_CLIENT_SECRET;
+
+  if (!secret && process.env.NODE_ENV === "production") {
+    throw new Error("IKI_OAUTH_CLIENT_SECRET is required to start the API.");
   }
+
+  return secret ?? "development-only-family-fi-oauth-secret";
 }

@@ -1,11 +1,20 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { genericOAuth } from "better-auth/plugins";
 
 import type { PrismaClient } from "../../../generated/prisma/client.js";
+import { ensureUserIsProvisioned } from "../application/provision-user.js";
 import type { AuthSession } from "../domain/auth.js";
 
 interface BetterAuthProviderOptions {
   baseUrl: string;
+  hubOrigin: string;
+  ikiOAuthAuthorizationUrl: string;
+  ikiOAuthClientId: string;
+  ikiOAuthClientSecret: string;
+  ikiOAuthIssuer: string;
+  ikiOAuthTokenUrl: string;
+  ikiOAuthUserInfoUrl: string;
   secret: string;
   trustedOrigins: string[];
 }
@@ -24,14 +33,36 @@ export function createBetterAuthProvider(
     database: prismaAdapter(prisma, {
       provider: "postgresql",
     }),
-    emailAndPassword: {
-      disableSignUp: true,
-      enabled: true,
-      maxPasswordLength: 128,
-      minPasswordLength: 8,
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (user) => {
+            await ensureUserIsProvisioned(prisma, user);
+          },
+        },
+      },
     },
+    plugins: [
+      genericOAuth({
+        config: [
+          {
+            authorizationUrl: options.ikiOAuthAuthorizationUrl,
+            clientId: options.ikiOAuthClientId,
+            clientSecret: options.ikiOAuthClientSecret,
+            issuer: options.ikiOAuthIssuer,
+            pkce: true,
+            providerId: "iki",
+            redirectURI: `${options.baseUrl}/api/auth/oauth2/callback/iki`,
+            requireIssuerValidation: true,
+            scopes: ["openid", "profile", "email"],
+            tokenUrl: options.ikiOAuthTokenUrl,
+            userInfoUrl: options.ikiOAuthUserInfoUrl,
+          },
+        ],
+      }),
+    ],
     secret: options.secret,
-    trustedOrigins: options.trustedOrigins,
+    trustedOrigins: [...options.trustedOrigins, options.hubOrigin],
   });
 
   return {
@@ -43,6 +74,8 @@ export function createBetterAuthProvider(
       if (!session) {
         return null;
       }
+
+      await ensureUserIsProvisioned(prisma, session.user);
 
       return {
         user: {
