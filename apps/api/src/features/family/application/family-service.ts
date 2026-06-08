@@ -76,7 +76,9 @@ export class FamilyService {
       request.spaceId,
     );
 
-    return this.getOrCreateFamily(request);
+    const existingFamily = await this.repository.findBySpaceId(request.spaceId);
+
+    return existingFamily ?? createSeedFamily(createFamilyId(request.spaceId));
   }
 
   async addMember(

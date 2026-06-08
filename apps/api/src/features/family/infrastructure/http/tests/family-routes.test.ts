@@ -719,7 +719,8 @@ test("family routes reject spaces without membership", async () => {
 });
 
 test("family routes allow read users to view and reject write mutations", async () => {
-  const app = createTestApp();
+  const familyRepository = createInMemoryFamilyRepository();
+  const app = createTestApp(undefined, familyRepository);
 
   const getResponse = await authenticatedRequest(
     app,
@@ -740,6 +741,7 @@ test("family routes allow read users to view and reject write mutations", async 
   const postBody = await postResponse.json();
 
   assert.equal(getResponse.status, 200);
+  assert.equal(await familyRepository.findBySpaceId(TEST_SPACE_ID), null);
   assert.equal(postResponse.status, 403);
   assert.deepEqual(postBody, { message: "Space is not accessible." });
 });
@@ -853,10 +855,11 @@ function createTestApp(
   familyServiceOptions?: Parameters<
     typeof createApiApp
   >[0]["familyServiceOptions"],
+  familyRepository = createInMemoryFamilyRepository(),
 ) {
   return createApiApp({
     authProvider: createTestAuthProvider(),
-    familyRepository: createInMemoryFamilyRepository(),
+    familyRepository,
     familyServiceOptions,
     spaceRepository: createInMemorySpacesRepository({
       memberships: [
