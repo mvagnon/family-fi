@@ -20,6 +20,7 @@ import { useFamilyFormat } from "./use-family-format";
 
 interface FamilyBudgetLineRowProps {
   disabled: boolean;
+  isGeneratedLineSettingSaving: boolean;
   line: FamilyBudgetLine;
   onDeleteLine: (line: RecurringLine) => void;
   onEditLine: (line: RecurringLine) => void;
@@ -31,6 +32,7 @@ interface FamilyBudgetLineRowProps {
 
 export function FamilyBudgetLineRow({
   disabled,
+  isGeneratedLineSettingSaving,
   line,
   onDeleteLine,
   onEditLine,
@@ -44,6 +46,12 @@ export function FamilyBudgetLineRow({
   const recurringLine = line.line;
   const isGenerated = line.kind === "generated";
   const isGeneratedDisabled = isGenerated && !line.isEnabled;
+  const shouldPreserveGeneratedLineAnimation =
+    isGenerated && isGeneratedLineSettingSaving;
+  const isLineNativelyDisabled =
+    disabled && !shouldPreserveGeneratedLineAnimation;
+  const isGeneratedToggleNativelyDisabled =
+    disabled && !shouldPreserveGeneratedLineAnimation;
   const lineTitle = getFamilyBudgetLineTitle(line, t);
 
   function handleLineClick() {
@@ -63,7 +71,8 @@ export function FamilyBudgetLineRow({
           aria-label={t("family.line.viewLabel", {
             title: lineTitle,
           })}
-          disabled={disabled}
+          aria-disabled={disabled || undefined}
+          disabled={isLineNativelyDisabled}
           onClick={handleLineClick}
           sx={(theme) => ({
             borderRadius: 0,
@@ -116,7 +125,8 @@ export function FamilyBudgetLineRow({
             {readonly ? null : isGenerated ? (
               <ActionIconButton
                 component="span"
-                disabled={disabled}
+                aria-disabled={disabled || undefined}
+                disabled={isGeneratedToggleNativelyDisabled}
                 icon={
                   line.isEnabled ? (
                     <VisibilityIcon fontSize="small" />
@@ -132,6 +142,10 @@ export function FamilyBudgetLineRow({
                 )}
                 onClick={(event) => {
                   event.stopPropagation();
+                  if (disabled) {
+                    return;
+                  }
+
                   onToggleGeneratedLine(line);
                 }}
                 size="small"

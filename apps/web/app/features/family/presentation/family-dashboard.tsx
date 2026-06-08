@@ -52,6 +52,7 @@ import { LineSummaryDialog } from "./line-summary-dialog";
 interface FamilyDashboardProps {
   canWrite?: boolean;
   family: Family;
+  isGeneratedLineSettingSaving?: boolean;
   isSaving?: boolean;
   mutationError?: string;
   mutationErrorKey?: string;
@@ -79,6 +80,7 @@ interface FamilyDashboardProps {
 export function FamilyDashboard({
   canWrite = true,
   family,
+  isGeneratedLineSettingSaving = false,
   isSaving = false,
   mutationError,
   mutationErrorKey,
@@ -356,6 +358,7 @@ export function FamilyDashboard({
         <FamilyBudgetTable
           categories={visibleCategories}
           disabled={isSaving}
+          isGeneratedLineSettingSaving={isGeneratedLineSettingSaving}
           lines={budgetLines}
           onAddLine={handleAddLine}
           onDeleteLine={handleRequestDeleteLine}

@@ -38,6 +38,7 @@ export function FamilyPage({ canWrite, repository, spaceId }: FamilyPageProps) {
   );
   const updateMemberMutation = useUpdateFamilyMember(repository, spaceId);
   const updateLineMutation = useUpdateFamilyRecurringLine(repository, spaceId);
+  const isGeneratedLineSettingSaving = generatedLineSettingMutation.isPending;
   const isSaving =
     addMemberMutation.isPending ||
     addCategoryMutation.isPending ||
@@ -45,7 +46,7 @@ export function FamilyPage({ canWrite, repository, spaceId }: FamilyPageProps) {
     deleteCategoryMutation.isPending ||
     deleteLineMutation.isPending ||
     deleteMemberMutation.isPending ||
-    generatedLineSettingMutation.isPending ||
+    isGeneratedLineSettingSaving ||
     updateMemberMutation.isPending ||
     updateLineMutation.isPending;
   const mutationError = getFamilyMutationError([
@@ -81,6 +82,7 @@ export function FamilyPage({ canWrite, repository, spaceId }: FamilyPageProps) {
     <FamilyDashboard
       canWrite={canWrite}
       family={familyQuery.data}
+      isGeneratedLineSettingSaving={isGeneratedLineSettingSaving}
       isSaving={isSaving}
       mutationError={mutationError?.message}
       mutationErrorKey={mutationError?.key}

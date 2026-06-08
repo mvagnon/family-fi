@@ -27,6 +27,7 @@ import {
 interface FamilyBudgetTableProps {
   categories: FamilyCategory[];
   disabled?: boolean;
+  isGeneratedLineSettingSaving?: boolean;
   lines: FamilyBudgetLine[];
   onAddLine: () => void;
   onDeleteLine: (line: RecurringLine) => void;
@@ -40,6 +41,7 @@ interface FamilyBudgetTableProps {
 export function FamilyBudgetTable({
   categories,
   disabled = false,
+  isGeneratedLineSettingSaving = false,
   lines,
   onAddLine,
   onDeleteLine,
@@ -124,6 +126,7 @@ export function FamilyBudgetTable({
               <FamilyBudgetCategoryGroup
                 disabled={disabled}
                 group={group}
+                isGeneratedLineSettingSaving={isGeneratedLineSettingSaving}
                 key={group.id}
                 onDeleteLine={onDeleteLine}
                 onEditLine={onEditLine}

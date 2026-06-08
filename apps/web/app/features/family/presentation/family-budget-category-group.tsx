@@ -25,6 +25,7 @@ interface FamilyBudgetCategoryGroupProps {
     label: string;
     lines: FamilyBudgetLine[];
   };
+  isGeneratedLineSettingSaving: boolean;
   onDeleteLine: (line: RecurringLine) => void;
   onEditLine: (line: RecurringLine) => void;
   onToggleGeneratedLine: (line: GeneratedFamilyBudgetLine) => void;
@@ -36,6 +37,7 @@ interface FamilyBudgetCategoryGroupProps {
 export function FamilyBudgetCategoryGroup({
   disabled,
   group,
+  isGeneratedLineSettingSaving,
   onDeleteLine,
   onEditLine,
   onToggleGeneratedLine,
@@ -84,6 +86,7 @@ export function FamilyBudgetCategoryGroup({
       {group.lines.map((line) => (
         <FamilyBudgetLineRow
           disabled={disabled}
+          isGeneratedLineSettingSaving={isGeneratedLineSettingSaving}
           key={line.line.id}
           line={line}
           onDeleteLine={onDeleteLine}
