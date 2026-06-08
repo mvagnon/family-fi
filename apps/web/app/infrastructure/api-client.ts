@@ -1,7 +1,7 @@
 export function getConfiguredApiBaseUrl(): string {
   const env = import.meta.env as { VITE_API_BASE_URL?: string } | undefined;
 
-  return env?.VITE_API_BASE_URL ?? "http://localhost:3000";
+  return env?.VITE_API_BASE_URL ?? "http://localhost:3001";
 }
 
 export function normalizeApiBaseUrl(value: string): string {
