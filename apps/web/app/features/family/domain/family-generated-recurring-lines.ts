@@ -120,7 +120,7 @@ function getDistributionGeneratedRecurringLines(
     return [
       createGeneratedFamilyBudgetLine(family, {
         amount: averageAmount,
-        movement: "positive",
+        movement: "negative",
         source: "distribution",
         sourceId: member.id,
         title: member.name,
