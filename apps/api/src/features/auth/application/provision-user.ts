@@ -4,6 +4,7 @@ import type { PrismaClient } from "../../../generated/prisma/client.js";
 
 interface ProvisionUserInput {
   id: string;
+  ikiUserId: string;
 }
 
 export async function ensureUserIsProvisioned(
@@ -23,7 +24,7 @@ export async function ensureUserIsProvisioned(
     },
   });
   const spaceId =
-    existingOwnerMembership?.spaceId ?? createPersonalSpaceId(user.id);
+    existingOwnerMembership?.spaceId ?? createPersonalSpaceId(user.ikiUserId);
   const familyId = `family-${spaceId}`;
 
   await prisma.$transaction(async (transaction) => {

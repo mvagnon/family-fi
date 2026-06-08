@@ -33,15 +33,6 @@ export function createBetterAuthProvider(
     database: prismaAdapter(prisma, {
       provider: "postgresql",
     }),
-    databaseHooks: {
-      user: {
-        create: {
-          after: async (user) => {
-            await ensureUserIsProvisioned(prisma, user);
-          },
-        },
-      },
-    },
     plugins: [
       genericOAuth({
         config: [
@@ -56,6 +47,7 @@ export function createBetterAuthProvider(
             requireIssuerValidation: true,
             scopes: ["openid", "profile", "email"],
             tokenUrl: options.ikiOAuthTokenUrl,
+            overrideUserInfo: true,
             userInfoUrl: options.ikiOAuthUserInfoUrl,
           },
         ],
@@ -75,16 +67,65 @@ export function createBetterAuthProvider(
         return null;
       }
 
-      await ensureUserIsProvisioned(prisma, session.user);
+      const ikiUserId = await syncIkiUserProfile(prisma, {
+        email: session.user.email,
+        id: session.user.id,
+        name: session.user.name,
+      });
+
+      await ensureUserIsProvisioned(prisma, {
+        id: session.user.id,
+        ikiUserId,
+      });
 
       return {
         user: {
           email: session.user.email,
           id: session.user.id,
+          ikiUserId,
           name: session.user.name,
         },
       };
     },
     handleAuthRequest: (request) => auth.handler(request),
   };
+}
+
+async function syncIkiUserProfile(
+  prisma: PrismaClient,
+  user: {
+    email: string;
+    id: string;
+    name: string;
+  },
+): Promise<string> {
+  const ikiAccount = await prisma.account.findFirst({
+    orderBy: {
+      createdAt: "asc",
+    },
+    select: {
+      accountId: true,
+    },
+    where: {
+      providerId: "iki",
+      userId: user.id,
+    },
+  });
+
+  if (!ikiAccount) {
+    throw new Error("Authenticated user is missing an Iki account link.");
+  }
+
+  await prisma.user.update({
+    data: {
+      email: user.email,
+      ikiUserId: ikiAccount.accountId,
+      name: user.name,
+    },
+    where: {
+      id: user.id,
+    },
+  });
+
+  return ikiAccount.accountId;
 }

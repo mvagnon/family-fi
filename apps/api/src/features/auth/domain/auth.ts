@@ -1,6 +1,7 @@
 export interface AuthenticatedUser {
   email: string;
   id: string;
+  ikiUserId: string;
   name: string;
 }
 

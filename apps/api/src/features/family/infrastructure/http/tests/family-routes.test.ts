@@ -925,6 +925,7 @@ function createTestAuthProvider(): AuthHttpAdapter {
         user: {
           email: "test@test.com",
           id: userId,
+          ikiUserId: userId,
           name: "Test User",
         },
       };

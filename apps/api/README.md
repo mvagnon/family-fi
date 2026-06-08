@@ -44,6 +44,19 @@ Production deployments must set `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
 
 Family budget routes are scoped under `/api/spaces/:spaceId/family`.
 
+## Auth Identity
+
+Iki is the source of truth for account identity and profile data. Family-Fi
+stores the Iki OIDC `sub` in `user.iki_user_id` and keeps local `email`/`name`
+values as a cache refreshed through Better Auth's Iki OAuth flow.
+
+Family-Fi still uses its local Better Auth `user.id` for internal relations
+such as space memberships and settings. New personal space ids are derived from
+the Iki `sub`, while existing owned spaces are preserved.
+
+Space member autocomplete searches only users already known by Family-Fi. It
+does not query a global Iki user directory.
+
 ## Architecture
 
 Feature code under `src/features/*` follows a hexagonal split:
