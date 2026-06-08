@@ -15,8 +15,8 @@ The app runs on `http://localhost:5174`.
 Override the API URL at build time with `VITE_API_BASE_URL`.
 Set `VITE_HUB_API_BASE_URL` to the Iki API origin, default
 `http://localhost:3000`.
-Set `VITE_LOGIN_FALLBACK_URL` to the Iki Hub URL opened from the account
-connection error state, default `http://localhost:5173`.
+Set `VITE_LOGIN_FALLBACK_URL` to the Iki Hub login URL opened from the account
+connection error state, default `http://localhost:5173/login`.
 
 ## Frontend architecture
 
@@ -47,7 +47,7 @@ Build the production image from the repository root:
 docker build \
   -f apps/web/Dockerfile \
   --build-arg VITE_API_BASE_URL=http://localhost:3001 \
-  --build-arg VITE_LOGIN_FALLBACK_URL=http://localhost:5173 \
+  --build-arg VITE_LOGIN_FALLBACK_URL=http://localhost:5173/login \
   -t family-fi-web .
 
 docker run --rm -p 5174:5174 family-fi-web

@@ -5,7 +5,7 @@ export function getConfiguredLoginFallbackUrl(): string {
 
   return (
     normalizeOptionalUrl(env?.VITE_LOGIN_FALLBACK_URL) ??
-    "http://localhost:5173"
+    "http://localhost:5173/login"
   );
 }
 
