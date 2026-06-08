@@ -36,7 +36,7 @@ docker compose up --build
 ```
 
 Run `../iki` on API `http://localhost:3000` and hub
-`http://localhost:5173`, then open `http://localhost:5174/login`.
+`http://localhost:5173`, then open Iki Hub and launch Family-Fi from there.
 Changes in `apps/web`, `apps/api`, and shared packages are mounted into the
 containers and reload without rebuilding the images.
 
@@ -72,7 +72,7 @@ docker build \
   the Iki OAuth endpoint URLs to the Iki OAuth client values.
 - Set `VITE_HUB_API_BASE_URL` so the web app can clear the Iki session on
   sign-out.
-- Set `VITE_LOGIN_FALLBACK_URL` to the login URL used when account session
+- Set `VITE_LOGIN_FALLBACK_URL` to the Iki Hub URL used when account session
   checks cannot complete.
 
 ## Checks

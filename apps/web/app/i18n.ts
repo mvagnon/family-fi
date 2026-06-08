@@ -35,22 +35,10 @@ export const resources = {
       },
       auth: {
         account: {
-          loginFallback: "Open sign-in",
           openMenu: "Open account menu",
           sessionError: "Account connection could not be checked.",
           signOut: "Sign out",
           signOutError: "Sign out failed.",
-        },
-        login: {
-          continueWithHub: "Continue with Iki",
-          redirecting: "Opening Iki",
-          ssoError: "Iki sign in could not be started.",
-          subtitle: "Use your Iki account to access Family-Fi.",
-          title: "Continue to Iki",
-        },
-        meta: {
-          loginDescription: "Family-Fi sign in.",
-          loginTitle: "Family-Fi | Sign in",
         },
       },
       configuration: {
@@ -599,22 +587,10 @@ export const resources = {
       },
       auth: {
         account: {
-          loginFallback: "Ouvrir la connexion",
           openMenu: "Ouvrir le menu du compte",
           sessionError: "La connexion au compte n'a pas pu être vérifiée.",
           signOut: "Déconnexion",
           signOutError: "La déconnexion a échoué.",
-        },
-        login: {
-          continueWithHub: "Continuer avec Iki",
-          redirecting: "Ouverture d'Iki",
-          ssoError: "La connexion Iki n'a pas pu être lancée.",
-          subtitle: "Utilisez votre compte Iki pour accéder à Family-Fi.",
-          title: "Continuer vers Iki",
-        },
-        meta: {
-          loginDescription: "Connexion à Family-Fi.",
-          loginTitle: "Family-Fi | Connexion",
         },
       },
       configuration: {
@@ -1172,22 +1148,10 @@ export const resources = {
       },
       auth: {
         account: {
-          loginFallback: "ログインを開く",
           openMenu: "アカウントメニューを開く",
           sessionError: "アカウント接続を確認できませんでした。",
           signOut: "ログアウト",
           signOutError: "ログアウトできませんでした。",
-        },
-        login: {
-          continueWithHub: "Ikiで続行",
-          redirecting: "Ikiを開いています",
-          ssoError: "Ikiログインを開始できませんでした。",
-          subtitle: "IkiアカウントでFamily-Fiにアクセスします。",
-          title: "Ikiへ続行",
-        },
-        meta: {
-          loginDescription: "Family-Fiのログイン。",
-          loginTitle: "Family-Fi | ログイン",
         },
       },
       configuration: {

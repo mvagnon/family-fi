@@ -21,6 +21,7 @@ export default function AppLayoutRoute() {
     <AuthenticatedRoute
       client={authClient}
       errorFallback={sessionFallback}
+      invalidSessionRedirectUrl={loginFallbackUrl}
       pendingFallback={sessionFallback}
     >
       <ActiveSpaceProvider repository={spacesHttpRepository}>

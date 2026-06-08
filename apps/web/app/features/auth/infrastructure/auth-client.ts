@@ -2,6 +2,7 @@ import { createAuthClient } from "better-auth/react";
 import { genericOAuthClient } from "better-auth/client/plugins";
 
 import { getConfiguredApiBaseUrl } from "~/infrastructure/api-client";
+import { getConfiguredLoginFallbackUrl } from "~/infrastructure/runtime-config";
 import type { AuthRepository } from "../domain/auth-repository";
 
 const betterAuthClient = createAuthClient({
@@ -37,7 +38,7 @@ export const authClient: AuthRepository = {
     const result = await betterAuthClient.signIn.oauth2({
       callbackURL: "/family",
       disableRedirect: true,
-      errorCallbackURL: "/login",
+      errorCallbackURL: getConfiguredLoginFallbackUrl(),
       providerId: "iki",
       scopes: ["openid", "profile", "email"],
     });

@@ -7,7 +7,7 @@ import {
 
 export default [
   index("routes/home.tsx"),
-  route("login", "routes/login.tsx"),
+  route("auth/iki", "routes/auth-iki.tsx"),
   layout("routes/app-layout.tsx", [
     route("configuration", "routes/configuration.tsx"),
     route("dashboard", "routes/dashboard.tsx"),

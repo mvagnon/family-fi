@@ -1,6 +1,6 @@
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Navigate } from "react-router";
 
 import { useAuthSession } from "../application/auth-session";
@@ -10,18 +10,15 @@ interface AuthenticatedRouteProps {
   children: ReactNode;
   client: AuthRepository;
   errorFallback?: ReactNode;
+  invalidSessionRedirectUrl?: string | null;
   pendingFallback?: ReactNode;
-}
-
-interface PublicOnlyRouteProps {
-  children: ReactNode;
-  client: AuthRepository;
 }
 
 export function AuthenticatedRoute({
   children,
   client,
   errorFallback,
+  invalidSessionRedirectUrl,
   pendingFallback,
 }: AuthenticatedRouteProps) {
   const session = useAuthSession(client);
@@ -31,25 +28,15 @@ export function AuthenticatedRoute({
   }
 
   if (session.error && !session.isAuthenticated) {
+    if (invalidSessionRedirectUrl) {
+      return <AuthRouteExternalRedirect to={invalidSessionRedirectUrl} />;
+    }
+
     return errorFallback ?? <AuthRouteLoading />;
   }
 
   if (!session.isAuthenticated) {
-    return <Navigate replace to="/login" />;
-  }
-
-  return children;
-}
-
-export function PublicOnlyRoute({ children, client }: PublicOnlyRouteProps) {
-  const session = useAuthSession(client);
-
-  if (session.isPending) {
-    return <AuthRouteLoading />;
-  }
-
-  if (session.isAuthenticated) {
-    return <Navigate replace to="/family" />;
+    return <Navigate replace to="/auth/iki" />;
   }
 
   return children;
@@ -75,4 +62,12 @@ function AuthRouteLoading() {
       <CircularProgress aria-label="Loading session" size={28} />
     </Box>
   );
+}
+
+function AuthRouteExternalRedirect({ to }: { to: string }) {
+  useEffect(() => {
+    window.location.assign(to);
+  }, [to]);
+
+  return <AuthRouteLoading />;
 }

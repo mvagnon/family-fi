@@ -1,11 +1,9 @@
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import LoginIcon from "@mui/icons-material/Login";
 import LogoutIcon from "@mui/icons-material/Logout";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import Alert from "@mui/material/Alert";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import ButtonBase from "@mui/material/ButtonBase";
 import CircularProgress from "@mui/material/CircularProgress";
 import ListItemIcon from "@mui/material/ListItemIcon";
@@ -18,7 +16,7 @@ import { alpha } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import { FeedbackSnackbar } from "@repo/ui/feedback-snackbar";
 import { LoadingButton } from "@repo/ui/loading-button";
-import { useState, type MouseEvent } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
@@ -46,11 +44,14 @@ export function AccountMenu({
     return <AccountMenuSkeleton />;
   }
 
+  if (session.error && loginFallbackUrl) {
+    return <AccountMenuSessionRedirect loginFallbackUrl={loginFallbackUrl} />;
+  }
+
   if (session.error) {
     return (
       <AccountMenuSessionError
         isRetrying={session.isRefetching}
-        loginFallbackUrl={loginFallbackUrl}
         onRetry={() => void session.refetch()}
       />
     );
@@ -67,7 +68,12 @@ export function AccountMenu({
 
     try {
       await signOut.mutateAsync();
-      navigate("/login", { replace: true });
+      if (loginFallbackUrl) {
+        window.location.assign(loginFallbackUrl);
+        return;
+      }
+
+      navigate("/auth/iki", { replace: true });
     } catch {
       // Mutation state drives the snackbar; the click handler must not leak a rejected promise.
     }
@@ -161,13 +167,11 @@ function AccountMenuSkeleton() {
 
 interface AccountMenuSessionErrorProps {
   isRetrying: boolean;
-  loginFallbackUrl?: string | null;
   onRetry: () => void;
 }
 
 function AccountMenuSessionError({
   isRetrying,
-  loginFallbackUrl,
   onRetry,
 }: AccountMenuSessionErrorProps) {
   const { t } = useTranslation();
@@ -177,18 +181,6 @@ function AccountMenuSessionError({
       <Alert severity="warning" sx={{ mb: 1 }} variant="outlined">
         {t("auth.account.sessionError")}
       </Alert>
-      {loginFallbackUrl ? (
-        <Button
-          fullWidth
-          href={loginFallbackUrl}
-          size="small"
-          startIcon={<LoginIcon />}
-          sx={{ mb: 1 }}
-          variant="contained"
-        >
-          {t("auth.account.loginFallback")}
-        </Button>
-      ) : null}
       <LoadingButton
         fullWidth
         isLoading={isRetrying}
@@ -201,6 +193,18 @@ function AccountMenuSessionError({
       </LoadingButton>
     </Box>
   );
+}
+
+function AccountMenuSessionRedirect({
+  loginFallbackUrl,
+}: {
+  loginFallbackUrl: string;
+}) {
+  useEffect(() => {
+    window.location.assign(loginFallbackUrl);
+  }, [loginFallbackUrl]);
+
+  return <AccountMenuSkeleton />;
 }
 
 function getUserLabel(user: AuthUser): string {
