@@ -25,11 +25,13 @@ import type { AuthUser } from "../domain/auth";
 import type { AuthRepository } from "../domain/auth-repository";
 
 interface AccountMenuProps {
+  loginErrorFallbackUrl?: string | null;
   loginFallbackUrl?: string | null;
   repository: AuthRepository;
 }
 
 export function AccountMenu({
+  loginErrorFallbackUrl,
   loginFallbackUrl,
   repository,
 }: AccountMenuProps) {
@@ -44,8 +46,10 @@ export function AccountMenu({
     return <AccountMenuSkeleton />;
   }
 
-  if (session.error && loginFallbackUrl) {
-    return <AccountMenuSessionRedirect loginFallbackUrl={loginFallbackUrl} />;
+  if (session.error && loginErrorFallbackUrl) {
+    return (
+      <AccountMenuSessionRedirect loginFallbackUrl={loginErrorFallbackUrl} />
+    );
   }
 
   if (session.error) {

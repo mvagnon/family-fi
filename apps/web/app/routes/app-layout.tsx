@@ -4,13 +4,18 @@ import { AppShellLayout } from "~/features/app-shell/presentation/app-shell-layo
 import { FamilyMemberVisibilityProvider } from "~/features/family/presentation/family-member-visibility-provider";
 import { ActiveSpaceProvider } from "~/features/spaces/presentation/active-space-provider";
 import { spacesHttpRepository } from "~/features/spaces/infrastructure/spaces-http-repository";
-import { getConfiguredLoginFallbackUrl } from "~/infrastructure/runtime-config";
+import {
+  getConfiguredLoginErrorFallbackUrl,
+  getConfiguredLoginFallbackUrl,
+} from "~/infrastructure/runtime-config";
 
 export default function AppLayoutRoute() {
   const loginFallbackUrl = getConfiguredLoginFallbackUrl();
+  const loginErrorFallbackUrl = getConfiguredLoginErrorFallbackUrl();
   const sessionFallback = (
     <AppShellLayout
       authRepository={authClient}
+      loginErrorFallbackUrl={loginErrorFallbackUrl}
       loginFallbackUrl={loginFallbackUrl}
       showRouteContent={false}
       showSpaceSwitcher={false}
@@ -21,13 +26,14 @@ export default function AppLayoutRoute() {
     <AuthenticatedRoute
       client={authClient}
       errorFallback={sessionFallback}
-      invalidSessionRedirectUrl={loginFallbackUrl}
+      invalidSessionRedirectUrl={loginErrorFallbackUrl}
       pendingFallback={sessionFallback}
     >
       <ActiveSpaceProvider repository={spacesHttpRepository}>
         <FamilyMemberVisibilityProvider>
           <AppShellLayout
             authRepository={authClient}
+            loginErrorFallbackUrl={loginErrorFallbackUrl}
             loginFallbackUrl={loginFallbackUrl}
           />
         </FamilyMemberVisibilityProvider>

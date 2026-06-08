@@ -17,6 +17,8 @@ Set `VITE_HUB_API_BASE_URL` to the Iki API origin, default
 `http://localhost:3000`.
 Set `VITE_LOGIN_FALLBACK_URL` to the Iki Hub login URL opened from the account
 connection error state, default `http://localhost:5173/login?app=family-fi`.
+Family-Fi adds `auth_error=1` when it redirects there after a failed account
+connection attempt.
 
 ## Frontend architecture
 

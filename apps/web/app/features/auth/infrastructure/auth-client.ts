@@ -2,7 +2,7 @@ import { createAuthClient } from "better-auth/react";
 import { genericOAuthClient } from "better-auth/client/plugins";
 
 import { getConfiguredApiBaseUrl } from "~/infrastructure/api-client";
-import { getConfiguredLoginFallbackUrl } from "~/infrastructure/runtime-config";
+import { getConfiguredLoginErrorFallbackUrl } from "~/infrastructure/runtime-config";
 import type { AuthRepository } from "../domain/auth-repository";
 
 const betterAuthClient = createAuthClient({
@@ -36,9 +36,9 @@ export const authClient: AuthRepository = {
   },
   async signInWithHub() {
     const result = await betterAuthClient.signIn.oauth2({
-      callbackURL: "/family",
+      callbackURL: getAppCallbackUrl(),
       disableRedirect: true,
-      errorCallbackURL: getConfiguredLoginFallbackUrl(),
+      errorCallbackURL: getConfiguredLoginErrorFallbackUrl(),
       providerId: "iki",
       scopes: ["openid", "profile", "email"],
     });
@@ -69,6 +69,10 @@ export const authClient: AuthRepository = {
     }
   },
 };
+
+function getAppCallbackUrl(): string {
+  return new URL("/family", window.location.origin).toString();
+}
 
 function getConfiguredHubApiBaseUrl(): string {
   const env = import.meta.env as { VITE_HUB_API_BASE_URL?: string } | undefined;

@@ -46,12 +46,14 @@ interface SidebarNavigationItem {
 
 interface AppSidebarNavigationProps {
   authRepository: AuthRepository;
+  loginErrorFallbackUrl?: string | null;
   loginFallbackUrl?: string | null;
   showSpaceSwitcher?: boolean;
 }
 
 export const AppSidebarNavigation = memo(function AppSidebarNavigation({
   authRepository,
+  loginErrorFallbackUrl,
   loginFallbackUrl,
   showSpaceSwitcher = true,
 }: AppSidebarNavigationProps) {
@@ -74,6 +76,7 @@ export const AppSidebarNavigation = memo(function AppSidebarNavigation({
         ))}
       </List>
       <AccountMenu
+        loginErrorFallbackUrl={loginErrorFallbackUrl}
         loginFallbackUrl={loginFallbackUrl}
         repository={authRepository}
       />

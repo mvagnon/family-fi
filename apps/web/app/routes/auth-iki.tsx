@@ -6,13 +6,13 @@ import {
   useSignInWithHub,
 } from "~/features/auth/application/auth-session";
 import { authClient } from "~/features/auth/infrastructure/auth-client";
-import { getConfiguredLoginFallbackUrl } from "~/infrastructure/runtime-config";
+import { getConfiguredLoginErrorFallbackUrl } from "~/infrastructure/runtime-config";
 
 export default function IkiAuthRoute() {
   const session = useAuthSession(authClient);
   const { mutate } = useSignInWithHub(authClient);
   const hasStartedRedirect = useRef(false);
-  const loginFallbackUrl = getConfiguredLoginFallbackUrl();
+  const loginFallbackUrl = getConfiguredLoginErrorFallbackUrl();
 
   useEffect(() => {
     if (

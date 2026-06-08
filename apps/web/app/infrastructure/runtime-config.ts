@@ -9,8 +9,23 @@ export function getConfiguredLoginFallbackUrl(): string {
   );
 }
 
+export function getConfiguredLoginErrorFallbackUrl(): string {
+  return withAuthErrorParam(getConfiguredLoginFallbackUrl());
+}
+
 function normalizeOptionalUrl(value: string | undefined): string | null {
   const trimmedValue = value?.trim();
 
   return trimmedValue ? trimmedValue : null;
+}
+
+function withAuthErrorParam(value: string): string {
+  try {
+    const url = new URL(value);
+    url.searchParams.set("auth_error", "1");
+
+    return url.toString();
+  } catch {
+    return value;
+  }
 }
