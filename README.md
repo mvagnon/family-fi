@@ -72,8 +72,8 @@ docker build \
   the Iki OAuth endpoint URLs to the Iki OAuth client values.
 - Set `VITE_HUB_API_BASE_URL` so the web app can clear the Iki session on
   sign-out.
-- Set `VITE_LOGIN_FALLBACK_URL` to the Iki Hub login URL used when account
-  session checks cannot complete.
+- Set `VITE_LOGIN_FALLBACK_URL` to the Iki Hub login URL with the source app
+  context, used when account session checks cannot complete.
 
 ## Checks
 
