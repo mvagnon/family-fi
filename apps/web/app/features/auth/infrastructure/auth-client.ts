@@ -57,6 +57,10 @@ function createHubApiUrl(path: string): URL {
 
 async function postSignOut(url: URL): Promise<void> {
   const response = await fetchWithCredentials(url, {
+    body: "{}",
+    headers: {
+      "Content-Type": "application/json",
+    },
     method: "POST",
   });
 
