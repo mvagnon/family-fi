@@ -30,6 +30,7 @@ export function createBetterAuthProvider(
   options: BetterAuthProviderOptions,
 ): AuthHttpAdapter {
   const auth = betterAuth({
+    advanced: getAdvancedCookieOptions(options.baseUrl),
     baseURL: options.baseUrl,
     database: prismaAdapter(prisma, {
       provider: "postgresql",
@@ -91,6 +92,27 @@ export function createBetterAuthProvider(
     },
     handleAuthRequest: (request) => auth.handler(request),
   };
+}
+
+function getAdvancedCookieOptions(baseUrl: string) {
+  if (!isHttpsUrl(baseUrl)) {
+    return undefined;
+  }
+
+  return {
+    defaultCookieAttributes: {
+      sameSite: "none" as const,
+      secure: true,
+    },
+  };
+}
+
+function isHttpsUrl(value: string): boolean {
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 async function syncIkiUserProfile(
