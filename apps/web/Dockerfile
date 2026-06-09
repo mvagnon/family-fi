@@ -4,15 +4,11 @@ ENV CI=1
 ENV TURBO_TELEMETRY_DISABLED=1
 
 FROM base AS development
-ARG VITE_API_BASE_URL=http://localhost:3001
-ARG VITE_HUB_API_BASE_URL=http://localhost:3000
-ARG VITE_LOGIN_FALLBACK_URL=http://localhost:5173/login?app=family-fi
+ARG VITE_HUB_ORIGIN=http://localhost:5173
 ENV NODE_ENV=development
 ENV HOST=0.0.0.0
 ENV PORT=5174
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-ENV VITE_HUB_API_BASE_URL=$VITE_HUB_API_BASE_URL
-ENV VITE_LOGIN_FALLBACK_URL=$VITE_LOGIN_FALLBACK_URL
+ENV VITE_HUB_ORIGIN=$VITE_HUB_ORIGIN
 COPY . .
 RUN bun install --frozen-lockfile
 WORKDIR /app/apps/web
@@ -29,12 +25,8 @@ COPY --from=pruner /app/out/json/ .
 RUN bun install --frozen-lockfile
 
 FROM dependencies AS builder
-ARG VITE_API_BASE_URL=http://localhost:3001
-ARG VITE_HUB_API_BASE_URL=http://localhost:3000
-ARG VITE_LOGIN_FALLBACK_URL=http://localhost:5173/login?app=family-fi
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-ENV VITE_HUB_API_BASE_URL=$VITE_HUB_API_BASE_URL
-ENV VITE_LOGIN_FALLBACK_URL=$VITE_LOGIN_FALLBACK_URL
+ARG VITE_HUB_ORIGIN=http://localhost:5173
+ENV VITE_HUB_ORIGIN=$VITE_HUB_ORIGIN
 COPY --from=pruner /app/out/full/ .
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY --from=dependencies /app/apps/web/node_modules ./apps/web/node_modules

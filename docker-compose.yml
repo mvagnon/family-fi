@@ -43,10 +43,11 @@ services:
       - .env
     environment:
       DATABASE_URL: "postgresql://${POSTGRES_USER:?POSTGRES_USER is required}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:?POSTGRES_DB is required}"
-      FAMILY_FI_API_ORIGIN: "${FAMILY_FI_API_ORIGIN:-http://localhost:3001}"
+      HUB_ORIGIN: "${HUB_ORIGIN:-http://localhost:5173}"
       IKI_OAUTH_CLIENT_SECRET: "${IKI_OAUTH_CLIENT_SECRET:?IKI_OAUTH_CLIENT_SECRET is required}"
       NODE_ENV: development
       PORT: "${API_PORT:?API_PORT is required}"
+      WEB_ORIGIN: "${WEB_ORIGIN:-http://localhost:5174}"
     ports:
       - "${API_PORT:?API_PORT is required}:${API_PORT:?API_PORT is required}"
     extra_hosts:
@@ -70,9 +71,7 @@ services:
       dockerfile: apps/web/Dockerfile
       target: development
       args:
-        VITE_API_BASE_URL: "${VITE_API_BASE_URL:?VITE_API_BASE_URL is required}"
-        VITE_HUB_API_BASE_URL: "${VITE_HUB_API_BASE_URL:-http://localhost:3000}"
-        VITE_LOGIN_FALLBACK_URL: "${VITE_LOGIN_FALLBACK_URL:-http://localhost:5173/login?app=family-fi}"
+        VITE_HUB_ORIGIN: "${VITE_HUB_ORIGIN:-http://localhost:5173}"
     command:
       [
         "sh",
@@ -82,6 +81,7 @@ services:
     env_file:
       - .env
     environment:
+      FAMILY_FI_API_UPSTREAM_ORIGIN: "${FAMILY_FI_API_UPSTREAM_ORIGIN:-http://api:${API_PORT:?API_PORT is required}}"
       HOST: "${WEB_HOST:?WEB_HOST is required}"
       PORT: "${WEB_PORT:?WEB_PORT is required}"
     ports:

@@ -11,35 +11,13 @@ const webOrigin =
   getOptionalHttpOrigin("WEB_ORIGIN") ?? "http://localhost:5174";
 const hubOrigin =
   getOptionalHttpOrigin("HUB_ORIGIN") ?? "http://localhost:5173";
-const ikiAuthBrowserOrigin =
-  getOptionalHttpOrigin("IKI_AUTH_BROWSER_ORIGIN") ?? "http://localhost:3000";
-const ikiAuthServerOrigin =
-  getOptionalHttpOrigin("IKI_AUTH_SERVER_ORIGIN") ?? ikiAuthBrowserOrigin;
-const ikiOAuthDiscoveryUrl = getOptionalHttpUrl("IKI_OAUTH_DISCOVERY_URL");
 const openApiServerUrl = getOptionalHttpOrigin("OPENAPI_SERVER_URL");
 const authProvider = createOAuthAuthProvider(prisma, {
-  baseUrl:
-    getOptionalHttpOrigin("FAMILY_FI_API_ORIGIN") ?? `http://localhost:${port}`,
+  baseUrl: webOrigin,
   hubOrigin,
   ikiOAuthClientId: process.env.IKI_OAUTH_CLIENT_ID ?? "family-fi",
   ikiOAuthClientSecret: getIkiOAuthClientSecret(),
-  ikiOAuthDiscoveryUrl,
-  ikiOAuthAuthorizationUrl: ikiOAuthDiscoveryUrl
-    ? undefined
-    : (getOptionalHttpUrl("IKI_OAUTH_AUTHORIZATION_URL") ??
-      `${ikiAuthBrowserOrigin}/api/auth/oauth2/authorize`),
-  ikiOAuthIssuer: ikiOAuthDiscoveryUrl
-    ? undefined
-    : (getOptionalHttpUrl("IKI_OAUTH_ISSUER") ??
-      `${ikiAuthBrowserOrigin}/api/auth`),
-  ikiOAuthTokenUrl: ikiOAuthDiscoveryUrl
-    ? undefined
-    : (getOptionalHttpUrl("IKI_OAUTH_TOKEN_URL") ??
-      `${ikiAuthServerOrigin}/api/auth/oauth2/token`),
-  ikiOAuthUserInfoUrl: ikiOAuthDiscoveryUrl
-    ? undefined
-    : (getOptionalHttpUrl("IKI_OAUTH_USER_INFO_URL") ??
-      `${ikiAuthServerOrigin}/api/auth/oauth2/userinfo`),
+  ikiOAuthDiscoveryUrl: `${hubOrigin}/api/auth/.well-known/openid-configuration`,
   trustedOrigins: [webOrigin],
 });
 
@@ -80,19 +58,35 @@ function getOptionalEnv(name: string): string | undefined {
 function getOptionalHttpOrigin(name: string): string | undefined {
   const value = getOptionalEnv(name);
 
-  return value ? normalizeHttpUrl(value).replace(/\/$/, "") : undefined;
-}
-
-function getOptionalHttpUrl(name: string): string | undefined {
-  const value = getOptionalEnv(name);
-
-  return value ? normalizeHttpUrl(value) : undefined;
+  return value ? new URL(normalizeHttpUrl(value)).origin : undefined;
 }
 
 function normalizeHttpUrl(value: string): string {
-  const url = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+  const normalizedValue = value.trim().replace(/\/+$/, "");
+  const url = /^https?:\/\//i.test(normalizedValue)
+    ? normalizedValue
+    : `${getDefaultProtocol(normalizedValue)}://${normalizedValue}`;
 
   new URL(url);
 
   return url;
+}
+
+function getDefaultProtocol(value: string): "http" | "https" {
+  const host = value.split(/[/?#]/, 1)[0]?.toLowerCase() ?? "";
+
+  if (
+    host === "localhost" ||
+    host.startsWith("localhost:") ||
+    host === "127.0.0.1" ||
+    host.startsWith("127.0.0.1:") ||
+    host === "[::1]" ||
+    host.startsWith("[::1]:") ||
+    host.endsWith(".railway.internal") ||
+    host.includes(".railway.internal:")
+  ) {
+    return "http";
+  }
+
+  return "https";
 }

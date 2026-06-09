@@ -10,18 +10,16 @@ bun run --filter=web dev
 
 The app runs on `http://localhost:5174`.
 `/auth/iki` starts the Iki OAuth flow, and protected app routes call
-`http://localhost:3001` by default.
+the same-origin `/api/*` proxy by default.
 
-Override the API HTTP(S) URL at build time with `VITE_API_BASE_URL`.
-Set `VITE_HUB_API_BASE_URL` to the Iki API HTTP(S) origin, default
-`http://localhost:3000`.
-Set `VITE_LOGIN_FALLBACK_URL` to the Iki Hub login HTTP(S) URL opened from the
-account connection error state, default
-`http://localhost:5173/login?app=family-fi`.
+Set `FAMILY_FI_API_UPSTREAM_ORIGIN` to the real Family-Fi API origin used by
+the server-side `/api/*` proxy, default `http://localhost:3001`.
+Set `VITE_HUB_ORIGIN` to the Iki Hub origin used for account connection errors,
+default `http://localhost:5173`.
 Family-Fi adds `auth_error=1` when it redirects there after a failed account
 connection attempt.
-Bare production hostnames are normalized to `https://`, but prefer setting the
-full `https://...` URL in deployment variables.
+Bare production hostnames are normalized to `https://`; local and Railway
+private hostnames are normalized to `http://`.
 
 ## Frontend architecture
 
@@ -52,8 +50,8 @@ docker compose --profile full up --build web
 
 Docker Compose reads local web and API URL values from the root `.env`.
 Required local values for this service are `WEB_HOST`, `WEB_PORT`, and
-`VITE_API_BASE_URL`. `VITE_HUB_API_BASE_URL` and `VITE_LOGIN_FALLBACK_URL`
-default to the local Iki URLs when omitted.
+`FAMILY_FI_API_UPSTREAM_ORIGIN`. `VITE_HUB_ORIGIN` defaults to the local Iki Hub
+URL when omitted.
 
 The web source is bind-mounted into the container. Rebuild only when
 dependencies change.
@@ -63,10 +61,11 @@ Build the production image from the repository root:
 ```bash
 docker build \
   -f apps/web/Dockerfile \
-  --build-arg VITE_API_BASE_URL=http://localhost:3001 \
-  --build-arg VITE_HUB_API_BASE_URL=http://localhost:3000 \
-  --build-arg "VITE_LOGIN_FALLBACK_URL=http://localhost:5173/login?app=family-fi" \
+  --build-arg VITE_HUB_ORIGIN=http://localhost:5173 \
   -t family-fi-web .
 
-docker run --rm -p 5174:5174 family-fi-web
+docker run --rm \
+  -e FAMILY_FI_API_UPSTREAM_ORIGIN=http://host.docker.internal:3001 \
+  -p 5174:5174 \
+  family-fi-web
 ```

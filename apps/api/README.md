@@ -25,41 +25,29 @@ OpenAPI documentation:
 The API uses Prisma with PostgreSQL. `DATABASE_URL` is required at runtime.
 Optional auth settings:
 
-- `FAMILY_FI_API_ORIGIN`: API HTTP(S) origin used for the Iki OAuth callback,
-  default `http://localhost:3001`.
 - `WEB_ORIGIN`: credentialed CORS/trusted web HTTP(S) origin, default
-  `http://localhost:5174`.
+  `http://localhost:5174`. It is also the public origin used for the proxied
+  Iki OAuth callback.
 - `HUB_ORIGIN`: Iki hub HTTP(S) origin trusted for auth redirects, default
   `http://localhost:5173`.
-- `IKI_OAUTH_DISCOVERY_URL`: preferred deployed Iki OIDC metadata HTTP(S) URL.
-- `IKI_AUTH_BROWSER_ORIGIN`: Iki API HTTP(S) origin used for browser redirects,
-  default `http://localhost:3000`.
-- `IKI_AUTH_SERVER_ORIGIN`: Iki API HTTP(S) origin used by the API server for
-  token and userinfo calls, default `IKI_AUTH_BROWSER_ORIGIN`.
-- `IKI_OAUTH_AUTHORIZATION_URL`: explicit Iki OAuth authorization HTTP(S) URL.
-- `IKI_OAUTH_ISSUER`: explicit Iki OAuth issuer, default
-  `IKI_AUTH_BROWSER_ORIGIN` plus `/api/auth`.
-- `IKI_OAUTH_TOKEN_URL`: explicit Iki OAuth token HTTP(S) URL.
-- `IKI_OAUTH_USER_INFO_URL`: explicit Iki OAuth userinfo HTTP(S) URL.
 - `IKI_OAUTH_CLIENT_ID`: Iki OAuth client ID, default `family-fi`.
 - `IKI_OAUTH_CLIENT_SECRET`: Iki OAuth client secret. A dev default is used
   outside production.
 - `OPENAPI_SERVER_URL`: server URL advertised in the generated OpenAPI spec,
   default request origin.
 
-Production deployments must set `FAMILY_FI_API_ORIGIN`, `WEB_ORIGIN`,
-`IKI_OAUTH_CLIENT_SECRET`, and the web build's
-`VITE_API_BASE_URL` for the deployed origins. Prefer `IKI_OAUTH_DISCOVERY_URL`
-for provider metadata. Override the Iki OAuth URLs only when discovery cannot
-represent the browser/server network path.
-Bare production hostnames are normalized to `https://`, but prefer setting the
-full `https://...` origin in deployment variables.
+Production deployments must set `WEB_ORIGIN`, `HUB_ORIGIN`, and
+`IKI_OAUTH_CLIENT_SECRET`. Iki provider metadata is discovered through
+`HUB_ORIGIN` at `/api/auth/.well-known/openid-configuration`, so the Family-Fi
+API does not need to know the real Iki API domain.
+Bare production hostnames are normalized to `https://`; local and Railway
+private hostnames are normalized to `http://`.
 
 The matching Iki OAuth client must be registered in Iki with callback URL
-`http://localhost:3001/api/auth/oauth2/callback/iki` for local development, or
-the equivalent deployed callback URL in production. Iki syncs that client from
-its connected-app registry; this app's `IKI_OAUTH_CLIENT_SECRET` must match
-Iki's `FAMILY_FI_OAUTH_CLIENT_SECRET`.
+`http://localhost:5174/api/auth/oauth2/callback/iki` for local development, or
+the equivalent deployed web callback URL in production. Iki syncs that client
+from its connected-app registry; this app's `IKI_OAUTH_CLIENT_SECRET` must
+match Iki's `FAMILY_FI_OAUTH_CLIENT_SECRET`.
 
 Family budget routes are scoped under `/api/spaces/:spaceId/family`.
 
@@ -108,7 +96,8 @@ docker build -f apps/api/Dockerfile -t family-fi-api .
 
 docker run --rm \
   -p 3001:3001 \
-  -e FAMILY_FI_API_ORIGIN="http://localhost:3001" \
+  -e WEB_ORIGIN="http://localhost:5174" \
+  -e HUB_ORIGIN="http://localhost:5173" \
   -e DATABASE_URL="postgresql://user:password@host.docker.internal:5432/family_fi" \
   -e IKI_OAUTH_CLIENT_SECRET="replace-with-iki-client-secret" \
   family-fi-api

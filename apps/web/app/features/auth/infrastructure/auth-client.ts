@@ -4,6 +4,7 @@ import {
 } from "~/infrastructure/api-client";
 import {
   getConfiguredLoginErrorFallbackUrl,
+  getConfiguredLoginFallbackUrl,
   normalizeApiBaseUrl,
 } from "~/infrastructure/runtime-config";
 import type { AuthUser } from "../domain/auth";
@@ -43,11 +44,7 @@ function getAppCallbackUrl(): string {
 }
 
 function getConfiguredHubApiBaseUrl(): string {
-  const env = import.meta.env as { VITE_HUB_API_BASE_URL?: string } | undefined;
-
-  return normalizeApiBaseUrl(
-    env?.VITE_HUB_API_BASE_URL ?? "http://localhost:3000",
-  );
+  return normalizeApiBaseUrl(getConfiguredLoginFallbackUrl());
 }
 
 function createApiUrl(path: string): URL {

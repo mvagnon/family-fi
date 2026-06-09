@@ -1,12 +1,24 @@
+import { normalizeHttpOrigin, normalizeHttpUrl } from "./http-url";
+
 export function getConfiguredLoginFallbackUrl(): string {
   const env = import.meta.env as
-    | { VITE_LOGIN_FALLBACK_URL?: string }
+    | {
+        VITE_HUB_API_BASE_URL?: string;
+        VITE_HUB_ORIGIN?: string;
+        VITE_LOGIN_FALLBACK_URL?: string;
+      }
     | undefined;
-
-  return (
-    normalizeOptionalHttpUrl(env?.VITE_LOGIN_FALLBACK_URL) ??
-    "http://localhost:5173/login?app=family-fi"
+  const hubOrigin = normalizeHttpOrigin(
+    env?.VITE_HUB_ORIGIN?.trim() ||
+      getOriginFromUrl(env?.VITE_LOGIN_FALLBACK_URL) ||
+      env?.VITE_HUB_API_BASE_URL?.trim() ||
+      "http://localhost:5173",
   );
+  const url = new URL("/login", hubOrigin);
+
+  url.searchParams.set("app", "family-fi");
+
+  return url.toString();
 }
 
 export function getConfiguredLoginErrorFallbackUrl(): string {
@@ -14,29 +26,7 @@ export function getConfiguredLoginErrorFallbackUrl(): string {
 }
 
 export function normalizeApiBaseUrl(value: string): string {
-  return normalizeHttpUrl(value).replace(/\/$/, "");
-}
-
-export function normalizeHttpUrl(value: string): string {
-  const trimmedValue = value.trim();
-
-  if (!trimmedValue) {
-    throw new Error("URL value cannot be empty.");
-  }
-
-  const url = /^https?:\/\//i.test(trimmedValue)
-    ? trimmedValue
-    : `https://${trimmedValue}`;
-
-  new URL(url);
-
-  return url;
-}
-
-function normalizeOptionalHttpUrl(value: string | undefined): string | null {
-  const trimmedValue = value?.trim();
-
-  return trimmedValue ? normalizeHttpUrl(trimmedValue) : null;
+  return normalizeHttpOrigin(value);
 }
 
 function withAuthErrorParam(value: string): string {
@@ -48,4 +38,12 @@ function withAuthErrorParam(value: string): string {
   } catch {
     return value;
   }
+}
+
+function getOriginFromUrl(value: string | undefined): string {
+  if (!value?.trim()) {
+    return "";
+  }
+
+  return new URL(normalizeHttpUrl(value)).origin;
 }
