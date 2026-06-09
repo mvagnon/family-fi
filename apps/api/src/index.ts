@@ -17,9 +17,12 @@ const openApiServerUrl = getOptionalHttpOrigin("OPENAPI_SERVER_URL");
 const authProvider = createOAuthAuthProvider(prisma, {
   baseUrl: webOrigin,
   hubOrigin,
+  ikiOAuthAuthorizationUrl: `${hubOrigin}/api/auth/oauth2/authorize`,
   ikiOAuthClientId: process.env.IKI_OAUTH_CLIENT_ID ?? "family-fi",
   ikiOAuthClientSecret: getIkiOAuthClientSecret(),
   ikiOAuthDiscoveryUrl: `${ikiAuthServerOrigin}/api/auth/.well-known/openid-configuration`,
+  ikiOAuthTokenUrl: `${ikiAuthServerOrigin}/api/auth/oauth2/token`,
+  ikiOAuthUserInfoUrl: `${ikiAuthServerOrigin}/api/auth/oauth2/userinfo`,
   trustedOrigins: [webOrigin],
 });
 

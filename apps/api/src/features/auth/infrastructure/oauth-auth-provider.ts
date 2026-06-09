@@ -525,9 +525,13 @@ function createOAuthMetadataResolver(
       const payload = getRecord(await response.json());
 
       const discoveredMetadata: OAuthMetadata = {
-        authorizationUrl: getString(payload, "authorization_endpoint"),
-        tokenUrl: getString(payload, "token_endpoint"),
-        userInfoUrl: getString(payload, "userinfo_endpoint"),
+        authorizationUrl:
+          options.ikiOAuthAuthorizationUrl ??
+          getString(payload, "authorization_endpoint"),
+        tokenUrl:
+          options.ikiOAuthTokenUrl ?? getString(payload, "token_endpoint"),
+        userInfoUrl:
+          options.ikiOAuthUserInfoUrl ?? getString(payload, "userinfo_endpoint"),
       };
       const issuer = getOptionalString(payload, "issuer");
 

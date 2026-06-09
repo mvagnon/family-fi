@@ -18,6 +18,7 @@ CHOKIDAR_USEPOLLING=true
 API_PORT=3001
 FAMILY_FI_API_UPSTREAM_ORIGIN=http://localhost:3001
 HUB_ORIGIN=http://localhost:5173
+IKI_AUTH_SERVER_ORIGIN=http://host.docker.internal:3000
 IKI_OAUTH_CLIENT_SECRET=development-only-family-fi-oauth-secret
 WEB_ORIGIN=http://localhost:5174
 WEB_HOST=0.0.0.0
