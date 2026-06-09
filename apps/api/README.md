@@ -82,7 +82,7 @@ Feature code under `src/features/*` follows a hexagonal split:
 Run the dev stack with hot reload from the repository root:
 
 ```bash
-docker compose up --build api
+bun run docker:up
 ```
 
 Docker Compose reads local API, auth, and database values from the root `.env`.

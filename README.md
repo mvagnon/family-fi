@@ -7,7 +7,7 @@ Turborepo Bun workspace with:
 
 ## Local
 
-Before `docker compose up`, create a root `.env` for local Docker development:
+Before `bun run dev`, create a root `.env` for local Docker development:
 
 ```env
 POSTGRES_DB=family_fi
@@ -29,7 +29,7 @@ Then start the API and frontend:
 
 ```bash
 bun install
-make dev
+bun run dev
 ```
 
 The web app runs on `http://localhost:5174`.
@@ -51,7 +51,7 @@ cd apps/web && bun run dev
 Run the Docker development stack for PostgreSQL, Prisma migrations, and the API:
 
 ```bash
-make docker-up
+bun run docker:up
 ```
 
 Docker Compose reads `.env` for local configuration and injects it into the API
@@ -72,7 +72,7 @@ Iki's `FAMILY_FI_OAUTH_CLIENT_SECRET`.
 Run the web app with Bun for normal frontend work:
 
 ```bash
-make bun-dev
+bun run dev:web
 ```
 
 The Docker web service remains available for full-container checks:
@@ -89,7 +89,7 @@ Docker volumes:
 
 ```bash
 docker compose down -v
-docker compose up --build api
+bun run docker:up
 ```
 
 Build one image from the repository root:
