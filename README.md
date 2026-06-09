@@ -16,8 +16,7 @@ POSTGRES_PASSWORD=family_fi
 POSTGRES_PORT=5432
 CHOKIDAR_USEPOLLING=true
 API_PORT=3001
-BETTER_AUTH_SECRET=development-only-better-auth-secret-32-chars
-BETTER_AUTH_URL=http://localhost:3001
+FAMILY_FI_API_ORIGIN=http://localhost:3001
 IKI_AUTH_BROWSER_ORIGIN=http://localhost:3000
 IKI_AUTH_SERVER_ORIGIN=http://host.docker.internal:3000
 IKI_OAUTH_CLIENT_SECRET=development-only-family-fi-oauth-secret
@@ -41,9 +40,8 @@ The web app runs on `http://localhost:5174`.
 The API runs from Docker on `http://localhost:3001`.
 Run `../iki` on API `http://localhost:3000` and hub
 `http://localhost:5173` before signing in.
-When starting the API outside Docker, set `DATABASE_URL`,
-`BETTER_AUTH_SECRET`, and `IKI_OAUTH_CLIENT_SECRET` in the shell or API
-environment.
+When starting the API outside Docker, set `DATABASE_URL` and
+`IKI_OAUTH_CLIENT_SECRET` in the shell or API environment.
 
 Run one package from its app directory when needed:
 
@@ -119,7 +117,7 @@ docker build \
 ## Production Env Checklist
 
 - Set `DATABASE_URL` to the production database connection string.
-- Set `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `WEB_ORIGIN`, `HUB_ORIGIN`, and
+- Set `FAMILY_FI_API_ORIGIN`, `WEB_ORIGIN`, `HUB_ORIGIN`, and
   `VITE_API_BASE_URL` for the production origins.
 - Set `IKI_OAUTH_CLIENT_SECRET` to the Iki OAuth client secret. Override
   `IKI_OAUTH_CLIENT_ID` only when it differs from `family-fi`.

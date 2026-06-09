@@ -21,7 +21,6 @@
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@repo/api-contracts": "*",
-    "better-auth": "^1.6.11",
     "dotenv": "^17.4.2",
     "hono": "^4.12.23",
     "pg": "^8.21.0"

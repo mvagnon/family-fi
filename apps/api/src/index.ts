@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
 
 import { createApiApp } from "./app.js";
-import { createBetterAuthProvider } from "./features/auth/infrastructure/better-auth-provider.js";
+import { createOAuthAuthProvider } from "./features/auth/infrastructure/oauth-auth-provider.js";
 import { PrismaFamilyRepository } from "./features/family/infrastructure/persistence/prisma-family-repository.js";
 import { PrismaSpacesRepository } from "./features/spaces/infrastructure/persistence/prisma-spaces-repository.js";
 import { prisma } from "./infrastructure/prisma.js";
@@ -17,9 +17,9 @@ const ikiAuthServerOrigin =
   getOptionalHttpOrigin("IKI_AUTH_SERVER_ORIGIN") ?? ikiAuthBrowserOrigin;
 const ikiOAuthDiscoveryUrl = getOptionalHttpUrl("IKI_OAUTH_DISCOVERY_URL");
 const openApiServerUrl = getOptionalHttpOrigin("OPENAPI_SERVER_URL");
-const authProvider = createBetterAuthProvider(prisma, {
+const authProvider = createOAuthAuthProvider(prisma, {
   baseUrl:
-    getOptionalHttpOrigin("BETTER_AUTH_URL") ?? `http://localhost:${port}`,
+    getOptionalHttpOrigin("FAMILY_FI_API_ORIGIN") ?? `http://localhost:${port}`,
   hubOrigin,
   ikiOAuthClientId: process.env.IKI_OAUTH_CLIENT_ID ?? "family-fi",
   ikiOAuthClientSecret: getIkiOAuthClientSecret(),
@@ -40,7 +40,6 @@ const authProvider = createBetterAuthProvider(prisma, {
     ? undefined
     : (getOptionalHttpUrl("IKI_OAUTH_USER_INFO_URL") ??
       `${ikiAuthServerOrigin}/api/auth/oauth2/userinfo`),
-  secret: getBetterAuthSecret(),
   trustedOrigins: [webOrigin],
 });
 
@@ -61,16 +60,6 @@ serve(
     console.log(`Server is running on http://localhost:${info.port}`);
   },
 );
-
-function getBetterAuthSecret(): string {
-  const secret = process.env.BETTER_AUTH_SECRET;
-
-  if (!secret) {
-    throw new Error("BETTER_AUTH_SECRET is required to start the API.");
-  }
-
-  return secret;
-}
 
 function getIkiOAuthClientSecret(): string {
   const secret = process.env.IKI_OAUTH_CLIENT_SECRET;

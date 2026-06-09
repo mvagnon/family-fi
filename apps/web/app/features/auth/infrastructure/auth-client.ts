@@ -1,75 +1,40 @@
-import { createAuthClient } from "better-auth/react";
-import { genericOAuthClient } from "better-auth/client/plugins";
-
-import { getConfiguredApiBaseUrl } from "~/infrastructure/api-client";
+import {
+  fetchWithCredentials,
+  getConfiguredApiBaseUrl,
+} from "~/infrastructure/api-client";
 import {
   getConfiguredLoginErrorFallbackUrl,
   normalizeApiBaseUrl,
 } from "~/infrastructure/runtime-config";
+import type { AuthUser } from "../domain/auth";
 import type { AuthRepository } from "../domain/auth-repository";
-
-const betterAuthClient = createAuthClient({
-  baseURL: getConfiguredApiBaseUrl(),
-  fetchOptions: {
-    credentials: "include",
-  },
-  plugins: [genericOAuthClient()],
-});
-
-const hubAuthClient = createAuthClient({
-  baseURL: getConfiguredHubApiBaseUrl(),
-  fetchOptions: {
-    credentials: "include",
-  },
-});
 
 export const authClient: AuthRepository = {
   async getSession() {
-    const result = await betterAuthClient.getSession();
+    const response = await fetchWithCredentials(
+      createApiUrl("/api/auth/get-session"),
+    );
 
-    if (result.error) {
-      if (result.error.status === 401) {
-        return null;
-      }
-
-      throw new Error(result.error.message ?? "Session could not be loaded.");
+    if (!response.ok) {
+      throw new Error("Session could not be loaded.");
     }
 
-    return result.data?.user ?? null;
+    return parseSessionPayload(await response.json());
   },
   async signInWithHub() {
-    const result = await betterAuthClient.signIn.oauth2({
-      callbackURL: getAppCallbackUrl(),
-      disableRedirect: true,
-      errorCallbackURL: getConfiguredLoginErrorFallbackUrl(),
-      providerId: "iki",
-      scopes: ["openid", "profile", "email"],
-    });
+    const redirectUrl = createApiUrl("/api/auth/iki/start");
+    redirectUrl.searchParams.set("callbackURL", getAppCallbackUrl());
+    redirectUrl.searchParams.set(
+      "errorCallbackURL",
+      getConfiguredLoginErrorFallbackUrl(),
+    );
 
-    if (result.error) {
-      throw new Error(result.error.message ?? "Sign in failed.");
-    }
-
-    const redirectUrl = getRedirectUrl(result.data);
-
-    if (!redirectUrl) {
-      throw new Error("Sign in redirect could not be started.");
-    }
-
-    window.location.assign(redirectUrl);
+    window.location.assign(redirectUrl.toString());
   },
   async signOut() {
-    const result = await betterAuthClient.signOut();
+    await postSignOut(createApiUrl("/api/auth/sign-out"));
 
-    if (result.error) {
-      throw new Error(result.error.message ?? "Sign out failed.");
-    }
-
-    const hubResult = await hubAuthClient.signOut();
-
-    if (hubResult.error) {
-      throw new Error(hubResult.error.message ?? "Sign out failed.");
-    }
+    await postSignOut(createHubApiUrl("/api/auth/sign-out"));
   },
 };
 
@@ -85,22 +50,61 @@ function getConfiguredHubApiBaseUrl(): string {
   );
 }
 
-function getRedirectUrl(value: unknown): string | null {
+function createApiUrl(path: string): URL {
+  return new URL(path, getConfiguredApiBaseUrl());
+}
+
+function createHubApiUrl(path: string): URL {
+  return new URL(path, getConfiguredHubApiBaseUrl());
+}
+
+async function postSignOut(url: URL): Promise<void> {
+  const response = await fetchWithCredentials(url, {
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    throw new Error("Sign out failed.");
+  }
+}
+
+function parseSessionPayload(value: unknown): AuthUser | null {
+  if (value === null) {
+    return null;
+  }
+
   if (!isRecord(value)) {
     return null;
   }
 
-  if (typeof value.url === "string") {
-    return value.url;
+  const user = isRecord(value.user) ? value.user : value;
+  const id = getString(user, "id");
+  const email = getString(user, "email");
+  const name = getString(user, "name");
+
+  if (!id || !email || !name) {
+    return null;
   }
 
-  if (typeof value.redirectTo === "string") {
-    return value.redirectTo;
-  }
-
-  return null;
+  return {
+    email,
+    id,
+    image: getOptionalString(user, "image"),
+    name,
+  };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function getString(value: Record<string, unknown>, key: string): string | null {
+  return typeof value[key] === "string" ? value[key] : null;
+}
+
+function getOptionalString(
+  value: Record<string, unknown>,
+  key: string,
+): string | null {
+  return typeof value[key] === "string" ? value[key] : null;
 }

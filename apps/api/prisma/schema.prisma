@@ -61,6 +61,19 @@ model Session {
   @@map("session")
 }
 
+model OAuthLoginAttempt {
+  id               String   @id
+  state            String   @unique
+  codeVerifier     String   @map("code_verifier")
+  callbackUrl      String   @map("callback_url")
+  errorCallbackUrl String?  @map("error_callback_url")
+  createdAt        DateTime @default(now()) @map("created_at")
+  expiresAt        DateTime @map("expires_at")
+
+  @@index([expiresAt])
+  @@map("oauth_login_attempt")
+}
+
 model Account {
   id                    String    @id
   accountId             String    @map("account_id")

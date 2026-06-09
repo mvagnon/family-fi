@@ -1,6 +1,6 @@
 # Family-Fi API
 
-Hono API with Prisma, PostgreSQL, Better Auth sessions, and Iki OAuth login.
+Hono API with Prisma, PostgreSQL, local sessions, and Iki OAuth login.
 
 ## Local
 
@@ -8,7 +8,6 @@ Hono API with Prisma, PostgreSQL, Better Auth sessions, and Iki OAuth login.
 bun install
 DATABASE_URL="postgresql://user:password@localhost:5432/family_fi" bun run prisma:migrate
 DATABASE_URL="postgresql://user:password@localhost:5432/family_fi" \
-BETTER_AUTH_SECRET="replace-with-a-32-character-secret" \
 IKI_OAUTH_CLIENT_SECRET="replace-with-iki-client-secret" \
 bun run dev
 ```
@@ -23,11 +22,11 @@ OpenAPI documentation:
 - Swagger UI: `http://localhost:3001/api/docs` when `NODE_ENV` is not
   `production`.
 
-The API uses Prisma with PostgreSQL. `DATABASE_URL` and
-`BETTER_AUTH_SECRET` are required at runtime. Optional auth settings:
+The API uses Prisma with PostgreSQL. `DATABASE_URL` is required at runtime.
+Optional auth settings:
 
-- `BETTER_AUTH_URL`: API HTTP(S) origin used by Better Auth, default
-  `http://localhost:3001`.
+- `FAMILY_FI_API_ORIGIN`: API HTTP(S) origin used for the Iki OAuth callback,
+  default `http://localhost:3001`.
 - `WEB_ORIGIN`: credentialed CORS/trusted web HTTP(S) origin, default
   `http://localhost:5174`.
 - `HUB_ORIGIN`: Iki hub HTTP(S) origin trusted for auth redirects, default
@@ -48,8 +47,8 @@ The API uses Prisma with PostgreSQL. `DATABASE_URL` and
 - `OPENAPI_SERVER_URL`: server URL advertised in the generated OpenAPI spec,
   default request origin.
 
-Production deployments must set `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
-`WEB_ORIGIN`, `IKI_OAUTH_CLIENT_SECRET`, and the web build's
+Production deployments must set `FAMILY_FI_API_ORIGIN`, `WEB_ORIGIN`,
+`IKI_OAUTH_CLIENT_SECRET`, and the web build's
 `VITE_API_BASE_URL` for the deployed origins. Prefer `IKI_OAUTH_DISCOVERY_URL`
 for provider metadata. Override the Iki OAuth URLs only when discovery cannot
 represent the browser/server network path.
@@ -68,11 +67,11 @@ Family budget routes are scoped under `/api/spaces/:spaceId/family`.
 
 Iki is the source of truth for account identity and profile data. Family-Fi
 stores the Iki OIDC `sub` in `user.iki_user_id` and keeps local `email`/`name`
-values as a cache refreshed through Better Auth's Iki OAuth flow.
+values as a cache refreshed through its Iki OAuth flow.
 
-Family-Fi still uses its local Better Auth `user.id` for internal relations
-such as space memberships and settings. New personal space ids are derived from
-the Iki `sub`, while existing owned spaces are preserved.
+Family-Fi still uses its local `user.id` for internal relations such as space
+memberships and settings. New personal space ids are derived from the Iki
+`sub`, while existing owned spaces are preserved.
 
 Space member autocomplete searches only users already known by Family-Fi. It
 does not query a global Iki user directory.
@@ -109,8 +108,7 @@ docker build -f apps/api/Dockerfile -t family-fi-api .
 
 docker run --rm \
   -p 3001:3001 \
-  -e BETTER_AUTH_SECRET="replace-with-a-32-character-secret" \
-  -e BETTER_AUTH_URL="http://localhost:3001" \
+  -e FAMILY_FI_API_ORIGIN="http://localhost:3001" \
   -e DATABASE_URL="postgresql://user:password@host.docker.internal:5432/family_fi" \
   -e IKI_OAUTH_CLIENT_SECRET="replace-with-iki-client-secret" \
   family-fi-api
