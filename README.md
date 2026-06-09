@@ -32,8 +32,13 @@ Run the development stack with PostgreSQL, Prisma migrations, API, web, and
 bind-mounted source files:
 
 ```bash
+cp .env.example .env
 docker compose up --build
 ```
+
+Docker Compose reads `.env` for local configuration. Keep `.env` uncommitted
+and update it when local ports, origins, or development secrets differ from the
+example values.
 
 Run `../iki` on API `http://localhost:3000` and hub
 `http://localhost:5173`, then open Iki Hub and launch Family-Fi from there.

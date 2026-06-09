@@ -71,8 +71,11 @@ Feature code under `src/features/*` follows a hexagonal split:
 Run the dev stack with hot reload from the repository root:
 
 ```bash
+cp .env.example .env
 docker compose up --build api
 ```
+
+Docker Compose reads local API, auth, and database values from `.env`.
 
 The API source is bind-mounted into the container. Rebuild only when
 dependencies change.
