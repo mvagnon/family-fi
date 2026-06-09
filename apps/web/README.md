@@ -34,11 +34,18 @@ Routes compose infrastructure adapters with presentation entry points.
 
 ## Docker
 
-Run the dev stack with hot reload from the repository root:
+Run the web app with Bun during normal development:
+
+```bash
+bun run --filter=web dev
+```
+
+The Docker web service is available behind the `full` profile when you need a
+containerized frontend:
 
 ```bash
 cp .env.example .env
-docker compose up --build web
+docker compose --profile full up --build web
 ```
 
 Docker Compose reads local web and API URL values from `.env`.

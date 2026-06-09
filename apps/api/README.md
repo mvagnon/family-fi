@@ -46,19 +46,9 @@ when they cannot be derived from `IKI_AUTH_BROWSER_ORIGIN` and
 
 The matching Iki OAuth client must be registered in Iki with callback URL
 `http://localhost:3001/api/auth/oauth2/callback/iki` for local development, or
-the equivalent deployed callback URL in production.
-
-From the Iki repository, register the local client with:
-
-```bash
-docker compose run --rm \
-  -e OAUTH_CLIENT_ID=family-fi \
-  -e OAUTH_CLIENT_SECRET=development-only-family-fi-oauth-secret \
-  -e OAUTH_CLIENT_NAME=Family-Fi \
-  -e OAUTH_CLIENT_REDIRECT_URIS=http://localhost:3001/api/auth/oauth2/callback/iki \
-  -e OAUTH_CLIENT_URI=http://localhost:5174 \
-  api sh -lc "bun run prisma:deploy && bun run oauth-client:upsert"
-```
+the equivalent deployed callback URL in production. Iki syncs that client from
+its connected-app registry; this app's `IKI_OAUTH_CLIENT_SECRET` must match
+Iki's `FAMILY_FI_OAUTH_CLIENT_SECRET`.
 
 Family budget routes are scoped under `/api/spaces/:spaceId/family`.
 

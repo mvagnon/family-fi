@@ -63,6 +63,8 @@ services:
         condition: service_completed_successfully
 
   web:
+    profiles:
+      - full
     build:
       context: .
       dockerfile: apps/web/Dockerfile

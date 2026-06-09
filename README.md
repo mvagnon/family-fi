@@ -9,11 +9,13 @@ Turborepo Bun workspace with:
 
 ```bash
 bun install
+cp .env.example .env
+docker compose up --build api
 bun run dev
 ```
 
 The web app runs on `http://localhost:5174`.
-The API runs on `http://localhost:3001`.
+The API runs from Docker on `http://localhost:3001`.
 Run `../iki` on API `http://localhost:3000` and hub
 `http://localhost:5173` before signing in.
 Set `BETTER_AUTH_SECRET` to a 32+ character value before starting the API
@@ -28,47 +30,45 @@ cd apps/web && bun run dev
 
 ## Docker
 
-Run the development stack with PostgreSQL, Prisma migrations, API, web, and
-bind-mounted source files:
+Run the Docker development stack for PostgreSQL, Prisma migrations, and the API:
 
 ```bash
 cp .env.example .env
-docker compose up --build
+docker compose up --build api
 ```
 
 Docker Compose reads `.env` for local configuration and injects it into the API
-and web containers. The API database URL is derived from `POSTGRES_USER`,
+container. The API database URL is derived from `POSTGRES_USER`,
 `POSTGRES_PASSWORD`, and `POSTGRES_DB`. Keep `.env` uncommitted and update it
 when local ports, origins, or development secrets differ from the example
 values.
 
 Run `../iki` on API `http://localhost:3000` and hub
-`http://localhost:5173`. Register an Iki OAuth client for Family-Fi with client
-id `family-fi`, callback URL
-`http://localhost:3001/api/auth/oauth2/callback/iki`, and a secret matching
-`IKI_OAUTH_CLIENT_SECRET`, then open Iki Hub and launch Family-Fi from there.
+`http://localhost:5173`. Iki syncs the Family-Fi OAuth client from its
+connected-app registry; keep this repo's `IKI_OAUTH_CLIENT_SECRET` equal to
+Iki's `FAMILY_FI_OAUTH_CLIENT_SECRET`.
 
-From `../iki`, the local Docker registration command is:
+Run the web app with Bun for normal frontend work:
 
 ```bash
-docker compose run --rm \
-  -e OAUTH_CLIENT_ID=family-fi \
-  -e OAUTH_CLIENT_SECRET=development-only-family-fi-oauth-secret \
-  -e OAUTH_CLIENT_NAME=Family-Fi \
-  -e OAUTH_CLIENT_REDIRECT_URIS=http://localhost:3001/api/auth/oauth2/callback/iki \
-  -e OAUTH_CLIENT_URI=http://localhost:5174 \
-  api sh -lc "bun run prisma:deploy && bun run oauth-client:upsert"
+bun run dev
 ```
 
-Changes in `apps/web`, `apps/api`, and shared packages are mounted into the
-containers and reload without rebuilding the images.
+The Docker web service remains available for full-container checks:
+
+```bash
+docker compose --profile full up --build web
+```
+
+Changes in `apps/api` and shared packages are mounted into the API container and
+reload without rebuilding the image.
 
 If dependencies or the local Prisma migration history change, recreate the
 Docker volumes:
 
 ```bash
 docker compose down -v
-docker compose up --build
+docker compose up --build api
 ```
 
 Build one image from the repository root:
