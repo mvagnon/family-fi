@@ -30,6 +30,10 @@ Optional auth settings:
   Iki OAuth callback.
 - `HUB_ORIGIN`: Iki hub HTTP(S) origin trusted for auth redirects, default
   `http://localhost:5173`.
+- `IKI_AUTH_SERVER_ORIGIN`: optional Iki hub HTTP(S) origin used by the API to
+  discover OAuth metadata, default `HUB_ORIGIN`. Set it to
+  `http://host.docker.internal:5173` when the API runs in Docker and the Iki
+  Hub runs on the host.
 - `IKI_OAUTH_CLIENT_ID`: Iki OAuth client ID, default `family-fi`.
 - `IKI_OAUTH_CLIENT_SECRET`: Iki OAuth client secret. A dev default is used
   outside production.

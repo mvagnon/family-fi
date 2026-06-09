@@ -11,13 +11,15 @@ const webOrigin =
   getOptionalHttpOrigin("WEB_ORIGIN") ?? "http://localhost:5174";
 const hubOrigin =
   getOptionalHttpOrigin("HUB_ORIGIN") ?? "http://localhost:5173";
+const ikiAuthServerOrigin =
+  getOptionalHttpOrigin("IKI_AUTH_SERVER_ORIGIN") ?? hubOrigin;
 const openApiServerUrl = getOptionalHttpOrigin("OPENAPI_SERVER_URL");
 const authProvider = createOAuthAuthProvider(prisma, {
   baseUrl: webOrigin,
   hubOrigin,
   ikiOAuthClientId: process.env.IKI_OAUTH_CLIENT_ID ?? "family-fi",
   ikiOAuthClientSecret: getIkiOAuthClientSecret(),
-  ikiOAuthDiscoveryUrl: `${hubOrigin}/api/auth/.well-known/openid-configuration`,
+  ikiOAuthDiscoveryUrl: `${ikiAuthServerOrigin}/api/auth/.well-known/openid-configuration`,
   trustedOrigins: [webOrigin],
 });
 
