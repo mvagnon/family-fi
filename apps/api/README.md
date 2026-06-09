@@ -1,3 +1,9 @@
+# Family-Fi API
+
+Hono API with Prisma, PostgreSQL, Better Auth sessions, and Iki OAuth login.
+
+## Local
+
 ```bash
 bun install
 DATABASE_URL="postgresql://user:password@localhost:5432/family_fi" bun run prisma:migrate
@@ -79,13 +85,13 @@ Feature code under `src/features/*` follows a hexagonal split:
 Run the dev stack with hot reload from the repository root:
 
 ```bash
-cp .env.example .env
 docker compose up --build api
 ```
 
-Docker Compose reads local API, auth, and database values from `.env`. The API
-database URL is derived from `POSTGRES_USER`, `POSTGRES_PASSWORD`, and
-`POSTGRES_DB`.
+Docker Compose reads local API, auth, and database values from the root `.env`.
+`POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` provision the local
+Postgres container. The API container receives a derived `DATABASE_URL` that
+contains those credentials and points to the local `db` service.
 
 The API source is bind-mounted into the container. Rebuild only when
 dependencies change.

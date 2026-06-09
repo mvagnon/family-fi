@@ -7,9 +7,30 @@ Turborepo Bun workspace with:
 
 ## Local
 
+Before `docker compose up`, create a root `.env` for local Docker development:
+
+```env
+POSTGRES_DB=family_fi
+POSTGRES_USER=family_fi
+POSTGRES_PASSWORD=family_fi
+POSTGRES_PORT=5432
+CHOKIDAR_USEPOLLING=true
+API_PORT=3001
+BETTER_AUTH_SECRET=development-only-better-auth-secret-32-chars
+BETTER_AUTH_URL=http://localhost:3001
+IKI_AUTH_BROWSER_ORIGIN=http://localhost:3000
+IKI_AUTH_SERVER_ORIGIN=http://host.docker.internal:3000
+IKI_OAUTH_CLIENT_SECRET=development-only-family-fi-oauth-secret
+WEB_ORIGIN=http://localhost:5174
+WEB_HOST=0.0.0.0
+WEB_PORT=5174
+VITE_API_BASE_URL=http://localhost:3001
+```
+
+Then start the API and frontend:
+
 ```bash
 bun install
-cp .env.example .env
 docker compose up --build api
 bun run dev
 ```
@@ -18,8 +39,9 @@ The web app runs on `http://localhost:5174`.
 The API runs from Docker on `http://localhost:3001`.
 Run `../iki` on API `http://localhost:3000` and hub
 `http://localhost:5173` before signing in.
-Set `BETTER_AUTH_SECRET` to a 32+ character value before starting the API
-outside Docker.
+When starting the API outside Docker, set `DATABASE_URL`,
+`BETTER_AUTH_SECRET`, and `IKI_OAUTH_CLIENT_SECRET` in the shell or API
+environment.
 
 Run one package from its app directory when needed:
 
@@ -33,15 +55,18 @@ cd apps/web && bun run dev
 Run the Docker development stack for PostgreSQL, Prisma migrations, and the API:
 
 ```bash
-cp .env.example .env
 docker compose up --build api
 ```
 
 Docker Compose reads `.env` for local configuration and injects it into the API
-container. The API database URL is derived from `POSTGRES_USER`,
-`POSTGRES_PASSWORD`, and `POSTGRES_DB`. Keep `.env` uncommitted and update it
-when local ports, origins, or development secrets differ from the example
-values.
+container. `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` provision the
+local Postgres container. The API container receives a derived `DATABASE_URL`
+that contains those credentials and points to the local `db` service.
+
+In production, do not use the Compose-only variables unless you also provision
+Postgres yourself with Compose. Set the deployed `DATABASE_URL` from the
+database provider instead; that URL already contains the database user,
+password, host, port, and database name.
 
 Run `../iki` on API `http://localhost:3000` and hub
 `http://localhost:5173`. Iki syncs the Family-Fi OAuth client from its
@@ -89,15 +114,24 @@ docker build \
 
 ## Production Env Checklist
 
-- Set `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `WEB_ORIGIN`, and
+- Set `DATABASE_URL` to the production database connection string.
+- Set `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `WEB_ORIGIN`, `HUB_ORIGIN`, and
   `VITE_API_BASE_URL` for the production origins.
 - Set `IKI_OAUTH_CLIENT_SECRET` to the Iki OAuth client secret. Override
-  `IKI_OAUTH_CLIENT_ID` and the Iki OAuth endpoint URLs only when they differ
-  from the standard Family-Fi client id and origin-derived URLs.
+  `IKI_OAUTH_CLIENT_ID` only when it differs from `family-fi`.
+- Set `IKI_AUTH_BROWSER_ORIGIN` and `IKI_AUTH_SERVER_ORIGIN` to the deployed Iki
+  API origins, or set the explicit `IKI_OAUTH_*` endpoint URLs.
 - Set `VITE_HUB_API_BASE_URL` so the web app can clear the Iki session on
   sign-out.
 - Set `VITE_LOGIN_FALLBACK_URL` to the Iki Hub login URL with the source app
   context, used when account session checks cannot complete.
+
+Docker-local variables:
+
+- `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`: local
+  Postgres container provisioning.
+- `API_PORT`, `WEB_HOST`, `WEB_PORT`: local container ports and host binding.
+- `CHOKIDAR_USEPOLLING`: local file watching.
 
 ## Checks
 

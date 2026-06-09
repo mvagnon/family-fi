@@ -44,11 +44,12 @@ The Docker web service is available behind the `full` profile when you need a
 containerized frontend:
 
 ```bash
-cp .env.example .env
 docker compose --profile full up --build web
 ```
 
-Docker Compose reads local web and API URL values from `.env`.
+Docker Compose reads local web and API URL values from the root `.env`.
+Required local values for this service are `WEB_HOST`, `WEB_PORT`, and
+`VITE_API_BASE_URL`.
 
 The web source is bind-mounted into the container. Rebuild only when
 dependencies change.
