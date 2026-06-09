@@ -40,7 +40,7 @@ import type {
   UpdateRecurringLineInput,
 } from "../domain/family.js";
 import type { FamilyRepository } from "../domain/family-repository.js";
-import { createSeedFamily } from "../domain/seed-family.js";
+import { createInitialFamily } from "../domain/initial-family.js";
 
 export interface FamilyServiceOptions {
   createId?: (prefix: string, label: string) => string;
@@ -78,7 +78,9 @@ export class FamilyService {
 
     const existingFamily = await this.repository.findBySpaceId(request.spaceId);
 
-    return existingFamily ?? createSeedFamily(createFamilyId(request.spaceId));
+    return (
+      existingFamily ?? createInitialFamily(createFamilyId(request.spaceId))
+    );
   }
 
   async addMember(
@@ -614,7 +616,7 @@ export class FamilyService {
 
     return this.repository.createFamily(
       request.spaceId,
-      createSeedFamily(createFamilyId(request.spaceId)),
+      createInitialFamily(createFamilyId(request.spaceId)),
     );
   }
 

@@ -47,7 +47,7 @@ const familyRouteParamsSchema = z.object({
 });
 
 const familyEntityRouteParamsSchema = familyRouteParamsSchema.extend({
-  id: pathIdSchema("id", "rent"),
+  id: pathIdSchema("id", "line-1"),
 });
 
 const familyJsonResponse = jsonResponse("Family snapshot.", familySchema);

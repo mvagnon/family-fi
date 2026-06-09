@@ -20,11 +20,14 @@ test("family routes expose and mutate the current family snapshot", async () => 
   const initialFamily = await initialResponse.json();
 
   assert.equal(initialResponse.status, 200);
-  assert.equal(initialFamily.recurringLines.length, 6);
+  assert.deepEqual(initialFamily.categories, []);
   assert.deepEqual(initialFamily.distributionLines, []);
   assert.deepEqual(initialFamily.generatedRecurringLineSettings, []);
   assert.deepEqual(initialFamily.loans, []);
   assert.deepEqual(initialFamily.loanRepaymentLines, []);
+  assert.deepEqual(initialFamily.members, []);
+  assert.deepEqual(initialFamily.participationLines, []);
+  assert.deepEqual(initialFamily.recurringLines, []);
 
   const categoryResponse = await authenticatedRequest(
     app,
@@ -36,14 +39,12 @@ test("family routes expose and mutate the current family snapshot", async () => 
     },
   );
   const familyWithCategory = await categoryResponse.json();
+  const category = familyWithCategory.categories.find(
+    (item: { label: string }) => item.label === "Santé",
+  );
 
   assert.equal(categoryResponse.status, 201);
-  assert.equal(
-    familyWithCategory.categories.some(
-      (category: { label: string }) => category.label === "Santé",
-    ),
-    true,
-  );
+  assert.ok(category);
 
   const lineResponse = await authenticatedRequest(
     app,
@@ -51,7 +52,7 @@ test("family routes expose and mutate the current family snapshot", async () => 
     {
       body: JSON.stringify({
         amount: 120,
-        categoryId: "budget",
+        categoryId: category.id,
         description: "Forfait familial",
         isEstimate: false,
         movement: "negative",
@@ -182,11 +183,12 @@ test("family routes reject invalid generated recurring line settings", async () 
 test("family routes delete recurring lines", async () => {
   const app = createTestApp();
 
-  await authenticatedRequest(app, familyPath);
+  const { category } = await createSharedCategory(app, "Budget");
+  const { line } = await createRecurringLine(app, category.id, "Loyer");
 
   const response = await authenticatedRequest(
     app,
-    `${familyPath}/recurring-lines/rent`,
+    `${familyPath}/recurring-lines/${line.id}`,
     {
       method: "DELETE",
     },
@@ -195,7 +197,7 @@ test("family routes delete recurring lines", async () => {
 
   assert.equal(response.status, 200);
   assert.equal(
-    family.recurringLines.some((line: { id: string }) => line.id === "rent"),
+    family.recurringLines.some((item: { id: string }) => item.id === line.id),
     false,
   );
 });
@@ -393,12 +395,19 @@ test("family routes create members with active flags and defaults", async () => 
 
 test("family routes update members and linked professional categories", async () => {
   const app = createTestApp();
-
-  await authenticatedRequest(app, familyPath);
+  const { family: initialFamily, member: initialMember } = await createMember(
+    app,
+    {
+      name: "Léa",
+    },
+  );
+  const initialCategory = initialFamily.categories.find(
+    (item: { ownerId?: string }) => item.ownerId === initialMember.id,
+  );
 
   const response = await authenticatedRequest(
     app,
-    `${familyPath}/members/lea`,
+    `${familyPath}/members/${initialMember.id}`,
     {
       body: JSON.stringify({ isActive: false, name: "Lina" }),
       headers: { "Content-Type": "application/json" },
@@ -407,17 +416,18 @@ test("family routes update members and linked professional categories", async ()
   );
   const family = await response.json();
   const member = family.members.find(
-    (item: { id: string }) => item.id === "lea",
+    (item: { id: string }) => item.id === initialMember.id,
   );
   const category = family.categories.find(
-    (item: { id: string }) => item.id === "pro-lea",
+    (item: { id: string }) => item.id === initialCategory?.id,
   );
 
   assert.equal(response.status, 200);
+  assert.ok(initialCategory);
   assert.equal(member?.name, "Lina");
   assert.equal(member?.isActive, false);
   assert.equal(category?.label, "Lina");
-  assert.equal(category?.ownerId, "lea");
+  assert.equal(category?.ownerId, initialMember.id);
 });
 
 test("family routes create participation lines for active members", async () => {
@@ -426,7 +436,7 @@ test("family routes create participation lines for active members", async () => 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
 
-  await authenticatedRequest(app, familyPath);
+  const { member } = await createMember(app, { name: "Léa" });
 
   const response = await authenticatedRequest(
     app,
@@ -434,7 +444,7 @@ test("family routes create participation lines for active members", async () => 
     {
       body: JSON.stringify({
         amount: 42.5,
-        memberId: "lea",
+        memberId: member.id,
         month,
         year,
       }),
@@ -444,7 +454,7 @@ test("family routes create participation lines for active members", async () => 
   );
   const family = await response.json();
   const line = family.participationLines.find(
-    (item: { memberId: string }) => item.memberId === "lea",
+    (item: { memberId: string }) => item.memberId === member.id,
   );
 
   assert.equal(response.status, 201);
@@ -461,7 +471,7 @@ test("family routes create participation lines for active members", async () => 
     {
       body: JSON.stringify({
         amount: -12.75,
-        memberId: "lea",
+        memberId: member.id,
         month,
         year,
       }),
@@ -522,7 +532,7 @@ test("family routes reject invalid participation line periods", async () => {
   const app = createTestApp();
   const year = new Date().getFullYear();
 
-  await authenticatedRequest(app, familyPath);
+  const { member } = await createMember(app, { name: "Léa" });
 
   const monthResponse = await authenticatedRequest(
     app,
@@ -530,7 +540,7 @@ test("family routes reject invalid participation line periods", async () => {
     {
       body: JSON.stringify({
         amount: 20,
-        memberId: "lea",
+        memberId: member.id,
         month: 13,
         year,
       }),
@@ -551,7 +561,7 @@ test("family routes reject invalid participation line periods", async () => {
     {
       body: JSON.stringify({
         amount: 20,
-        memberId: "lea",
+        memberId: member.id,
         month: 6,
         year: year + 1,
       }),
@@ -572,7 +582,7 @@ test("family routes reject participation lines in future months", async () => {
     now: () => new Date("2026-05-15T12:00:00.000Z"),
   });
 
-  await authenticatedRequest(app, familyPath);
+  const { member } = await createMember(app, { name: "Léa" });
 
   const response = await authenticatedRequest(
     app,
@@ -580,7 +590,7 @@ test("family routes reject participation lines in future months", async () => {
     {
       body: JSON.stringify({
         amount: 20,
-        memberId: "lea",
+        memberId: member.id,
         month: 6,
         year: 2026,
       }),
@@ -599,7 +609,7 @@ test("family routes reject participation lines in future months", async () => {
 test("family routes reject invalid participation line amounts", async () => {
   const app = createTestApp();
 
-  await authenticatedRequest(app, familyPath);
+  const { member } = await createMember(app, { name: "Léa" });
 
   const response = await authenticatedRequest(
     app,
@@ -607,7 +617,7 @@ test("family routes reject invalid participation line amounts", async () => {
     {
       body: JSON.stringify({
         amount: 0,
-        memberId: "lea",
+        memberId: member.id,
         month: 6,
         year: new Date().getFullYear(),
       }),
@@ -626,7 +636,7 @@ test("family routes reject invalid participation line amounts", async () => {
 test("family routes reject duplicate member names", async () => {
   const app = createTestApp();
 
-  await authenticatedRequest(app, familyPath);
+  await createMember(app, { name: "Léa" });
 
   const response = await authenticatedRequest(app, `${familyPath}/members`, {
     body: JSON.stringify({ name: " léa " }),
@@ -644,11 +654,12 @@ test("family routes reject duplicate member names", async () => {
 test("family routes reject duplicate member update names", async () => {
   const app = createTestApp();
 
-  await authenticatedRequest(app, familyPath);
+  const { member } = await createMember(app, { name: "Léa" });
+  await createMember(app, { name: "Marc" });
 
   const response = await authenticatedRequest(
     app,
-    `${familyPath}/members/lea`,
+    `${familyPath}/members/${member.id}`,
     {
       body: JSON.stringify({ isActive: true, name: " marc " }),
       headers: { "Content-Type": "application/json" },
@@ -666,7 +677,7 @@ test("family routes reject duplicate member update names", async () => {
 test("family routes reject duplicate category labels", async () => {
   const app = createTestApp();
 
-  await authenticatedRequest(app, familyPath);
+  await createSharedCategory(app, "Budget");
 
   const response = await authenticatedRequest(app, `${familyPath}/categories`, {
     body: JSON.stringify({ label: " budget " }),
@@ -947,4 +958,77 @@ function authenticatedRequest(
     ...init,
     headers,
   });
+}
+
+async function createSharedCategory(
+  app: ReturnType<typeof createApiApp>,
+  label: string,
+) {
+  const response = await authenticatedRequest(app, `${familyPath}/categories`, {
+    body: JSON.stringify({ label }),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+  const family = await response.json();
+  const category = family.categories.find(
+    (item: { label: string }) => item.label === label,
+  );
+
+  assert.equal(response.status, 201);
+  assert.ok(category);
+
+  return { category, family };
+}
+
+async function createMember(
+  app: ReturnType<typeof createApiApp>,
+  input: { isActive?: boolean; name: string },
+) {
+  const response = await authenticatedRequest(app, `${familyPath}/members`, {
+    body: JSON.stringify(input),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+  const family = await response.json();
+  const member = family.members.find(
+    (item: { name: string }) => item.name === input.name,
+  );
+
+  assert.equal(response.status, 201);
+  assert.ok(member);
+
+  return { family, member };
+}
+
+async function createRecurringLine(
+  app: ReturnType<typeof createApiApp>,
+  categoryId: string,
+  title: string,
+) {
+  const response = await authenticatedRequest(
+    app,
+    `${familyPath}/recurring-lines`,
+    {
+      body: JSON.stringify({
+        amount: 120,
+        categoryId,
+        description: "Forfait familial",
+        isEstimate: false,
+        movement: "negative",
+        recurrenceMonths: 1,
+        title,
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
+  const family = await response.json();
+  const line = family.recurringLines.find(
+    (item: { title: string }) => item.title === title,
+  );
+
+  assert.equal(response.status, 201);
+  assert.ok(line);
+
+  return { family, line };
 }

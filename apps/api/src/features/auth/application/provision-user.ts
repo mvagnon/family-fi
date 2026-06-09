@@ -1,5 +1,5 @@
 import { PrismaFamilyRepository } from "../../family/infrastructure/persistence/prisma-family-repository.js";
-import { createSeedFamily } from "../../family/domain/seed-family.js";
+import { createInitialFamily } from "../../family/domain/initial-family.js";
 import type { PrismaClient } from "../../../generated/prisma/client.js";
 
 interface ProvisionUserInput {
@@ -73,7 +73,7 @@ export async function ensureUserIsProvisioned(
   const existingFamily = await familyRepository.findBySpaceId(spaceId);
 
   if (!existingFamily) {
-    await familyRepository.createFamily(spaceId, createSeedFamily(familyId));
+    await familyRepository.createFamily(spaceId, createInitialFamily(familyId));
   }
 }
 
