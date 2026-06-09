@@ -4,7 +4,7 @@ export function getConfiguredLoginFallbackUrl(): string {
     | undefined;
 
   return (
-    normalizeOptionalUrl(env?.VITE_LOGIN_FALLBACK_URL) ??
+    normalizeOptionalHttpUrl(env?.VITE_LOGIN_FALLBACK_URL) ??
     "http://localhost:5173/login?app=family-fi"
   );
 }
@@ -13,10 +13,30 @@ export function getConfiguredLoginErrorFallbackUrl(): string {
   return withAuthErrorParam(getConfiguredLoginFallbackUrl());
 }
 
-function normalizeOptionalUrl(value: string | undefined): string | null {
+export function normalizeApiBaseUrl(value: string): string {
+  return normalizeHttpUrl(value).replace(/\/$/, "");
+}
+
+export function normalizeHttpUrl(value: string): string {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    throw new Error("URL value cannot be empty.");
+  }
+
+  const url = /^https?:\/\//i.test(trimmedValue)
+    ? trimmedValue
+    : `https://${trimmedValue}`;
+
+  new URL(url);
+
+  return url;
+}
+
+function normalizeOptionalHttpUrl(value: string | undefined): string | null {
   const trimmedValue = value?.trim();
 
-  return trimmedValue ? trimmedValue : null;
+  return trimmedValue ? normalizeHttpUrl(trimmedValue) : null;
 }
 
 function withAuthErrorParam(value: string): string {

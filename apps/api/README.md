@@ -26,19 +26,22 @@ OpenAPI documentation:
 The API uses Prisma with PostgreSQL. `DATABASE_URL` and
 `BETTER_AUTH_SECRET` are required at runtime. Optional auth settings:
 
-- `BETTER_AUTH_URL`: API origin used by Better Auth, default `http://localhost:3001`.
-- `WEB_ORIGIN`: credentialed CORS/trusted web origin, default `http://localhost:5174`.
-- `HUB_ORIGIN`: Iki hub origin trusted for auth redirects, default `http://localhost:5173`.
-- `IKI_OAUTH_DISCOVERY_URL`: preferred deployed Iki OIDC metadata URL.
-- `IKI_AUTH_BROWSER_ORIGIN`: Iki API origin used for browser redirects, default
-  `http://localhost:3000`.
-- `IKI_AUTH_SERVER_ORIGIN`: Iki API origin used by the API server for token and
-  userinfo calls, default `IKI_AUTH_BROWSER_ORIGIN`.
-- `IKI_OAUTH_AUTHORIZATION_URL`: explicit Iki OAuth authorization URL.
+- `BETTER_AUTH_URL`: API HTTP(S) origin used by Better Auth, default
+  `http://localhost:3001`.
+- `WEB_ORIGIN`: credentialed CORS/trusted web HTTP(S) origin, default
+  `http://localhost:5174`.
+- `HUB_ORIGIN`: Iki hub HTTP(S) origin trusted for auth redirects, default
+  `http://localhost:5173`.
+- `IKI_OAUTH_DISCOVERY_URL`: preferred deployed Iki OIDC metadata HTTP(S) URL.
+- `IKI_AUTH_BROWSER_ORIGIN`: Iki API HTTP(S) origin used for browser redirects,
+  default `http://localhost:3000`.
+- `IKI_AUTH_SERVER_ORIGIN`: Iki API HTTP(S) origin used by the API server for
+  token and userinfo calls, default `IKI_AUTH_BROWSER_ORIGIN`.
+- `IKI_OAUTH_AUTHORIZATION_URL`: explicit Iki OAuth authorization HTTP(S) URL.
 - `IKI_OAUTH_ISSUER`: explicit Iki OAuth issuer, default
   `IKI_AUTH_BROWSER_ORIGIN` plus `/api/auth`.
-- `IKI_OAUTH_TOKEN_URL`: explicit Iki OAuth token URL.
-- `IKI_OAUTH_USER_INFO_URL`: explicit Iki OAuth userinfo URL.
+- `IKI_OAUTH_TOKEN_URL`: explicit Iki OAuth token HTTP(S) URL.
+- `IKI_OAUTH_USER_INFO_URL`: explicit Iki OAuth userinfo HTTP(S) URL.
 - `IKI_OAUTH_CLIENT_ID`: Iki OAuth client ID, default `family-fi`.
 - `IKI_OAUTH_CLIENT_SECRET`: Iki OAuth client secret. A dev default is used
   outside production.
@@ -50,6 +53,8 @@ Production deployments must set `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
 `VITE_API_BASE_URL` for the deployed origins. Prefer `IKI_OAUTH_DISCOVERY_URL`
 for provider metadata. Override the Iki OAuth URLs only when discovery cannot
 represent the browser/server network path.
+Bare production hostnames are normalized to `https://`, but prefer setting the
+full `https://...` origin in deployment variables.
 
 The matching Iki OAuth client must be registered in Iki with callback URL
 `http://localhost:3001/api/auth/oauth2/callback/iki` for local development, or

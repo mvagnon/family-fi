@@ -7,34 +7,38 @@ import { PrismaSpacesRepository } from "./features/spaces/infrastructure/persist
 import { prisma } from "./infrastructure/prisma.js";
 
 const port = Number.parseInt(process.env.PORT ?? "3001", 10);
-const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:5174";
-const hubOrigin = process.env.HUB_ORIGIN ?? "http://localhost:5173";
+const webOrigin =
+  getOptionalHttpOrigin("WEB_ORIGIN") ?? "http://localhost:5174";
+const hubOrigin =
+  getOptionalHttpOrigin("HUB_ORIGIN") ?? "http://localhost:5173";
 const ikiAuthBrowserOrigin =
-  process.env.IKI_AUTH_BROWSER_ORIGIN ?? "http://localhost:3000";
+  getOptionalHttpOrigin("IKI_AUTH_BROWSER_ORIGIN") ?? "http://localhost:3000";
 const ikiAuthServerOrigin =
-  process.env.IKI_AUTH_SERVER_ORIGIN ?? ikiAuthBrowserOrigin;
-const ikiOAuthDiscoveryUrl = getOptionalEnv("IKI_OAUTH_DISCOVERY_URL");
-const openApiServerUrl = process.env.OPENAPI_SERVER_URL;
+  getOptionalHttpOrigin("IKI_AUTH_SERVER_ORIGIN") ?? ikiAuthBrowserOrigin;
+const ikiOAuthDiscoveryUrl = getOptionalHttpUrl("IKI_OAUTH_DISCOVERY_URL");
+const openApiServerUrl = getOptionalHttpOrigin("OPENAPI_SERVER_URL");
 const authProvider = createBetterAuthProvider(prisma, {
-  baseUrl: process.env.BETTER_AUTH_URL ?? `http://localhost:${port}`,
+  baseUrl:
+    getOptionalHttpOrigin("BETTER_AUTH_URL") ?? `http://localhost:${port}`,
   hubOrigin,
   ikiOAuthClientId: process.env.IKI_OAUTH_CLIENT_ID ?? "family-fi",
   ikiOAuthClientSecret: getIkiOAuthClientSecret(),
   ikiOAuthDiscoveryUrl,
   ikiOAuthAuthorizationUrl: ikiOAuthDiscoveryUrl
     ? undefined
-    : (process.env.IKI_OAUTH_AUTHORIZATION_URL ??
+    : (getOptionalHttpUrl("IKI_OAUTH_AUTHORIZATION_URL") ??
       `${ikiAuthBrowserOrigin}/api/auth/oauth2/authorize`),
   ikiOAuthIssuer: ikiOAuthDiscoveryUrl
     ? undefined
-    : (process.env.IKI_OAUTH_ISSUER ?? `${ikiAuthBrowserOrigin}/api/auth`),
+    : (getOptionalHttpUrl("IKI_OAUTH_ISSUER") ??
+      `${ikiAuthBrowserOrigin}/api/auth`),
   ikiOAuthTokenUrl: ikiOAuthDiscoveryUrl
     ? undefined
-    : (process.env.IKI_OAUTH_TOKEN_URL ??
+    : (getOptionalHttpUrl("IKI_OAUTH_TOKEN_URL") ??
       `${ikiAuthServerOrigin}/api/auth/oauth2/token`),
   ikiOAuthUserInfoUrl: ikiOAuthDiscoveryUrl
     ? undefined
-    : (process.env.IKI_OAUTH_USER_INFO_URL ??
+    : (getOptionalHttpUrl("IKI_OAUTH_USER_INFO_URL") ??
       `${ikiAuthServerOrigin}/api/auth/oauth2/userinfo`),
   secret: getBetterAuthSecret(),
   trustedOrigins: [webOrigin],
@@ -82,4 +86,24 @@ function getOptionalEnv(name: string): string | undefined {
   const value = process.env[name]?.trim();
 
   return value ? value : undefined;
+}
+
+function getOptionalHttpOrigin(name: string): string | undefined {
+  const value = getOptionalEnv(name);
+
+  return value ? normalizeHttpUrl(value).replace(/\/$/, "") : undefined;
+}
+
+function getOptionalHttpUrl(name: string): string | undefined {
+  const value = getOptionalEnv(name);
+
+  return value ? normalizeHttpUrl(value) : undefined;
+}
+
+function normalizeHttpUrl(value: string): string {
+  const url = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+
+  new URL(url);
+
+  return url;
 }

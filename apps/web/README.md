@@ -12,13 +12,16 @@ The app runs on `http://localhost:5174`.
 `/auth/iki` starts the Iki OAuth flow, and protected app routes call
 `http://localhost:3001` by default.
 
-Override the API URL at build time with `VITE_API_BASE_URL`.
-Set `VITE_HUB_API_BASE_URL` to the Iki API origin, default
+Override the API HTTP(S) URL at build time with `VITE_API_BASE_URL`.
+Set `VITE_HUB_API_BASE_URL` to the Iki API HTTP(S) origin, default
 `http://localhost:3000`.
-Set `VITE_LOGIN_FALLBACK_URL` to the Iki Hub login URL opened from the account
-connection error state, default `http://localhost:5173/login?app=family-fi`.
+Set `VITE_LOGIN_FALLBACK_URL` to the Iki Hub login HTTP(S) URL opened from the
+account connection error state, default
+`http://localhost:5173/login?app=family-fi`.
 Family-Fi adds `auth_error=1` when it redirects there after a failed account
 connection attempt.
+Bare production hostnames are normalized to `https://`, but prefer setting the
+full `https://...` URL in deployment variables.
 
 ## Frontend architecture
 

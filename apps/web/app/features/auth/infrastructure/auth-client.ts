@@ -2,7 +2,10 @@ import { createAuthClient } from "better-auth/react";
 import { genericOAuthClient } from "better-auth/client/plugins";
 
 import { getConfiguredApiBaseUrl } from "~/infrastructure/api-client";
-import { getConfiguredLoginErrorFallbackUrl } from "~/infrastructure/runtime-config";
+import {
+  getConfiguredLoginErrorFallbackUrl,
+  normalizeApiBaseUrl,
+} from "~/infrastructure/runtime-config";
 import type { AuthRepository } from "../domain/auth-repository";
 
 const betterAuthClient = createAuthClient({
@@ -77,7 +80,9 @@ function getAppCallbackUrl(): string {
 function getConfiguredHubApiBaseUrl(): string {
   const env = import.meta.env as { VITE_HUB_API_BASE_URL?: string } | undefined;
 
-  return env?.VITE_HUB_API_BASE_URL ?? "http://localhost:3000";
+  return normalizeApiBaseUrl(
+    env?.VITE_HUB_API_BASE_URL ?? "http://localhost:3000",
+  );
 }
 
 function getRedirectUrl(value: unknown): string | null {
