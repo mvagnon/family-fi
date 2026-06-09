@@ -36,12 +36,30 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Docker Compose reads `.env` for local configuration. Keep `.env` uncommitted
-and update it when local ports, origins, or development secrets differ from the
-example values.
+Docker Compose reads `.env` for local configuration and injects it into the API
+and web containers. The API database URL is derived from `POSTGRES_USER`,
+`POSTGRES_PASSWORD`, and `POSTGRES_DB`. Keep `.env` uncommitted and update it
+when local ports, origins, or development secrets differ from the example
+values.
 
 Run `../iki` on API `http://localhost:3000` and hub
-`http://localhost:5173`, then open Iki Hub and launch Family-Fi from there.
+`http://localhost:5173`. Register an Iki OAuth client for Family-Fi with client
+id `family-fi`, callback URL
+`http://localhost:3001/api/auth/oauth2/callback/iki`, and a secret matching
+`IKI_OAUTH_CLIENT_SECRET`, then open Iki Hub and launch Family-Fi from there.
+
+From `../iki`, the local Docker registration command is:
+
+```bash
+docker compose run --rm \
+  -e OAUTH_CLIENT_ID=family-fi \
+  -e OAUTH_CLIENT_SECRET=development-only-family-fi-oauth-secret \
+  -e OAUTH_CLIENT_NAME=Family-Fi \
+  -e OAUTH_CLIENT_REDIRECT_URIS=http://localhost:3001/api/auth/oauth2/callback/iki \
+  -e OAUTH_CLIENT_URI=http://localhost:5174 \
+  api sh -lc "bun run prisma:deploy && bun run oauth-client:upsert"
+```
+
 Changes in `apps/web`, `apps/api`, and shared packages are mounted into the
 containers and reload without rebuilding the images.
 
@@ -73,8 +91,9 @@ docker build \
 
 - Set `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `WEB_ORIGIN`, and
   `VITE_API_BASE_URL` for the production origins.
-- Set `IKI_OAUTH_CLIENT_ID`, `IKI_OAUTH_CLIENT_SECRET`, and
-  the Iki OAuth endpoint URLs to the Iki OAuth client values.
+- Set `IKI_OAUTH_CLIENT_SECRET` to the Iki OAuth client secret. Override
+  `IKI_OAUTH_CLIENT_ID` and the Iki OAuth endpoint URLs only when they differ
+  from the standard Family-Fi client id and origin-derived URLs.
 - Set `VITE_HUB_API_BASE_URL` so the web app can clear the Iki session on
   sign-out.
 - Set `VITE_LOGIN_FALLBACK_URL` to the Iki Hub login URL with the source app

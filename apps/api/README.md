@@ -39,8 +39,26 @@ The API uses Prisma with PostgreSQL. `DATABASE_URL` and
   default request origin.
 
 Production deployments must set `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
-`WEB_ORIGIN`, `IKI_OAUTH_CLIENT_SECRET`, the Iki OAuth URLs, and the web build's
-`VITE_API_BASE_URL` for the deployed origins.
+`WEB_ORIGIN`, `IKI_OAUTH_CLIENT_SECRET`, and the web build's
+`VITE_API_BASE_URL` for the deployed origins. Override the Iki OAuth URLs only
+when they cannot be derived from `IKI_AUTH_BROWSER_ORIGIN` and
+`IKI_AUTH_SERVER_ORIGIN`.
+
+The matching Iki OAuth client must be registered in Iki with callback URL
+`http://localhost:3001/api/auth/oauth2/callback/iki` for local development, or
+the equivalent deployed callback URL in production.
+
+From the Iki repository, register the local client with:
+
+```bash
+docker compose run --rm \
+  -e OAUTH_CLIENT_ID=family-fi \
+  -e OAUTH_CLIENT_SECRET=development-only-family-fi-oauth-secret \
+  -e OAUTH_CLIENT_NAME=Family-Fi \
+  -e OAUTH_CLIENT_REDIRECT_URIS=http://localhost:3001/api/auth/oauth2/callback/iki \
+  -e OAUTH_CLIENT_URI=http://localhost:5174 \
+  api sh -lc "bun run prisma:deploy && bun run oauth-client:upsert"
+```
 
 Family budget routes are scoped under `/api/spaces/:spaceId/family`.
 
@@ -75,7 +93,9 @@ cp .env.example .env
 docker compose up --build api
 ```
 
-Docker Compose reads local API, auth, and database values from `.env`.
+Docker Compose reads local API, auth, and database values from `.env`. The API
+database URL is derived from `POSTGRES_USER`, `POSTGRES_PASSWORD`, and
+`POSTGRES_DB`.
 
 The API source is bind-mounted into the container. Rebuild only when
 dependencies change.

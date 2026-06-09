@@ -41,7 +41,7 @@ cp .env.example .env
 docker compose up --build web
 ```
 
-Docker Compose reads local web, auth, and API URL values from `.env`.
+Docker Compose reads local web and API URL values from `.env`.
 
 The web source is bind-mounted into the container. Rebuild only when
 dependencies change.

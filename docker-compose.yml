@@ -2,11 +2,11 @@ services:
   db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-family_fi}
-      POSTGRES_USER: ${POSTGRES_USER:-family_fi}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-family_fi}
+      POSTGRES_DB: "${POSTGRES_DB:?POSTGRES_DB is required}"
+      POSTGRES_USER: "${POSTGRES_USER:?POSTGRES_USER is required}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_PORT:?POSTGRES_PORT is required}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -22,7 +22,7 @@ services:
       target: builder
     command: ["bun", "run", "--filter=api", "prisma:deploy"]
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-family_fi}:${POSTGRES_PASSWORD:-family_fi}@db:5432/${POSTGRES_DB:-family_fi}
+      DATABASE_URL: "postgresql://${POSTGRES_USER:?POSTGRES_USER is required}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:?POSTGRES_DB is required}"
     depends_on:
       db:
         condition: service_healthy
@@ -39,20 +39,18 @@ services:
         "-lc",
         "cd /app && bun install --frozen-lockfile && cd /app/apps/api && bun run prisma generate && bun --watch src/index.ts",
       ]
+    env_file:
+      - .env
     environment:
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-development-only-better-auth-secret-32-chars}
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3001}
-      CHOKIDAR_USEPOLLING: "${CHOKIDAR_USEPOLLING:-true}"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-family_fi}:${POSTGRES_PASSWORD:-family_fi}@db:5432/${POSTGRES_DB:-family_fi}
-      HUB_ORIGIN: ${HUB_ORIGIN:-http://localhost:5173}
-      IKI_AUTH_BROWSER_ORIGIN: ${IKI_AUTH_BROWSER_ORIGIN:-http://localhost:3000}
-      IKI_AUTH_SERVER_ORIGIN: ${IKI_AUTH_SERVER_ORIGIN:-http://host.docker.internal:3000}
-      IKI_OAUTH_CLIENT_ID: ${IKI_OAUTH_CLIENT_ID:-family-fi}
-      IKI_OAUTH_CLIENT_SECRET: ${IKI_OAUTH_CLIENT_SECRET:-development-only-family-fi-oauth-secret}
-      PORT: "${API_PORT:-3001}"
-      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:5174}
+      BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}"
+      DATABASE_URL: "postgresql://${POSTGRES_USER:?POSTGRES_USER is required}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:?POSTGRES_DB is required}"
+      IKI_OAUTH_CLIENT_SECRET: "${IKI_OAUTH_CLIENT_SECRET:?IKI_OAUTH_CLIENT_SECRET is required}"
+      NODE_ENV: development
+      PORT: "${API_PORT:?API_PORT is required}"
     ports:
-      - "${API_PORT:-3001}:${API_PORT:-3001}"
+      - "${API_PORT:?API_PORT is required}:${API_PORT:?API_PORT is required}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - .:/app
       - root-node-modules:/app/node_modules
@@ -70,23 +68,20 @@ services:
       dockerfile: apps/web/Dockerfile
       target: development
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3001}
-        VITE_LOGIN_FALLBACK_URL: ${VITE_LOGIN_FALLBACK_URL:-http://localhost:5173/login?app=family-fi}
+        VITE_API_BASE_URL: "${VITE_API_BASE_URL:?VITE_API_BASE_URL is required}"
     command:
       [
         "sh",
         "-lc",
-        "cd /app && bun install --frozen-lockfile && cd /app/apps/web && bun run react-router dev --host ${WEB_HOST:-0.0.0.0} --port ${WEB_PORT:-5174}",
+        "cd /app && bun install --frozen-lockfile && cd /app/apps/web && bun run react-router dev --host ${WEB_HOST:?WEB_HOST is required} --port ${WEB_PORT:?WEB_PORT is required}",
       ]
+    env_file:
+      - .env
     environment:
-      CHOKIDAR_USEPOLLING: "${CHOKIDAR_USEPOLLING:-true}"
-      HOST: ${WEB_HOST:-0.0.0.0}
-      PORT: "${WEB_PORT:-5174}"
-      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3001}
-      VITE_HUB_API_BASE_URL: ${VITE_HUB_API_BASE_URL:-http://localhost:3000}
-      VITE_LOGIN_FALLBACK_URL: "${VITE_LOGIN_FALLBACK_URL:-http://localhost:5173/login?app=family-fi}"
+      HOST: "${WEB_HOST:?WEB_HOST is required}"
+      PORT: "${WEB_PORT:?WEB_PORT is required}"
     ports:
-      - "${WEB_PORT:-5174}:${WEB_PORT:-5174}"
+      - "${WEB_PORT:?WEB_PORT is required}:${WEB_PORT:?WEB_PORT is required}"
     volumes:
       - .:/app
       - root-node-modules:/app/node_modules
