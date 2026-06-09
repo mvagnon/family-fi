@@ -29,8 +29,7 @@ Then start the API and frontend:
 
 ```bash
 bun install
-docker compose up --build api
-bun run dev
+make dev
 ```
 
 The web app runs on `http://localhost:5174`.
@@ -52,7 +51,7 @@ cd apps/web && bun run dev
 Run the Docker development stack for PostgreSQL, Prisma migrations, and the API:
 
 ```bash
-docker compose up --build api
+make docker-up
 ```
 
 Docker Compose reads `.env` for local configuration and injects it into the API
@@ -73,7 +72,7 @@ Iki's `FAMILY_FI_OAUTH_CLIENT_SECRET`.
 Run the web app with Bun for normal frontend work:
 
 ```bash
-bun run dev
+make bun-dev
 ```
 
 The Docker web service remains available for full-container checks:
