@@ -9,12 +9,13 @@ import type { AuthSession } from "../domain/auth.js";
 interface BetterAuthProviderOptions {
   baseUrl: string;
   hubOrigin: string;
-  ikiOAuthAuthorizationUrl: string;
+  ikiOAuthAuthorizationUrl?: string;
   ikiOAuthClientId: string;
   ikiOAuthClientSecret: string;
-  ikiOAuthIssuer: string;
-  ikiOAuthTokenUrl: string;
-  ikiOAuthUserInfoUrl: string;
+  ikiOAuthDiscoveryUrl?: string;
+  ikiOAuthIssuer?: string;
+  ikiOAuthTokenUrl?: string;
+  ikiOAuthUserInfoUrl?: string;
   secret: string;
   trustedOrigins: string[];
 }
@@ -40,6 +41,7 @@ export function createBetterAuthProvider(
             authorizationUrl: options.ikiOAuthAuthorizationUrl,
             clientId: options.ikiOAuthClientId,
             clientSecret: options.ikiOAuthClientSecret,
+            discoveryUrl: options.ikiOAuthDiscoveryUrl,
             issuer: options.ikiOAuthIssuer,
             pkce: true,
             providerId: "iki",

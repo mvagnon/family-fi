@@ -49,7 +49,8 @@ docker compose --profile full up --build web
 
 Docker Compose reads local web and API URL values from the root `.env`.
 Required local values for this service are `WEB_HOST`, `WEB_PORT`, and
-`VITE_API_BASE_URL`.
+`VITE_API_BASE_URL`. `VITE_HUB_API_BASE_URL` and `VITE_LOGIN_FALLBACK_URL`
+default to the local Iki URLs when omitted.
 
 The web source is bind-mounted into the container. Rebuild only when
 dependencies change.
@@ -60,6 +61,7 @@ Build the production image from the repository root:
 docker build \
   -f apps/web/Dockerfile \
   --build-arg VITE_API_BASE_URL=http://localhost:3001 \
+  --build-arg VITE_HUB_API_BASE_URL=http://localhost:3000 \
   --build-arg "VITE_LOGIN_FALLBACK_URL=http://localhost:5173/login?app=family-fi" \
   -t family-fi-web .
 

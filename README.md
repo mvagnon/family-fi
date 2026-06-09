@@ -25,6 +25,8 @@ WEB_ORIGIN=http://localhost:5174
 WEB_HOST=0.0.0.0
 WEB_PORT=5174
 VITE_API_BASE_URL=http://localhost:3001
+VITE_HUB_API_BASE_URL=http://localhost:3000
+VITE_LOGIN_FALLBACK_URL=http://localhost:5173/login?app=family-fi
 ```
 
 Then start the API and frontend:
@@ -109,6 +111,8 @@ The web image bakes `VITE_API_BASE_URL` at build time:
 docker build \
   -f apps/web/Dockerfile \
   --build-arg VITE_API_BASE_URL=http://localhost:3001 \
+  --build-arg VITE_HUB_API_BASE_URL=http://localhost:3000 \
+  --build-arg "VITE_LOGIN_FALLBACK_URL=http://localhost:5173/login?app=family-fi" \
   -t family-fi-web .
 ```
 
@@ -119,8 +123,10 @@ docker build \
   `VITE_API_BASE_URL` for the production origins.
 - Set `IKI_OAUTH_CLIENT_SECRET` to the Iki OAuth client secret. Override
   `IKI_OAUTH_CLIENT_ID` only when it differs from `family-fi`.
-- Set `IKI_AUTH_BROWSER_ORIGIN` and `IKI_AUTH_SERVER_ORIGIN` to the deployed Iki
-  API origins, or set the explicit `IKI_OAUTH_*` endpoint URLs.
+- Prefer `IKI_OAUTH_DISCOVERY_URL` for deployed OAuth metadata. Use
+  `IKI_AUTH_BROWSER_ORIGIN` and `IKI_AUTH_SERVER_ORIGIN`, or explicit
+  `IKI_OAUTH_*` endpoint URLs, only when discovery cannot represent the network
+  topology.
 - Set `VITE_HUB_API_BASE_URL` so the web app can clear the Iki session on
   sign-out.
 - Set `VITE_LOGIN_FALLBACK_URL` to the Iki Hub login URL with the source app

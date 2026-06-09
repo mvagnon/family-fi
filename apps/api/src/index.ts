@@ -13,23 +13,29 @@ const ikiAuthBrowserOrigin =
   process.env.IKI_AUTH_BROWSER_ORIGIN ?? "http://localhost:3000";
 const ikiAuthServerOrigin =
   process.env.IKI_AUTH_SERVER_ORIGIN ?? ikiAuthBrowserOrigin;
+const ikiOAuthDiscoveryUrl = getOptionalEnv("IKI_OAUTH_DISCOVERY_URL");
 const openApiServerUrl = process.env.OPENAPI_SERVER_URL;
 const authProvider = createBetterAuthProvider(prisma, {
   baseUrl: process.env.BETTER_AUTH_URL ?? `http://localhost:${port}`,
   hubOrigin,
-  ikiOAuthAuthorizationUrl:
-    process.env.IKI_OAUTH_AUTHORIZATION_URL ??
-    `${ikiAuthBrowserOrigin}/api/auth/oauth2/authorize`,
   ikiOAuthClientId: process.env.IKI_OAUTH_CLIENT_ID ?? "family-fi",
   ikiOAuthClientSecret: getIkiOAuthClientSecret(),
-  ikiOAuthIssuer:
-    process.env.IKI_OAUTH_ISSUER ?? `${ikiAuthBrowserOrigin}/api/auth`,
-  ikiOAuthTokenUrl:
-    process.env.IKI_OAUTH_TOKEN_URL ??
-    `${ikiAuthServerOrigin}/api/auth/oauth2/token`,
-  ikiOAuthUserInfoUrl:
-    process.env.IKI_OAUTH_USER_INFO_URL ??
-    `${ikiAuthServerOrigin}/api/auth/oauth2/userinfo`,
+  ikiOAuthDiscoveryUrl,
+  ikiOAuthAuthorizationUrl: ikiOAuthDiscoveryUrl
+    ? undefined
+    : (process.env.IKI_OAUTH_AUTHORIZATION_URL ??
+      `${ikiAuthBrowserOrigin}/api/auth/oauth2/authorize`),
+  ikiOAuthIssuer: ikiOAuthDiscoveryUrl
+    ? undefined
+    : (process.env.IKI_OAUTH_ISSUER ?? `${ikiAuthBrowserOrigin}/api/auth`),
+  ikiOAuthTokenUrl: ikiOAuthDiscoveryUrl
+    ? undefined
+    : (process.env.IKI_OAUTH_TOKEN_URL ??
+      `${ikiAuthServerOrigin}/api/auth/oauth2/token`),
+  ikiOAuthUserInfoUrl: ikiOAuthDiscoveryUrl
+    ? undefined
+    : (process.env.IKI_OAUTH_USER_INFO_URL ??
+      `${ikiAuthServerOrigin}/api/auth/oauth2/userinfo`),
   secret: getBetterAuthSecret(),
   trustedOrigins: [webOrigin],
 });
@@ -70,4 +76,10 @@ function getIkiOAuthClientSecret(): string {
   }
 
   return secret ?? "development-only-family-fi-oauth-secret";
+}
+
+function getOptionalEnv(name: string): string | undefined {
+  const value = process.env[name]?.trim();
+
+  return value ? value : undefined;
 }

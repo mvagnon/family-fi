@@ -29,6 +29,7 @@ The API uses Prisma with PostgreSQL. `DATABASE_URL` and
 - `BETTER_AUTH_URL`: API origin used by Better Auth, default `http://localhost:3001`.
 - `WEB_ORIGIN`: credentialed CORS/trusted web origin, default `http://localhost:5174`.
 - `HUB_ORIGIN`: Iki hub origin trusted for auth redirects, default `http://localhost:5173`.
+- `IKI_OAUTH_DISCOVERY_URL`: preferred deployed Iki OIDC metadata URL.
 - `IKI_AUTH_BROWSER_ORIGIN`: Iki API origin used for browser redirects, default
   `http://localhost:3000`.
 - `IKI_AUTH_SERVER_ORIGIN`: Iki API origin used by the API server for token and
@@ -46,9 +47,9 @@ The API uses Prisma with PostgreSQL. `DATABASE_URL` and
 
 Production deployments must set `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
 `WEB_ORIGIN`, `IKI_OAUTH_CLIENT_SECRET`, and the web build's
-`VITE_API_BASE_URL` for the deployed origins. Override the Iki OAuth URLs only
-when they cannot be derived from `IKI_AUTH_BROWSER_ORIGIN` and
-`IKI_AUTH_SERVER_ORIGIN`.
+`VITE_API_BASE_URL` for the deployed origins. Prefer `IKI_OAUTH_DISCOVERY_URL`
+for provider metadata. Override the Iki OAuth URLs only when discovery cannot
+represent the browser/server network path.
 
 The matching Iki OAuth client must be registered in Iki with callback URL
 `http://localhost:3001/api/auth/oauth2/callback/iki` for local development, or
@@ -104,6 +105,7 @@ docker build -f apps/api/Dockerfile -t family-fi-api .
 docker run --rm \
   -p 3001:3001 \
   -e BETTER_AUTH_SECRET="replace-with-a-32-character-secret" \
+  -e BETTER_AUTH_URL="http://localhost:3001" \
   -e DATABASE_URL="postgresql://user:password@host.docker.internal:5432/family_fi" \
   -e IKI_OAUTH_CLIENT_SECRET="replace-with-iki-client-secret" \
   family-fi-api

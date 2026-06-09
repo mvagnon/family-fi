@@ -5,11 +5,11 @@ ENV TURBO_TELEMETRY_DISABLED=1
 
 FROM base AS development
 ENV NODE_ENV=development
-ENV PORT=3000
+ENV PORT=3001
 COPY . .
 RUN bun install --frozen-lockfile
 WORKDIR /app/apps/api
-EXPOSE 3000
+EXPOSE 3001
 CMD ["sh", "-lc", "bun run prisma generate && bun --watch src/index.ts"]
 
 FROM base AS pruner
@@ -33,12 +33,12 @@ RUN bun install --frozen-lockfile --production
 
 FROM base AS runner
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=3001
 
 COPY --from=production-dependencies /app ./
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
 
 WORKDIR /app/apps/api
-EXPOSE 3000
+EXPOSE 3001
 CMD ["bun", "dist/src/index.js"]
