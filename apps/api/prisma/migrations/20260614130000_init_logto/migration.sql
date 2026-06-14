@@ -13,7 +13,7 @@ CREATE TABLE "family" (
 
 CREATE TABLE "user" (
     "id" TEXT NOT NULL,
-    "iki_user_id" TEXT,
+    "identity_subject" TEXT,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "email_verified" BOOLEAN NOT NULL DEFAULT false,
@@ -35,6 +35,18 @@ CREATE TABLE "session" (
     "user_id" TEXT NOT NULL,
 
     CONSTRAINT "session_pkey" PRIMARY KEY ("id")
+);
+
+CREATE TABLE "oauth_login_attempt" (
+    "id" TEXT NOT NULL,
+    "state" TEXT NOT NULL,
+    "code_verifier" TEXT NOT NULL,
+    "callback_url" TEXT NOT NULL,
+    "error_callback_url" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "expires_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "oauth_login_attempt_pkey" PRIMARY KEY ("id")
 );
 
 CREATE TABLE "account" (
@@ -213,10 +225,12 @@ CREATE TABLE "loan_repayment_lines" (
 );
 
 CREATE UNIQUE INDEX "family_space_id_key" ON "family"("space_id");
-CREATE UNIQUE INDEX "user_iki_user_id_key" ON "user"("iki_user_id");
+CREATE UNIQUE INDEX "user_identity_subject_key" ON "user"("identity_subject");
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 CREATE UNIQUE INDEX "session_token_key" ON "session"("token");
 CREATE INDEX "session_user_id_idx" ON "session"("user_id");
+CREATE UNIQUE INDEX "oauth_login_attempt_state_key" ON "oauth_login_attempt"("state");
+CREATE INDEX "oauth_login_attempt_expires_at_idx" ON "oauth_login_attempt"("expires_at");
 CREATE INDEX "account_user_id_idx" ON "account"("user_id");
 CREATE INDEX "verification_identifier_idx" ON "verification"("identifier");
 CREATE INDEX "space_membership_user_id_idx" ON "space_membership"("user_id");
