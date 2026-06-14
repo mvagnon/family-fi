@@ -16,27 +16,19 @@ import { alpha } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import { FeedbackSnackbar } from "@repo/ui/feedback-snackbar";
 import { LoadingButton } from "@repo/ui/loading-button";
-import { useEffect, useState, type MouseEvent } from "react";
+import { useState, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
 
 import { useAuthSession, useSignOut } from "../application/auth-session";
 import type { AuthUser } from "../domain/auth";
 import type { AuthRepository } from "../domain/auth-repository";
 
 interface AccountMenuProps {
-  loginErrorFallbackUrl?: string | null;
-  loginFallbackUrl?: string | null;
   repository: AuthRepository;
 }
 
-export function AccountMenu({
-  loginErrorFallbackUrl,
-  loginFallbackUrl,
-  repository,
-}: AccountMenuProps) {
+export function AccountMenu({ repository }: AccountMenuProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const session = useAuthSession(repository);
   const signOut = useSignOut(repository);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -44,12 +36,6 @@ export function AccountMenu({
 
   if (session.isPending) {
     return <AccountMenuSkeleton />;
-  }
-
-  if (session.error && loginErrorFallbackUrl) {
-    return (
-      <AccountMenuSessionRedirect loginFallbackUrl={loginErrorFallbackUrl} />
-    );
   }
 
   if (session.error) {
@@ -71,13 +57,7 @@ export function AccountMenu({
     setAnchorEl(null);
 
     try {
-      await signOut.mutateAsync();
-      if (loginFallbackUrl) {
-        window.location.assign(loginFallbackUrl);
-        return;
-      }
-
-      navigate("/auth/iki", { replace: true });
+      window.location.assign(await signOut.mutateAsync());
     } catch {
       // Mutation state drives the snackbar; the click handler must not leak a rejected promise.
     }
@@ -197,18 +177,6 @@ function AccountMenuSessionError({
       </LoadingButton>
     </Box>
   );
-}
-
-function AccountMenuSessionRedirect({
-  loginFallbackUrl,
-}: {
-  loginFallbackUrl: string;
-}) {
-  useEffect(() => {
-    window.location.assign(loginFallbackUrl);
-  }, [loginFallbackUrl]);
-
-  return <AccountMenuSkeleton />;
 }
 
 function getUserLabel(user: AuthUser): string {

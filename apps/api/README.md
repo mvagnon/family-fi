@@ -1,6 +1,6 @@
 # Family-Fi API
 
-Hono API with Prisma, PostgreSQL, local sessions, and Iki OAuth login.
+Hono API with Prisma, PostgreSQL, local sessions, and Logto OIDC login.
 
 ## Local
 
@@ -8,7 +8,11 @@ Hono API with Prisma, PostgreSQL, local sessions, and Iki OAuth login.
 bun install
 DATABASE_URL="postgresql://user:password@localhost:5432/family_fi" bun run prisma:migrate
 DATABASE_URL="postgresql://user:password@localhost:5432/family_fi" \
-IKI_OAUTH_CLIENT_SECRET="replace-with-iki-client-secret" \
+WEB_ORIGIN="http://localhost:5174" \
+LOGTO_ENDPOINT="http://localhost:3010" \
+LOGTO_ISSUER="http://localhost:3010/oidc" \
+LOGTO_CLIENT_ID="replace-with-logto-app-id" \
+LOGTO_CLIENT_SECRET="replace-with-logto-app-secret" \
 bun run dev
 ```
 
@@ -23,50 +27,59 @@ OpenAPI documentation:
   `production`.
 
 The API uses Prisma with PostgreSQL. `DATABASE_URL` is required at runtime.
-Optional auth settings:
 
-- `WEB_ORIGIN`: credentialed CORS/trusted web HTTP(S) origin, default
-  `http://localhost:5174`. It is also the public origin used for the proxied
-  Iki OAuth callback.
-- `HUB_ORIGIN`: Iki hub HTTP(S) origin trusted for auth redirects, default
-  `http://localhost:5173`.
-- `IKI_AUTH_SERVER_ORIGIN`: optional Iki hub HTTP(S) origin used by the API to
-  call Iki OAuth server endpoints, default `HUB_ORIGIN`. Set it to
-  `http://host.docker.internal:3000` when the API runs in Docker and the Iki
-  API runs on the host or in another local Docker stack.
-- `IKI_OAUTH_CLIENT_ID`: Iki OAuth client ID, default `family-fi`.
-- `IKI_OAUTH_CLIENT_SECRET`: Iki OAuth client secret. A dev default is used
-  outside production.
+Auth settings:
+
+- `WEB_ORIGIN`: credentialed CORS/trusted web HTTP(S) origin. It is also the
+  public origin used for the proxied Logto callback.
+- `LOGTO_ENDPOINT`: Logto HTTP(S) origin used to load OIDC discovery.
+- `LOGTO_ISSUER`: Logto OIDC issuer expected in discovery.
+- `LOGTO_CLIENT_ID`: Family-Fi application ID from Logto.
+- `LOGTO_CLIENT_SECRET`: Family-Fi application secret from Logto.
 - `OPENAPI_SERVER_URL`: server URL advertised in the generated OpenAPI spec,
   default request origin.
 
-Production deployments must set `WEB_ORIGIN`, `HUB_ORIGIN`, and
-`IKI_OAUTH_CLIENT_SECRET`. Iki provider metadata is discovered through
-`HUB_ORIGIN` at `/api/auth/.well-known/openid-configuration`, so the Family-Fi
-API does not need to know the real Iki API domain.
+Production deployments must set `WEB_ORIGIN`, `LOGTO_ENDPOINT`,
+`LOGTO_ISSUER`, `LOGTO_CLIENT_ID`, and `LOGTO_CLIENT_SECRET`. Logto provider
+metadata is discovered at `LOGTO_ENDPOINT/oidc/.well-known/openid-configuration`
+and its `issuer` must match `LOGTO_ISSUER`.
 Bare production hostnames are normalized to `https://`; local and Railway
 private hostnames are normalized to `http://`.
 
-The matching Iki OAuth client must be registered in Iki with callback URL
-`http://localhost:5174/api/auth/oauth2/callback/iki` for local development, or
-the equivalent deployed web callback URL in production. Iki syncs that client
-from its connected-app registry; this app's `IKI_OAUTH_CLIENT_SECRET` must
-match Iki's `FAMILY_FI_OAUTH_CLIENT_SECRET`.
+For local Docker, `LOGTO_ENDPOINT` can point to
+`http://host.docker.internal:3010` so the API container can reach Logto, while
+`LOGTO_ISSUER` remains the public issuer exposed by Logto, such as
+`http://localhost:3010/oidc`.
+
+The matching Logto application must register this callback URL for local
+development:
+
+```text
+http://localhost:5174/api/auth/callback/logto
+```
+
+It must also register this post sign-out redirect URL:
+
+```text
+http://localhost:5174/auth/signed-out
+```
+
+Use the equivalent deployed web callback and post sign-out URLs in production.
 
 Family budget routes are scoped under `/api/spaces/:spaceId/family`.
 
 ## Auth Identity
 
-Iki is the source of truth for account identity and profile data. Family-Fi
-stores the Iki OIDC `sub` in `user.iki_user_id` and keeps local `email`/`name`
-values as a cache refreshed through its Iki OAuth flow.
+Logto is the source of truth for account identity and profile data. Family-Fi
+stores the Logto OIDC `sub` in `user.identity_subject` and keeps local
+`email`/`name` values as a cache refreshed through its Logto OIDC flow.
 
 Family-Fi still uses its local `user.id` for internal relations such as space
-memberships and settings. New personal space ids are derived from the Iki
+memberships and settings. New personal space ids are derived from the Logto
 `sub`, while existing owned spaces are preserved.
 
 Space member autocomplete searches only users already known by Family-Fi. It
-does not query a global Iki user directory.
+does not query a global Logto user directory.
 
 ## Architecture
 
@@ -101,8 +114,10 @@ docker build -f apps/api/Dockerfile -t family-fi-api .
 docker run --rm \
   -p 3001:3001 \
   -e WEB_ORIGIN="http://localhost:5174" \
-  -e HUB_ORIGIN="http://localhost:5173" \
+  -e LOGTO_ENDPOINT="http://host.docker.internal:3010" \
+  -e LOGTO_ISSUER="http://localhost:3010/oidc" \
+  -e LOGTO_CLIENT_ID="replace-with-logto-app-id" \
+  -e LOGTO_CLIENT_SECRET="replace-with-logto-app-secret" \
   -e DATABASE_URL="postgresql://user:password@host.docker.internal:5432/family_fi" \
-  -e IKI_OAUTH_CLIENT_SECRET="replace-with-iki-client-secret" \
   family-fi-api
 ```

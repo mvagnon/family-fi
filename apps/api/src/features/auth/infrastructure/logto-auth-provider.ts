@@ -4,27 +4,25 @@ import type { PrismaClient } from "../../../generated/prisma/client.js";
 import { ensureUserIsProvisioned } from "../application/provision-user.js";
 import type { AuthSession } from "../domain/auth.js";
 
-interface OAuthAuthProviderOptions {
+interface LogtoAuthProviderOptions {
   baseUrl: string;
-  hubOrigin: string;
-  ikiOAuthAuthorizationUrl?: string;
-  ikiOAuthClientId: string;
-  ikiOAuthClientSecret: string;
-  ikiOAuthDiscoveryUrl?: string;
-  ikiOAuthIssuer?: string;
-  ikiOAuthTokenUrl?: string;
-  ikiOAuthUserInfoUrl?: string;
+  logtoClientId: string;
+  logtoClientSecret: string;
+  logtoDiscoveryUrl: string;
+  logtoIssuer: string;
+  postSignOutRedirectUrl: string;
   trustedOrigins: string[];
 }
 
 interface OAuthMetadata {
-  authorizationUrl: string;
-  issuer?: string;
-  tokenUrl: string;
-  userInfoUrl: string;
+  authorizationEndpoint: string;
+  endSessionEndpoint: string;
+  issuer: string;
+  tokenEndpoint: string;
+  userInfoEndpoint: string;
 }
 
-interface IkiUserInfo {
+interface LogtoUserInfo {
   email: string;
   emailVerified: boolean;
   image: string | null;
@@ -35,7 +33,7 @@ interface IkiUserInfo {
 interface TokenResponse {
   accessToken: string;
   expiresAt: Date | null;
-  idToken: string | null;
+  idToken: string;
   refreshToken: string | null;
   refreshTokenExpiresAt: Date | null;
   scope: string | null;
@@ -51,28 +49,24 @@ const SESSION_COOKIE_NAME = "family-fi.session";
 const SECURE_SESSION_COOKIE_NAME = "__Secure-family-fi.session";
 const LOGIN_ATTEMPT_TTL_MS = 5 * 60 * 1000;
 
-export function createOAuthAuthProvider(
+export function createLogtoAuthProvider(
   prisma: PrismaClient,
-  options: OAuthAuthProviderOptions,
+  options: LogtoAuthProviderOptions,
 ): AuthHttpAdapter {
   const metadata = createOAuthMetadataResolver(options);
-  const baseUrl = new URL(options.baseUrl);
   const redirectUri = new URL(
-    "/api/auth/oauth2/callback/iki",
-    baseUrl,
+    "/api/auth/callback/logto",
+    options.baseUrl,
   ).toString();
   const defaultCallbackUrl = new URL(
     "/family",
     options.trustedOrigins[0],
   ).toString();
   const defaultErrorCallbackUrl = createDefaultErrorCallbackUrl(
-    options.hubOrigin,
+    options.baseUrl,
   );
   const allowedCallbackOrigins = new Set(options.trustedOrigins);
-  const allowedErrorCallbackOrigins = new Set([
-    ...options.trustedOrigins,
-    options.hubOrigin,
-  ]);
+  const allowedErrorCallbackOrigins = new Set(options.trustedOrigins);
 
   return {
     async getSession(request) {
@@ -104,7 +98,7 @@ export function createOAuthAuthProvider(
         return null;
       }
 
-      if (!session.user.ikiUserId) {
+      if (!session.user.identitySubject) {
         return null;
       }
 
@@ -112,7 +106,7 @@ export function createOAuthAuthProvider(
         user: {
           email: session.user.email,
           id: session.user.id,
-          ikiUserId: session.user.ikiUserId,
+          identitySubject: session.user.identitySubject,
           name: session.user.name,
         },
       };
@@ -120,9 +114,9 @@ export function createOAuthAuthProvider(
     async handleAuthRequest(request) {
       const url = new URL(request.url);
 
-      if (request.method === "GET" && url.pathname === "/api/auth/iki/start") {
+      if (request.method === "GET" && url.pathname === "/api/auth/login") {
         try {
-          return await startIkiSignIn(prisma, {
+          return await startLogtoSignIn(prisma, {
             allowedCallbackOrigins,
             allowedErrorCallbackOrigins,
             defaultCallbackUrl,
@@ -139,9 +133,9 @@ export function createOAuthAuthProvider(
 
       if (
         request.method === "GET" &&
-        url.pathname === "/api/auth/oauth2/callback/iki"
+        url.pathname === "/api/auth/callback/logto"
       ) {
-        return handleIkiCallback(prisma, {
+        return handleLogtoCallback(prisma, {
           defaultErrorCallbackUrl,
           metadata: await metadata(),
           options,
@@ -151,22 +145,18 @@ export function createOAuthAuthProvider(
         });
       }
 
-      if (
-        request.method === "GET" &&
-        (url.pathname === "/api/auth/get-session" ||
-          url.pathname === "/api/auth/session")
-      ) {
+      if (request.method === "GET" && url.pathname === "/api/auth/session") {
         const session = await this.getSession(request);
 
         return jsonResponse(session);
       }
 
-      if (
-        request.method === "POST" &&
-        (url.pathname === "/api/auth/sign-out" ||
-          url.pathname === "/api/auth/signout")
-      ) {
-        return signOut(prisma, request, options.baseUrl);
+      if (request.method === "POST" && url.pathname === "/api/auth/sign-out") {
+        return signOut(prisma, {
+          metadata,
+          options,
+          request,
+        });
       }
 
       return jsonResponse({ message: "Not Found" }, 404);
@@ -174,7 +164,7 @@ export function createOAuthAuthProvider(
   };
 }
 
-async function startIkiSignIn(
+async function startLogtoSignIn(
   prisma: PrismaClient,
   input: {
     allowedCallbackOrigins: Set<string>;
@@ -182,7 +172,7 @@ async function startIkiSignIn(
     defaultCallbackUrl: string;
     defaultErrorCallbackUrl: string;
     metadata: OAuthMetadata;
-    options: OAuthAuthProviderOptions;
+    options: LogtoAuthProviderOptions;
     redirectUri: string;
     requestUrl: URL;
   },
@@ -207,7 +197,7 @@ async function startIkiSignIn(
   );
   const state = createRandomToken();
   const codeVerifier = createRandomToken();
-  const authorizationUrl = new URL(input.metadata.authorizationUrl);
+  const authorizationUrl = new URL(input.metadata.authorizationEndpoint);
 
   await prisma.oAuthLoginAttempt.create({
     data: {
@@ -221,10 +211,7 @@ async function startIkiSignIn(
   });
 
   authorizationUrl.searchParams.set("response_type", "code");
-  authorizationUrl.searchParams.set(
-    "client_id",
-    input.options.ikiOAuthClientId,
-  );
+  authorizationUrl.searchParams.set("client_id", input.options.logtoClientId);
   authorizationUrl.searchParams.set("redirect_uri", input.redirectUri);
   authorizationUrl.searchParams.set("scope", "openid profile email");
   authorizationUrl.searchParams.set("state", state);
@@ -237,12 +224,12 @@ async function startIkiSignIn(
   return redirectResponse(authorizationUrl.toString());
 }
 
-async function handleIkiCallback(
+async function handleLogtoCallback(
   prisma: PrismaClient,
   input: {
     defaultErrorCallbackUrl: string;
     metadata: OAuthMetadata;
-    options: OAuthAuthProviderOptions;
+    options: LogtoAuthProviderOptions;
     redirectUri: string;
     request: Request;
     requestUrl: URL;
@@ -277,7 +264,7 @@ async function handleIkiCallback(
       options: input.options,
       redirectUri: input.redirectUri,
     });
-    const profile = await fetchIkiUserInfo(input.metadata, token.accessToken);
+    const profile = await fetchLogtoUserInfo(input.metadata, token.accessToken);
     const user = await syncAuthenticatedUser(prisma, profile, token);
     const sessionToken = createRandomToken();
     const sessionExpiresAt = new Date(
@@ -297,7 +284,7 @@ async function handleIkiCallback(
 
     await ensureUserIsProvisioned(prisma, {
       id: user.id,
-      ikiUserId: profile.sub,
+      identitySubject: profile.sub,
     });
 
     return redirectResponse(loginAttempt.callbackUrl, {
@@ -342,18 +329,18 @@ async function exchangeAuthorizationCode(input: {
   code: string;
   codeVerifier: string;
   metadata: OAuthMetadata;
-  options: OAuthAuthProviderOptions;
+  options: LogtoAuthProviderOptions;
   redirectUri: string;
 }): Promise<TokenResponse> {
   const body = new URLSearchParams({
-    client_id: input.options.ikiOAuthClientId,
-    client_secret: input.options.ikiOAuthClientSecret,
+    client_id: input.options.logtoClientId,
+    client_secret: input.options.logtoClientSecret,
     code: input.code,
     code_verifier: input.codeVerifier,
     grant_type: "authorization_code",
     redirect_uri: input.redirectUri,
   });
-  const response = await fetch(input.metadata.tokenUrl, {
+  const response = await fetch(input.metadata.tokenEndpoint, {
     body,
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -362,60 +349,57 @@ async function exchangeAuthorizationCode(input: {
   });
 
   if (!response.ok) {
-    throw new Error("Iki token exchange failed.");
+    throw new Error("Logto token exchange failed.");
   }
 
   const payload = getRecord(await response.json());
-  const accessToken = getString(payload, "access_token");
 
   return {
-    accessToken,
+    accessToken: getString(payload, "access_token"),
     expiresAt: getExpiresAt(payload, "expires_in"),
-    idToken: getOptionalString(payload, "id_token"),
+    idToken: getString(payload, "id_token"),
     refreshToken: getOptionalString(payload, "refresh_token"),
     refreshTokenExpiresAt: getExpiresAt(payload, "refresh_token_expires_in"),
     scope: getOptionalString(payload, "scope"),
   };
 }
 
-async function fetchIkiUserInfo(
+async function fetchLogtoUserInfo(
   metadata: OAuthMetadata,
   accessToken: string,
-): Promise<IkiUserInfo> {
-  const response = await fetch(metadata.userInfoUrl, {
+): Promise<LogtoUserInfo> {
+  const response = await fetch(metadata.userInfoEndpoint, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
   });
 
   if (!response.ok) {
-    throw new Error("Iki user info could not be loaded.");
+    throw new Error("Logto user info could not be loaded.");
   }
 
   const payload = getRecord(await response.json());
-  const sub = getString(payload, "sub");
   const email = getString(payload, "email");
-  const name = getOptionalString(payload, "name") ?? email;
 
   return {
     email,
     emailVerified: getOptionalBoolean(payload, "email_verified") ?? false,
     image: getOptionalString(payload, "picture"),
-    name,
-    sub,
+    name: getOptionalString(payload, "name") ?? email,
+    sub: getString(payload, "sub"),
   };
 }
 
 async function syncAuthenticatedUser(
   prisma: PrismaClient,
-  profile: IkiUserInfo,
+  profile: LogtoUserInfo,
   token: TokenResponse,
 ) {
   return prisma.$transaction(async (transaction) => {
     const existingUser =
       (await transaction.user.findUnique({
         where: {
-          ikiUserId: profile.sub,
+          identitySubject: profile.sub,
         },
       })) ??
       (await transaction.user.findUnique({
@@ -429,14 +413,14 @@ async function syncAuthenticatedUser(
         email: profile.email,
         emailVerified: profile.emailVerified,
         id: userId,
-        ikiUserId: profile.sub,
+        identitySubject: profile.sub,
         image: profile.image,
         name: profile.name,
       },
       update: {
         email: profile.email,
         emailVerified: profile.emailVerified,
-        ikiUserId: profile.sub,
+        identitySubject: profile.sub,
         image: profile.image,
         name: profile.name,
       },
@@ -449,7 +433,7 @@ async function syncAuthenticatedUser(
         createdAt: "asc",
       },
       where: {
-        providerId: "iki",
+        providerId: "logto",
         userId: user.id,
       },
     });
@@ -458,7 +442,7 @@ async function syncAuthenticatedUser(
       accessTokenExpiresAt: token.expiresAt,
       accountId: profile.sub,
       idToken: token.idToken,
-      providerId: "iki",
+      providerId: "logto",
       refreshToken: token.refreshToken,
       refreshTokenExpiresAt: token.refreshTokenExpiresAt,
       scope: token.scope,
@@ -487,80 +471,156 @@ async function syncAuthenticatedUser(
 
 async function signOut(
   prisma: PrismaClient,
-  request: Request,
-  baseUrl: string,
+  input: {
+    metadata: () => Promise<OAuthMetadata>;
+    options: LogtoAuthProviderOptions;
+    request: Request;
+  },
 ): Promise<Response> {
-  const rawSessionToken = getSessionCookie(request, baseUrl);
+  const rawSessionToken = getSessionCookie(
+    input.request,
+    input.options.baseUrl,
+  );
+  let idToken: string | null = null;
 
   if (rawSessionToken) {
+    const token = hashToken(rawSessionToken);
+    const session = await prisma.session.findUnique({
+      select: {
+        userId: true,
+      },
+      where: {
+        token,
+      },
+    });
+
+    if (session) {
+      const account = await prisma.account.findFirst({
+        orderBy: {
+          updatedAt: "desc",
+        },
+        select: {
+          idToken: true,
+        },
+        where: {
+          providerId: "logto",
+          userId: session.userId,
+        },
+      });
+
+      idToken = account?.idToken ?? null;
+    }
+
     await prisma.session.deleteMany({
       where: {
-        token: hashToken(rawSessionToken),
+        token,
       },
     });
   }
 
-  return jsonResponse(null, 200, {
-    "Set-Cookie": serializeExpiredSessionCookie(baseUrl),
-  });
+  const metadata = await input.metadata();
+
+  return jsonResponse(
+    {
+      redirectUrl: createSignOutRedirectUrl(metadata, {
+        idToken,
+        postSignOutRedirectUrl: input.options.postSignOutRedirectUrl,
+      }),
+    },
+    200,
+    {
+      "Set-Cookie": serializeExpiredSessionCookie(input.options.baseUrl),
+    },
+  );
 }
 
 function createOAuthMetadataResolver(
-  options: OAuthAuthProviderOptions,
+  options: LogtoAuthProviderOptions,
 ): () => Promise<OAuthMetadata> {
   let cachedMetadata: OAuthMetadata | null = null;
 
   return async (): Promise<OAuthMetadata> => {
-    if (cachedMetadata) {
-      return cachedMetadata;
-    }
-
-    if (options.ikiOAuthDiscoveryUrl) {
-      const response = await fetch(options.ikiOAuthDiscoveryUrl);
-
-      if (!response.ok) {
-        throw new Error("Iki OAuth discovery could not be loaded.");
-      }
-
-      const payload = getRecord(await response.json());
-
-      const discoveredMetadata: OAuthMetadata = {
-        authorizationUrl:
-          options.ikiOAuthAuthorizationUrl ??
-          getString(payload, "authorization_endpoint"),
-        tokenUrl:
-          options.ikiOAuthTokenUrl ?? getString(payload, "token_endpoint"),
-        userInfoUrl:
-          options.ikiOAuthUserInfoUrl ?? getString(payload, "userinfo_endpoint"),
-      };
-      const issuer = getOptionalString(payload, "issuer");
-
-      if (issuer) {
-        discoveredMetadata.issuer = issuer;
-      }
-
-      cachedMetadata = discoveredMetadata;
-
-      return cachedMetadata;
-    }
-
-    if (
-      !options.ikiOAuthAuthorizationUrl ||
-      !options.ikiOAuthTokenUrl ||
-      !options.ikiOAuthUserInfoUrl
-    ) {
-      throw new Error("Iki OAuth endpoints are required.");
-    }
-
-    cachedMetadata = {
-      authorizationUrl: options.ikiOAuthAuthorizationUrl,
-      issuer: options.ikiOAuthIssuer,
-      tokenUrl: options.ikiOAuthTokenUrl,
-      userInfoUrl: options.ikiOAuthUserInfoUrl,
-    };
+    cachedMetadata ??= await loadOAuthMetadata(options);
 
     return cachedMetadata;
   };
+}
+
+async function loadOAuthMetadata(
+  options: LogtoAuthProviderOptions,
+): Promise<OAuthMetadata> {
+  const response = await fetch(options.logtoDiscoveryUrl);
+
+  if (!response.ok) {
+    throw new Error("Logto OIDC discovery could not be loaded.");
+  }
+
+  const payload = getRecord(await response.json());
+  const issuer = getString(payload, "issuer");
+
+  if (normalizeIssuer(issuer) !== normalizeIssuer(options.logtoIssuer)) {
+    throw new Error("Logto OIDC discovery issuer does not match LOGTO_ISSUER.");
+  }
+
+  return {
+    authorizationEndpoint: createLogtoPublicEndpoint(
+      options.logtoIssuer,
+      "auth",
+    ),
+    endSessionEndpoint: createLogtoPublicEndpoint(
+      options.logtoIssuer,
+      "session/end",
+    ),
+    issuer,
+    tokenEndpoint: getString(payload, "token_endpoint"),
+    userInfoEndpoint: getString(payload, "userinfo_endpoint"),
+  };
+}
+
+function createSignOutRedirectUrl(
+  metadata: OAuthMetadata,
+  input: {
+    idToken: string | null;
+    postSignOutRedirectUrl: string;
+  },
+): string {
+  const url = new URL(metadata.endSessionEndpoint);
+
+  url.searchParams.set(
+    "post_logout_redirect_uri",
+    input.postSignOutRedirectUrl,
+  );
+
+  if (input.idToken && hasJwtIssuer(input.idToken, metadata.issuer)) {
+    url.searchParams.set("id_token_hint", input.idToken);
+  }
+
+  return url.toString();
+}
+
+function createLogtoPublicEndpoint(issuer: string, path: string): string {
+  return `${normalizeIssuer(issuer)}/${path}`;
+}
+
+function hasJwtIssuer(token: string, issuer: string): boolean {
+  try {
+    const [, payload] = token.split(".");
+
+    if (!payload) {
+      return false;
+    }
+
+    const claims = JSON.parse(
+      Buffer.from(payload, "base64url").toString("utf8"),
+    ) as { iss?: unknown };
+
+    return (
+      typeof claims.iss === "string" &&
+      normalizeIssuer(claims.iss) === normalizeIssuer(issuer)
+    );
+  } catch {
+    return false;
+  }
 }
 
 function getAllowedRedirectUrl(
@@ -625,7 +685,7 @@ function serializeSessionCookie(input: {
     "HttpOnly",
     `Max-Age=${SESSION_COOKIE_MAX_AGE_SECONDS}`,
     `Expires=${input.expiresAt.toUTCString()}`,
-    `SameSite=${isSecure ? "None" : "Lax"}`,
+    "SameSite=Lax",
   ];
 
   if (isSecure) {
@@ -643,7 +703,7 @@ function serializeExpiredSessionCookie(baseUrl: string): string {
     "HttpOnly",
     "Max-Age=0",
     "Expires=Thu, 01 Jan 1970 00:00:00 GMT",
-    `SameSite=${isSecure ? "None" : "Lax"}`,
+    "SameSite=Lax",
   ];
 
   if (isSecure) {
@@ -693,9 +753,8 @@ function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("base64url");
 }
 
-function createDefaultErrorCallbackUrl(hubOrigin: string): string {
-  const url = new URL("/login", hubOrigin);
-  url.searchParams.set("app", "family-fi");
+function createDefaultErrorCallbackUrl(baseUrl: string): string {
+  const url = new URL("/auth/signed-out", baseUrl);
   url.searchParams.set("auth_error", "1");
 
   return url.toString();
@@ -763,6 +822,10 @@ function getOptionalBoolean(
   const value = payload[key];
 
   return typeof value === "boolean" ? value : null;
+}
+
+function normalizeIssuer(value: string): string {
+  return value.replace(/\/+$/, "");
 }
 
 function isHttpsUrl(value: string): boolean {

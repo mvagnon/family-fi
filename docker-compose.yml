@@ -43,9 +43,10 @@ services:
       - .env
     environment:
       DATABASE_URL: "postgresql://${POSTGRES_USER:?POSTGRES_USER is required}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:?POSTGRES_DB is required}"
-      HUB_ORIGIN: "${HUB_ORIGIN:-http://localhost:5173}"
-      IKI_AUTH_SERVER_ORIGIN: "${IKI_AUTH_SERVER_ORIGIN:-http://host.docker.internal:3000}"
-      IKI_OAUTH_CLIENT_SECRET: "${IKI_OAUTH_CLIENT_SECRET:?IKI_OAUTH_CLIENT_SECRET is required}"
+      LOGTO_CLIENT_ID: "${LOGTO_CLIENT_ID:?LOGTO_CLIENT_ID is required}"
+      LOGTO_CLIENT_SECRET: "${LOGTO_CLIENT_SECRET:?LOGTO_CLIENT_SECRET is required}"
+      LOGTO_ENDPOINT: "${LOGTO_ENDPOINT:-http://host.docker.internal:3010}"
+      LOGTO_ISSUER: "${LOGTO_ISSUER:-http://localhost:3010/oidc}"
       NODE_ENV: development
       PORT: "${API_PORT:?API_PORT is required}"
       WEB_ORIGIN: "${WEB_ORIGIN:-http://localhost:5174}"
@@ -71,8 +72,6 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
       target: development
-      args:
-        VITE_HUB_ORIGIN: "${VITE_HUB_ORIGIN:-http://localhost:5173}"
     command:
       [
         "sh",

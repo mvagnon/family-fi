@@ -2,18 +2,13 @@ import {
   fetchWithCredentials,
   getConfiguredApiBaseUrl,
 } from "~/infrastructure/api-client";
-import {
-  getConfiguredLoginErrorFallbackUrl,
-  getConfiguredLoginFallbackUrl,
-  normalizeApiBaseUrl,
-} from "~/infrastructure/runtime-config";
 import type { AuthUser } from "../domain/auth";
 import type { AuthRepository } from "../domain/auth-repository";
 
 export const authClient: AuthRepository = {
   async getSession() {
     const response = await fetchWithCredentials(
-      createApiUrl("/api/auth/get-session"),
+      createApiUrl("/api/auth/session"),
     );
 
     if (!response.ok) {
@@ -22,40 +17,19 @@ export const authClient: AuthRepository = {
 
     return parseSessionPayload(await response.json());
   },
-  async signInWithHub() {
-    const redirectUrl = createApiUrl("/api/auth/iki/start");
-    redirectUrl.searchParams.set("callbackURL", getAppCallbackUrl());
-    redirectUrl.searchParams.set(
-      "errorCallbackURL",
-      getConfiguredLoginErrorFallbackUrl(),
-    );
-
-    window.location.assign(redirectUrl.toString());
+  async signInWithLogto() {
+    window.location.assign(createApiUrl("/api/auth/login").toString());
   },
   async signOut() {
-    await postSignOut(createApiUrl("/api/auth/sign-out"));
-
-    await postSignOut(createHubApiUrl("/api/auth/sign-out"));
+    return postSignOut(createApiUrl("/api/auth/sign-out"));
   },
 };
-
-function getAppCallbackUrl(): string {
-  return new URL("/family", window.location.origin).toString();
-}
-
-function getConfiguredHubApiBaseUrl(): string {
-  return normalizeApiBaseUrl(getConfiguredLoginFallbackUrl());
-}
 
 function createApiUrl(path: string): URL {
   return new URL(path, getConfiguredApiBaseUrl());
 }
 
-function createHubApiUrl(path: string): URL {
-  return new URL(path, getConfiguredHubApiBaseUrl());
-}
-
-async function postSignOut(url: URL): Promise<void> {
+async function postSignOut(url: URL): Promise<string> {
   const response = await fetchWithCredentials(url, {
     method: "POST",
   });
@@ -63,6 +37,8 @@ async function postSignOut(url: URL): Promise<void> {
   if (!response.ok) {
     throw new Error("Sign out failed.");
   }
+
+  return parseSignOutPayload(await response.json());
 }
 
 function parseSessionPayload(value: unknown): AuthUser | null {
@@ -89,6 +65,20 @@ function parseSessionPayload(value: unknown): AuthUser | null {
     image: getOptionalString(user, "image"),
     name,
   };
+}
+
+function parseSignOutPayload(value: unknown): string {
+  if (!isRecord(value)) {
+    throw new Error("Sign out response is invalid.");
+  }
+
+  const redirectUrl = getString(value, "redirectUrl");
+
+  if (!redirectUrl) {
+    throw new Error("Sign out response is missing redirectUrl.");
+  }
+
+  return redirectUrl;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

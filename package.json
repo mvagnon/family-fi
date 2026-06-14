@@ -4,7 +4,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "bun run docker:up && bun run dev:web",
-    "dev:web": "FAMILY_FI_API_UPSTREAM_ORIGIN=${FAMILY_FI_API_UPSTREAM_ORIGIN:-http://localhost:3001} VITE_HUB_ORIGIN=${VITE_HUB_ORIGIN:-http://localhost:5173} turbo run dev --filter=web -- --port 5174",
+    "dev:web": "FAMILY_FI_API_UPSTREAM_ORIGIN=${FAMILY_FI_API_UPSTREAM_ORIGIN:-http://localhost:3001} turbo run dev --filter=web -- --port 5174",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f api",
     "docker:ps": "docker compose ps",

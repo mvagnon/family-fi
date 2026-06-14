@@ -3,11 +3,35 @@
 Turborepo Bun workspace with:
 
 - `apps/web`: React Router app
-- `apps/api`: Hono API with Prisma and PostgreSQL
+- `apps/api`: Hono API with Prisma, PostgreSQL, local sessions, and Logto OIDC login
 
 ## Local
 
-Before `bun run dev`, create a root `.env` for local Docker development:
+Start Logto from `../iki` first:
+
+```bash
+cd ../iki
+bun install
+bun run dev
+```
+
+Logto runs on `http://localhost:3010`.
+The Logto Admin Console runs on `http://localhost:3011/console`.
+
+In the Logto Admin Console, create a traditional web application for Family-Fi
+and register this redirect URI:
+
+```text
+http://localhost:5174/api/auth/callback/logto
+```
+
+Register this post sign-out redirect URI too:
+
+```text
+http://localhost:5174/auth/signed-out
+```
+
+Then create a root `.env` for local Docker development:
 
 ```env
 POSTGRES_DB=family_fi
@@ -17,13 +41,13 @@ POSTGRES_PORT=5432
 CHOKIDAR_USEPOLLING=true
 API_PORT=3001
 FAMILY_FI_API_UPSTREAM_ORIGIN=http://localhost:3001
-HUB_ORIGIN=http://localhost:5173
-IKI_AUTH_SERVER_ORIGIN=http://host.docker.internal:3000
-IKI_OAUTH_CLIENT_SECRET=development-only-family-fi-oauth-secret
+LOGTO_ENDPOINT=http://host.docker.internal:3010
+LOGTO_ISSUER=http://localhost:3010/oidc
+LOGTO_CLIENT_ID=replace-with-logto-app-id
+LOGTO_CLIENT_SECRET=replace-with-logto-app-secret
 WEB_ORIGIN=http://localhost:5174
 WEB_HOST=0.0.0.0
 WEB_PORT=5174
-VITE_HUB_ORIGIN=http://localhost:5173
 ```
 
 Then start the API and frontend:
@@ -35,10 +59,6 @@ bun run dev
 
 The web app runs on `http://localhost:5174`.
 The API runs from Docker on `http://localhost:3001`.
-Run `../iki` on API `http://localhost:3000` and hub
-`http://localhost:5173` before signing in.
-When starting the API outside Docker, set `DATABASE_URL` and
-`IKI_OAUTH_CLIENT_SECRET` in the shell or API environment.
 
 Run one package from its app directory when needed:
 
@@ -46,6 +66,10 @@ Run one package from its app directory when needed:
 cd apps/api && bun run dev
 cd apps/web && bun run dev
 ```
+
+When starting the API outside Docker, set `DATABASE_URL`, `WEB_ORIGIN`,
+`LOGTO_ENDPOINT`, `LOGTO_ISSUER`, `LOGTO_CLIENT_ID`, and
+`LOGTO_CLIENT_SECRET` in the shell or API environment.
 
 ## Docker
 
@@ -64,11 +88,6 @@ In production, do not use the Compose-only variables unless you also provision
 Postgres yourself with Compose. Set the deployed `DATABASE_URL` from the
 database provider instead; that URL already contains the database user,
 password, host, port, and database name.
-
-Run `../iki` on API `http://localhost:3000` and hub
-`http://localhost:5173`. Iki syncs the Family-Fi OAuth client from its
-connected-app registry; keep this repo's `IKI_OAUTH_CLIENT_SECRET` equal to
-Iki's `FAMILY_FI_OAUTH_CLIENT_SECRET`.
 
 Run the web app with Bun for normal frontend work:
 
@@ -100,26 +119,25 @@ docker build -f apps/api/Dockerfile -t family-fi-api .
 docker build -f apps/web/Dockerfile -t family-fi-web .
 ```
 
-The web image bakes `VITE_API_BASE_URL` at build time:
-
-```bash
-docker build \
-  -f apps/web/Dockerfile \
-  --build-arg VITE_HUB_ORIGIN=http://localhost:5173 \
-  -t family-fi-web .
-```
-
 ## Production Env Checklist
 
 - Set `DATABASE_URL` to the production database connection string.
-- Set `WEB_ORIGIN` and `HUB_ORIGIN` on the API.
+- Set `WEB_ORIGIN` on the API to the public Family-Fi web origin.
+- Set `LOGTO_ENDPOINT` on the API to the public Logto endpoint.
+- Set `LOGTO_ISSUER` on the API to the Logto OIDC issuer.
+- Set `LOGTO_CLIENT_ID` and `LOGTO_CLIENT_SECRET` on the API from the Logto
+  Family-Fi application.
 - Set `FAMILY_FI_API_UPSTREAM_ORIGIN` on the web service to the real API
-  Railway domain.
-- Set `VITE_HUB_ORIGIN` on the web service to the Iki Hub origin.
-- Set `IKI_OAUTH_CLIENT_SECRET` to the Iki OAuth client secret. Override
-  `IKI_OAUTH_CLIENT_ID` only when it differs from `family-fi`.
-- Register the Iki OAuth callback as
-  `WEB_ORIGIN/api/auth/oauth2/callback/iki`.
+  domain.
+- Register the Logto redirect URI as
+  `WEB_ORIGIN/api/auth/callback/logto`.
+- Register the Logto post sign-out redirect URI as
+  `WEB_ORIGIN/auth/signed-out`.
+
+For local Docker, `LOGTO_ENDPOINT` can point to
+`http://host.docker.internal:3010` so the API container can reach Logto, while
+`LOGTO_ISSUER` remains the public issuer exposed by Logto, such as
+`http://localhost:3010/oidc`.
 
 Docker-local variables:
 
@@ -133,4 +151,5 @@ Docker-local variables:
 ```bash
 bun run build
 bun run check-types
+bun run lint
 ```

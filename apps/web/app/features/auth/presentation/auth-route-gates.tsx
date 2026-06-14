@@ -10,7 +10,6 @@ interface AuthenticatedRouteProps {
   children: ReactNode;
   client: AuthRepository;
   errorFallback?: ReactNode;
-  invalidSessionRedirectUrl?: string | null;
   pendingFallback?: ReactNode;
 }
 
@@ -18,7 +17,6 @@ export function AuthenticatedRoute({
   children,
   client,
   errorFallback,
-  invalidSessionRedirectUrl,
   pendingFallback,
 }: AuthenticatedRouteProps) {
   const session = useAuthSession(client);
@@ -28,18 +26,22 @@ export function AuthenticatedRoute({
   }
 
   if (session.error && !session.isAuthenticated) {
-    if (invalidSessionRedirectUrl) {
-      return <AuthRouteExternalRedirect to={invalidSessionRedirectUrl} />;
-    }
-
     return errorFallback ?? <AuthRouteLoading />;
   }
 
   if (!session.isAuthenticated) {
-    return <Navigate replace to="/auth/iki" />;
+    return <AuthRouteExternalRedirect to="/api/auth/login" />;
   }
 
   return children;
+}
+
+function AuthRouteExternalRedirect({ to }: { to: string }) {
+  useEffect(() => {
+    window.location.assign(to);
+  }, [to]);
+
+  return <AuthRouteLoading />;
 }
 
 export function HomeRedirect() {
@@ -62,12 +64,4 @@ function AuthRouteLoading() {
       <CircularProgress aria-label="Loading session" size={28} />
     </Box>
   );
-}
-
-function AuthRouteExternalRedirect({ to }: { to: string }) {
-  useEffect(() => {
-    window.location.assign(to);
-  }, [to]);
-
-  return <AuthRouteLoading />;
 }

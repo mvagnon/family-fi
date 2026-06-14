@@ -23,11 +23,11 @@ export function useAuthSession(repository: AuthRepository) {
   };
 }
 
-export function useSignInWithHub(repository: AuthRepository) {
+export function useSignInWithLogto(repository: AuthRepository) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => repository.signInWithHub(),
+    mutationFn: () => repository.signInWithLogto(),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: authQueryKeys.session(),

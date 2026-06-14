@@ -40,6 +40,14 @@ export const resources = {
           signOut: "Sign out",
           signOutError: "Sign out failed.",
         },
+        signedOut: {
+          description: "You have been signed out of Family-Fi.",
+          errorDescription:
+            "The account connection could not be completed. Try again from Logto.",
+          errorTitle: "Sign-in failed",
+          signIn: "Sign in",
+          title: "Signed out",
+        },
       },
       configuration: {
         currency: {
@@ -591,6 +599,14 @@ export const resources = {
           sessionError: "La connexion au compte n'a pas pu être vérifiée.",
           signOut: "Déconnexion",
           signOutError: "La déconnexion a échoué.",
+        },
+        signedOut: {
+          description: "Vous avez été déconnecté de Family-Fi.",
+          errorDescription:
+            "La connexion au compte n'a pas pu être terminée. Réessayez depuis Logto.",
+          errorTitle: "Connexion échouée",
+          signIn: "Se connecter",
+          title: "Déconnecté",
         },
       },
       configuration: {
@@ -1152,6 +1168,14 @@ export const resources = {
           sessionError: "アカウント接続を確認できませんでした。",
           signOut: "ログアウト",
           signOutError: "ログアウトできませんでした。",
+        },
+        signedOut: {
+          description: "Family-Fiからサインアウトしました。",
+          errorDescription:
+            "アカウント接続を完了できませんでした。Logtoから再試行してください。",
+          errorTitle: "ログインに失敗しました",
+          signIn: "ログイン",
+          title: "サインアウトしました",
         },
       },
       configuration: {

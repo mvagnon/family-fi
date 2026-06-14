@@ -3,7 +3,7 @@ import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 
 import { UnauthenticatedError } from "./features/auth/domain/auth.js";
-import type { AuthHttpAdapter } from "./features/auth/infrastructure/oauth-auth-provider.js";
+import type { AuthHttpAdapter } from "./features/auth/infrastructure/logto-auth-provider.js";
 import { FamilyService } from "./features/family/application/family-service.js";
 import type { FamilyServiceOptions } from "./features/family/application/family-service.js";
 import {

@@ -1,28 +1,26 @@
 import { serve } from "@hono/node-server";
 
 import { createApiApp } from "./app.js";
-import { createOAuthAuthProvider } from "./features/auth/infrastructure/oauth-auth-provider.js";
+import { createLogtoAuthProvider } from "./features/auth/infrastructure/logto-auth-provider.js";
 import { PrismaFamilyRepository } from "./features/family/infrastructure/persistence/prisma-family-repository.js";
 import { PrismaSpacesRepository } from "./features/spaces/infrastructure/persistence/prisma-spaces-repository.js";
 import { prisma } from "./infrastructure/prisma.js";
 
 const port = Number.parseInt(process.env.PORT ?? "3001", 10);
-const webOrigin =
-  getOptionalHttpOrigin("WEB_ORIGIN") ?? "http://localhost:5174";
-const hubOrigin =
-  getOptionalHttpOrigin("HUB_ORIGIN") ?? "http://localhost:5173";
-const ikiAuthServerOrigin =
-  getOptionalHttpOrigin("IKI_AUTH_SERVER_ORIGIN") ?? hubOrigin;
+const webOrigin = getRequiredHttpOrigin("WEB_ORIGIN");
+const logtoEndpoint = getRequiredHttpOrigin("LOGTO_ENDPOINT");
+const logtoIssuer = getRequiredHttpUrl("LOGTO_ISSUER");
 const openApiServerUrl = getOptionalHttpOrigin("OPENAPI_SERVER_URL");
-const authProvider = createOAuthAuthProvider(prisma, {
+const authProvider = createLogtoAuthProvider(prisma, {
   baseUrl: webOrigin,
-  hubOrigin,
-  ikiOAuthAuthorizationUrl: `${hubOrigin}/api/auth/oauth2/authorize`,
-  ikiOAuthClientId: process.env.IKI_OAUTH_CLIENT_ID ?? "family-fi",
-  ikiOAuthClientSecret: getIkiOAuthClientSecret(),
-  ikiOAuthDiscoveryUrl: `${ikiAuthServerOrigin}/api/auth/.well-known/openid-configuration`,
-  ikiOAuthTokenUrl: `${ikiAuthServerOrigin}/api/auth/oauth2/token`,
-  ikiOAuthUserInfoUrl: `${ikiAuthServerOrigin}/api/auth/oauth2/userinfo`,
+  logtoClientId: getRequiredEnv("LOGTO_CLIENT_ID"),
+  logtoClientSecret: getRequiredEnv("LOGTO_CLIENT_SECRET"),
+  logtoDiscoveryUrl: new URL(
+    "/oidc/.well-known/openid-configuration",
+    logtoEndpoint,
+  ).toString(),
+  logtoIssuer,
+  postSignOutRedirectUrl: new URL("/auth/signed-out", webOrigin).toString(),
   trustedOrigins: [webOrigin],
 });
 
@@ -44,14 +42,14 @@ serve(
   },
 );
 
-function getIkiOAuthClientSecret(): string {
-  const secret = process.env.IKI_OAUTH_CLIENT_SECRET;
+function getRequiredEnv(name: string): string {
+  const value = getOptionalEnv(name);
 
-  if (!secret && process.env.NODE_ENV === "production") {
-    throw new Error("IKI_OAUTH_CLIENT_SECRET is required to start the API.");
+  if (!value) {
+    throw new Error(`${name} is required to start the API.`);
   }
 
-  return secret ?? "development-only-family-fi-oauth-secret";
+  return value;
 }
 
 function getOptionalEnv(name: string): string | undefined {
@@ -64,6 +62,14 @@ function getOptionalHttpOrigin(name: string): string | undefined {
   const value = getOptionalEnv(name);
 
   return value ? new URL(normalizeHttpUrl(value)).origin : undefined;
+}
+
+function getRequiredHttpOrigin(name: string): string {
+  return new URL(normalizeHttpUrl(getRequiredEnv(name))).origin;
+}
+
+function getRequiredHttpUrl(name: string): string {
+  return normalizeHttpUrl(getRequiredEnv(name));
 }
 
 function normalizeHttpUrl(value: string): string {

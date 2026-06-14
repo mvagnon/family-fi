@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { createApiApp } from "../../../../../app.js";
-import type { AuthHttpAdapter } from "../../../../auth/infrastructure/oauth-auth-provider.js";
+import type { AuthHttpAdapter } from "../../../../auth/infrastructure/logto-auth-provider.js";
 import { createInMemorySpacesRepository } from "../../../../spaces/infrastructure/persistence/in-memory-spaces-repository.js";
 import { createInMemoryFamilyRepository } from "../../persistence/in-memory-family-repository.js";
 
@@ -936,7 +936,7 @@ function createTestAuthProvider(): AuthHttpAdapter {
         user: {
           email: "test@test.com",
           id: userId,
-          ikiUserId: userId,
+          identitySubject: userId,
           name: "Test User",
         },
       };

@@ -1,7 +1,7 @@
 export interface AuthenticatedUser {
   email: string;
   id: string;
-  ikiUserId: string;
+  identitySubject: string;
   name: string;
 }
 
