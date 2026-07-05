@@ -33,6 +33,7 @@ import {
 import { useFamilyFormat } from "./use-family-format";
 
 interface DistributionLineFormValidationMessages {
+  amountInvalid: string;
   amountRequired: string;
   memberAmountInvalid: string;
   memberDuplicate: string;
@@ -52,17 +53,13 @@ function createDistributionLineFormSchema(
   return z
     .object({
       amount: requiredNumberTextSchema(messages.amountRequired).refine(
-        (value) => value > 0,
-        { message: messages.amountRequired },
+        (value) => value >= 0,
+        { message: messages.amountInvalid },
       ),
       memberAmounts: z
         .array(
           z.object({
-            amount: requiredNumberTextSchema(
-              messages.memberAmountInvalid,
-            ).refine((value) => value >= 0, {
-              message: messages.memberAmountInvalid,
-            }),
+            amount: requiredNumberTextSchema(messages.memberAmountInvalid),
             memberId: requiredTextSchema(messages.memberRequired),
           }),
         )
@@ -565,6 +562,7 @@ function getDistributionLineFormValidationMessages(
   t: TFunction,
 ): DistributionLineFormValidationMessages {
   return {
+    amountInvalid: t("distributions.creation.validation.amountInvalid"),
     amountRequired: t("distributions.creation.validation.amountRequired"),
     memberAmountInvalid: t(
       "distributions.creation.validation.memberAmountInvalid",

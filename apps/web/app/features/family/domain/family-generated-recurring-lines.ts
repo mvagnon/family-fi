@@ -43,7 +43,7 @@ function getLoanGeneratedRecurringLines(
   return family.loans.flatMap((loan) => {
     const averageAmount = getAverageMonthlyAmountTotal(
       family.loanRepaymentLines
-        .filter((line) => line.loanId === loan.id)
+        .filter((line) => line.loanId === loan.id && !line.isExcludedFromStats)
         .map((line) => ({
           amount: line.paidAmount,
           month: line.month,
@@ -73,7 +73,9 @@ function getParticipationGeneratedRecurringLines(
   return family.members.flatMap((member) => {
     const averageAmount = getAverageMonthlyAmountTotal(
       family.participationLines
-        .filter((line) => line.memberId === member.id)
+        .filter(
+          (line) => line.memberId === member.id && !line.isExcludedFromStats,
+        )
         .map((line) => ({
           amount: line.amount,
           month: line.month,
@@ -102,25 +104,27 @@ function getDistributionGeneratedRecurringLines(
 ): GeneratedFamilyBudgetLine[] {
   return family.members.flatMap((member) => {
     const averageAmount = getAverageMonthlyAmountTotal(
-      family.distributionLines.flatMap((line) =>
-        line.memberAmounts
-          .filter((memberAmount) => memberAmount.memberId === member.id)
-          .map((memberAmount) => ({
-            amount: memberAmount.amount,
-            month: line.month,
-            year: line.year,
-          })),
-      ),
+      family.distributionLines
+        .filter((line) => !line.isExcludedFromStats)
+        .flatMap((line) =>
+          line.memberAmounts
+            .filter((memberAmount) => memberAmount.memberId === member.id)
+            .map((memberAmount) => ({
+              amount: memberAmount.amount,
+              month: line.month,
+              year: line.year,
+            })),
+        ),
     );
 
-    if (averageAmount <= 0) {
+    if (averageAmount === 0) {
       return [];
     }
 
     return [
       createGeneratedFamilyBudgetLine(family, {
-        amount: averageAmount,
-        movement: "negative",
+        amount: Math.abs(averageAmount),
+        movement: averageAmount > 0 ? "negative" : "positive",
         source: "distribution",
         sourceId: member.id,
         title: member.name,

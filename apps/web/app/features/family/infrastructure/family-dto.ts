@@ -78,6 +78,8 @@ function parseLoanRepaymentLine(value: unknown): LoanRepaymentLine {
     createdAt: getDateString(line, "createdAt"),
     feesAmount: getNonNegativeNumber(line, "feesAmount"),
     id: getString(line, "id"),
+    isExcludedFromStats:
+      getOptionalBoolean(line, "isExcludedFromStats") ?? false,
     loanId: getString(line, "loanId"),
     month: getMonth(line),
     paidAmount: getPositiveNumber(line, "paidAmount"),
@@ -130,8 +132,11 @@ function parseParticipationLine(value: unknown): ParticipationLine {
     amount: getNonZeroNumber(line, "amount"),
     createdAt: getDateString(line, "createdAt"),
     id: getString(line, "id"),
+    isExcludedFromStats:
+      getOptionalBoolean(line, "isExcludedFromStats") ?? false,
     memberId: getString(line, "memberId"),
     month: getMonth(line),
+    title: getOptionalString(line, "title"),
     year: getPositiveInteger(line, "year"),
   };
 }
@@ -140,9 +145,11 @@ function parseDistributionLine(value: unknown): DistributionLine {
   const line = getRecord(value);
 
   return {
-    amount: getPositiveNumber(line, "amount"),
+    amount: getNonNegativeNumber(line, "amount"),
     createdAt: getDateString(line, "createdAt"),
     id: getString(line, "id"),
+    isExcludedFromStats:
+      getOptionalBoolean(line, "isExcludedFromStats") ?? false,
     memberAmounts: getArray(line, "memberAmounts").map(
       parseDistributionMemberAmount,
     ),
@@ -157,7 +164,7 @@ function parseDistributionMemberAmount(
   const memberAmount = getRecord(value);
 
   return {
-    amount: getNonNegativeNumber(memberAmount, "amount"),
+    amount: getFiniteNumber(memberAmount, "amount"),
     memberId: getString(memberAmount, "memberId"),
   };
 }

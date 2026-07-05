@@ -71,7 +71,12 @@ export function getFamilyDistributionProjection(
     activeMembers: members.filter((member) => member.isActive),
     memberBalances: getMemberBalances(family),
     monthGroups,
-    summary: getDistributionSummary(monthGroups),
+    summary: getDistributionSummary(
+      buildMonthGroups(
+        lines.filter((line) => !line.line.isExcludedFromStats),
+        input,
+      ),
+    ),
   };
 }
 

@@ -60,7 +60,9 @@ export function getFamilyParticipationProjection(
   return {
     activeMembers: members.filter((member) => member.isActive),
     monthGroups: buildMonthGroups(participationLines, members, input),
-    summary: getParticipationSummary(participationLines),
+    summary: getParticipationSummary(
+      participationLines.filter((line) => !line.line.isExcludedFromStats),
+    ),
   };
 }
 

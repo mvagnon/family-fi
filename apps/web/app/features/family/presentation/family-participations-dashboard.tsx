@@ -83,6 +83,7 @@ export function FamilyParticipationsDashboard({
   const [lineDialogMode, setLineDialogMode] = useState<"create" | "edit">(
     "create",
   );
+  const [isLineExclusionSaving, setIsLineExclusionSaving] = useState(false);
   const [linePendingDeletion, setLinePendingDeletion] =
     useState<ParticipationLine | null>(null);
   const [memberPendingDeletion, setMemberPendingDeletion] =
@@ -234,7 +235,10 @@ export function FamilyParticipationsDashboard({
       if (lineDialogMode === "create") {
         await onCreateParticipationLine(input);
       } else if (selectedLine) {
-        await onUpdateParticipationLine(selectedLine.id, input);
+        await onUpdateParticipationLine(selectedLine.id, {
+          ...input,
+          isExcludedFromStats: selectedLine.isExcludedFromStats,
+        });
       }
 
       setLocalError(null);
@@ -243,6 +247,25 @@ export function FamilyParticipationsDashboard({
       setYear(input.year);
     } catch {
       return;
+    }
+  }
+
+  async function handleToggleLineExclusion(line: FamilyParticipationLine) {
+    if (!canWrite) {
+      return;
+    }
+
+    setIsLineExclusionSaving(true);
+
+    try {
+      await onUpdateParticipationLine(line.line.id, {
+        ...toParticipationLineInput(line.line),
+        isExcludedFromStats: !line.line.isExcludedFromStats,
+      });
+    } catch {
+      return;
+    } finally {
+      setIsLineExclusionSaving(false);
     }
   }
 
@@ -292,11 +315,13 @@ export function FamilyParticipationsDashboard({
       <AppShellContent>
         <FamilyParticipationsTable
           disabled={isSaving}
+          isLineExclusionSaving={isLineExclusionSaving}
           key={year}
           monthGroups={projection.monthGroups}
           onAddLine={handleAddLine}
           onDeleteLine={handleRequestDeleteLine}
           onEditLine={handleEditLine}
+          onToggleLineExclusion={handleToggleLineExclusion}
           readonly={!canWrite}
         />
         <FeedbackSnackbar
@@ -415,8 +440,10 @@ function toParticipationLineInput(
 ): CreateParticipationLineInput {
   return {
     amount: line.amount,
+    isExcludedFromStats: line.isExcludedFromStats,
     memberId: line.memberId,
     month: line.month,
+    title: line.title,
     year: line.year,
   };
 }

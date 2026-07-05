@@ -82,7 +82,16 @@ export function getFamilyLoanProjection(
       input,
     ),
     pastLoans,
-    summary: getLoanSummary(family, visibleLoanIds, input),
+    summary: getLoanSummary(
+      {
+        ...family,
+        loanRepaymentLines: family.loanRepaymentLines.filter(
+          (line) => !line.isExcludedFromStats,
+        ),
+      },
+      visibleLoanIds,
+      input,
+    ),
   };
 }
 

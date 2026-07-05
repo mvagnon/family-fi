@@ -47,24 +47,27 @@ export const participationLineSchema = z
     amount: z.number().refine((value) => value !== 0),
     createdAt: z.string(),
     id: z.string(),
+    isExcludedFromStats: z.boolean(),
     memberId: z.string(),
     month: z.number().int().min(1).max(12),
+    title: z.string().optional(),
     year: z.number().int().positive(),
   })
   .meta({ id: "ParticipationLine" });
 
 export const distributionMemberAmountSchema = z
   .object({
-    amount: z.number().nonnegative(),
+    amount: z.number(),
     memberId: z.string(),
   })
   .meta({ id: "DistributionMemberAmount" });
 
 export const distributionLineSchema = z
   .object({
-    amount: z.number().positive(),
+    amount: z.number().nonnegative(),
     createdAt: z.string(),
     id: z.string(),
+    isExcludedFromStats: z.boolean(),
     memberAmounts: z.array(distributionMemberAmountSchema),
     month: z.number().int().min(1).max(12),
     year: z.number().int().positive(),
@@ -86,6 +89,7 @@ export const loanRepaymentLineSchema = z
     createdAt: z.string(),
     feesAmount: z.number().nonnegative(),
     id: z.string(),
+    isExcludedFromStats: z.boolean(),
     loanId: z.string(),
     month: z.number().int().min(1).max(12),
     paidAmount: z.number().positive(),
@@ -307,12 +311,19 @@ export const participationLineInputSchema = z.object({
   amount: nonZeroNumberSchema(
     "Participation amount must be different from zero.",
   ),
+  isExcludedFromStats: excludedFromStatsInputSchema(
+    "Participation statistics exclusion is invalid.",
+  ),
   memberId: requiredTextSchema("Participation member is required."),
   month: z
     .number({ error: "Participation month is invalid." })
     .int({ message: "Participation month is invalid." })
     .min(1, { message: "Participation month is invalid." })
     .max(12, { message: "Participation month is invalid." }),
+  title: z
+    .string({ error: "Participation title is invalid." })
+    .nullish()
+    .transform((value) => value?.trim() || undefined),
   year: z
     .number({ error: "Participation year is invalid." })
     .int({ message: "Participation year is invalid." })
@@ -321,14 +332,17 @@ export const participationLineInputSchema = z.object({
 
 export const distributionMemberAmountInputSchema = z
   .object({
-    amount: nonNegativeNumberSchema("Distribution member amount is invalid."),
+    amount: z.number({ error: "Distribution member amount is invalid." }),
     memberId: requiredTextSchema("Distribution member is required."),
   })
   .meta({ id: "DistributionMemberAmountInput" });
 
 export const distributionLineInputSchema = z
   .object({
-    amount: positiveNumberSchema("Distribution amount is required."),
+    amount: nonNegativeNumberSchema("Distribution amount is invalid."),
+    isExcludedFromStats: excludedFromStatsInputSchema(
+      "Distribution statistics exclusion is invalid.",
+    ),
     memberAmounts: z
       .array(distributionMemberAmountInputSchema)
       .min(1, { message: "Distribution members are required." }),
@@ -376,6 +390,9 @@ export const updateLoanInputSchema = loanInputSchema.meta({
 export const loanRepaymentLineInputSchema = z
   .object({
     feesAmount: nonNegativeNumberSchema("Loan fees amount is invalid."),
+    isExcludedFromStats: excludedFromStatsInputSchema(
+      "Loan repayment statistics exclusion is invalid.",
+    ),
     loanId: requiredTextSchema("Loan is required."),
     month: z
       .number({ error: "Loan repayment month is invalid." })
@@ -415,6 +432,10 @@ function nonZeroNumberSchema(message: string) {
 
 function nonNegativeNumberSchema(message: string) {
   return z.number({ error: message }).nonnegative({ message });
+}
+
+function excludedFromStatsInputSchema(message: string) {
+  return z.boolean({ error: message }).optional().default(false);
 }
 
 function optionalPositiveNumberSchema(message: string) {

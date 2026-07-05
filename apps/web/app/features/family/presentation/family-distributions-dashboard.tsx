@@ -83,6 +83,7 @@ export function FamilyDistributionsDashboard({
   const [lineDialogMode, setLineDialogMode] = useState<"create" | "edit">(
     "create",
   );
+  const [isLineExclusionSaving, setIsLineExclusionSaving] = useState(false);
   const [linePendingDeletion, setLinePendingDeletion] =
     useState<FamilyDistributionLine | null>(null);
   const [memberPendingDeletion, setMemberPendingDeletion] =
@@ -219,7 +220,10 @@ export function FamilyDistributionsDashboard({
       if (lineDialogMode === "create") {
         await onCreateDistributionLine(input);
       } else if (selectedLine) {
-        await onUpdateDistributionLine(selectedLine.id, input);
+        await onUpdateDistributionLine(selectedLine.id, {
+          ...input,
+          isExcludedFromStats: selectedLine.isExcludedFromStats,
+        });
       }
 
       setLocalError(null);
@@ -228,6 +232,25 @@ export function FamilyDistributionsDashboard({
       setYear(input.year);
     } catch {
       return;
+    }
+  }
+
+  async function handleToggleLineExclusion(line: FamilyDistributionLine) {
+    if (!canWrite) {
+      return;
+    }
+
+    setIsLineExclusionSaving(true);
+
+    try {
+      await onUpdateDistributionLine(line.line.id, {
+        ...toDistributionLineInput(line.line),
+        isExcludedFromStats: !line.line.isExcludedFromStats,
+      });
+    } catch {
+      return;
+    } finally {
+      setIsLineExclusionSaving(false);
     }
   }
 
@@ -278,11 +301,13 @@ export function FamilyDistributionsDashboard({
         <FamilyDistributionsTable
           disabled={isSaving}
           hasMembers={projection.activeMembers.length > 0}
+          isLineExclusionSaving={isLineExclusionSaving}
           key={year}
           monthGroups={projection.monthGroups}
           onAddLine={handleAddLine}
           onDeleteLine={setLinePendingDeletion}
           onEditLine={handleEditLine}
+          onToggleLineExclusion={handleToggleLineExclusion}
           readonly={!canWrite}
         />
         <FeedbackSnackbar
@@ -380,6 +405,18 @@ export function FamilyDistributionsDashboard({
       </AppShellWidgets>
     </>
   );
+}
+
+function toDistributionLineInput(
+  line: DistributionLine,
+): CreateDistributionLineInput {
+  return {
+    amount: line.amount,
+    isExcludedFromStats: line.isExcludedFromStats,
+    memberAmounts: line.memberAmounts,
+    month: line.month,
+    year: line.year,
+  };
 }
 
 function getDistributionLineModalMembers(

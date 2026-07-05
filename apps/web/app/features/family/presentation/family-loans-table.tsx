@@ -23,27 +23,31 @@ import {
 import { useFamilyFormat } from "./use-family-format";
 
 const loansTableGridColumns = {
-  md: "44px minmax(180px, 1fr) minmax(112px, 140px) minmax(112px, 140px) minmax(112px, 140px) minmax(112px, 140px) 96px",
-  xs: "40px minmax(136px, 1fr) minmax(96px, 112px) minmax(96px, 112px) minmax(96px, 112px) minmax(104px, 120px) 88px",
+  md: "44px minmax(180px, 1fr) minmax(112px, 140px) minmax(112px, 140px) minmax(112px, 140px) minmax(112px, 140px) 152px",
+  xs: "40px minmax(136px, 1fr) minmax(96px, 112px) minmax(96px, 112px) minmax(96px, 112px) minmax(104px, 120px) 124px",
 };
 
 interface FamilyLoansTableProps {
   disabled?: boolean;
   hasLoans: boolean;
+  isLineExclusionSaving?: boolean;
   monthGroups: FamilyLoanMonthGroup[];
   onAddLine: () => void;
   onDeleteLine: (line: FamilyLoanRepaymentLine) => void;
   onEditLine: (line: FamilyLoanRepaymentLine) => void;
+  onToggleLineExclusion: (line: FamilyLoanRepaymentLine) => void;
   readonly?: boolean;
 }
 
 export function FamilyLoansTable({
   disabled = false,
   hasLoans,
+  isLineExclusionSaving = false,
   monthGroups,
   onAddLine,
   onDeleteLine,
   onEditLine,
+  onToggleLineExclusion,
   readonly = false,
 }: FamilyLoansTableProps) {
   const { t } = useTranslation();
@@ -91,10 +95,12 @@ export function FamilyLoansTable({
           createdAtFormatter={createdAtFormatter}
           disabled={disabled}
           group={group}
+          isLineExclusionSaving={isLineExclusionSaving}
           key={group.id}
           monthLabel={monthLabel}
           onDeleteLine={onDeleteLine}
           onEditLine={onEditLine}
+          onToggleLineExclusion={onToggleLineExclusion}
           readonly={readonly}
           onToggle={onToggle}
         />
@@ -111,9 +117,11 @@ function LoanMonthGroup({
   createdAtFormatter,
   disabled,
   group,
+  isLineExclusionSaving,
   monthLabel,
   onDeleteLine,
   onEditLine,
+  onToggleLineExclusion,
   readonly,
   onToggle,
 }: {
@@ -122,9 +130,11 @@ function LoanMonthGroup({
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
   group: FamilyLoanMonthGroup;
+  isLineExclusionSaving: boolean;
   monthLabel: string;
   onDeleteLine: (line: FamilyLoanRepaymentLine) => void;
   onEditLine: (line: FamilyLoanRepaymentLine) => void;
+  onToggleLineExclusion: (line: FamilyLoanRepaymentLine) => void;
   readonly: boolean;
   onToggle: () => void;
 }) {
@@ -166,10 +176,12 @@ function LoanMonthGroup({
               <LoanLineRow
                 createdAtFormatter={createdAtFormatter}
                 disabled={disabled}
+                isLineExclusionSaving={isLineExclusionSaving}
                 key={line.line.id}
                 line={line}
                 onDeleteLine={onDeleteLine}
                 onEditLine={onEditLine}
+                onToggleLineExclusion={onToggleLineExclusion}
                 readonly={readonly}
               />
             ))}
@@ -183,19 +195,24 @@ function LoanMonthGroup({
 function LoanLineRow({
   createdAtFormatter,
   disabled,
+  isLineExclusionSaving,
   line,
   onDeleteLine,
   onEditLine,
+  onToggleLineExclusion,
   readonly,
 }: {
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
+  isLineExclusionSaving: boolean;
   line: FamilyLoanRepaymentLine;
   onDeleteLine: (line: FamilyLoanRepaymentLine) => void;
   onEditLine: (line: FamilyLoanRepaymentLine) => void;
+  onToggleLineExclusion: (line: FamilyLoanRepaymentLine) => void;
   readonly: boolean;
 }) {
   const { t } = useTranslation();
+  const isExcluded = line.line.isExcludedFromStats;
   const lineLabel = `${line.loan.title} ${createdAtFormatter.format(
     new Date(line.line.createdAt),
   )}`;
@@ -206,6 +223,7 @@ function LoanLineRow({
         borderTop: `1px solid ${theme.palette.divider}`,
         display: "grid",
         gridTemplateColumns: loansTableGridColumns,
+        opacity: isExcluded ? 0.56 : 1,
         ...familyBudgetMonthTableRowPaddingSx,
       })}
     >
@@ -231,8 +249,20 @@ function LoanLineRow({
           disabled={disabled}
           editLabel={t("loans.line.editLabel", { label: lineLabel })}
           editTooltip={t("loans.line.editTooltip")}
+          excludeLabel={t(
+            isExcluded ? "loans.line.includeLabel" : "loans.line.excludeLabel",
+            { label: lineLabel },
+          )}
+          excludeTooltip={t(
+            isExcluded
+              ? "loans.line.includeTooltip"
+              : "loans.line.excludeTooltip",
+          )}
+          isExcluded={isExcluded}
+          isExcludeSaving={isLineExclusionSaving}
           onDelete={() => onDeleteLine(line)}
           onEdit={() => onEditLine(line)}
+          onToggleExcluded={() => onToggleLineExclusion(line)}
         />
       )}
     </Box>

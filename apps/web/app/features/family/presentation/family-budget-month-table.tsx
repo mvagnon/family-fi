@@ -4,6 +4,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Table from "@mui/material/Table";
@@ -334,16 +336,26 @@ export function FamilyBudgetLineActions({
   disabled,
   editLabel,
   editTooltip,
+  excludeLabel,
+  excludeTooltip,
+  isExcluded = false,
+  isExcludeSaving = false,
   onDelete,
   onEdit,
+  onToggleExcluded,
 }: {
   deleteLabel: string;
   deleteTooltip: string;
   disabled: boolean;
   editLabel: string;
   editTooltip: string;
+  excludeLabel?: string;
+  excludeTooltip?: string;
+  isExcluded?: boolean;
+  isExcludeSaving?: boolean;
   onDelete: () => void;
   onEdit: () => void;
+  onToggleExcluded?: () => void;
 }) {
   return (
     <Box
@@ -356,6 +368,31 @@ export function FamilyBudgetLineActions({
         py: 1,
       }}
     >
+      {onToggleExcluded && excludeLabel && excludeTooltip ? (
+        <ActionIconButton
+          component="span"
+          aria-disabled={disabled || undefined}
+          disabled={disabled && !isExcludeSaving}
+          icon={
+            isExcluded ? (
+              <VisibilityOffIcon fontSize="small" />
+            ) : (
+              <VisibilityIcon fontSize="small" />
+            )
+          }
+          label={excludeLabel}
+          onClick={() => {
+            if (disabled) {
+              return;
+            }
+
+            onToggleExcluded();
+          }}
+          size="small"
+          stopPropagation
+          tooltip={excludeTooltip}
+        />
+      ) : null}
       <ActionIconButton
         disabled={disabled}
         icon={<EditIcon fontSize="small" />}

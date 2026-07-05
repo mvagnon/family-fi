@@ -275,8 +275,10 @@ export class FamilyService {
         `${participationLine.member.name}-${participationLine.year}-${participationLine.month}`,
         family.participationLines.map((item) => item.id),
       ),
+      isExcludedFromStats: participationLine.isExcludedFromStats,
       memberId: participationLine.memberId,
       month: participationLine.month,
+      title: participationLine.title,
       year: participationLine.year,
     };
 
@@ -308,8 +310,10 @@ export class FamilyService {
         amount: participationLine.amount,
         createdAt: existingLine.createdAt,
         id: existingLine.id,
+        isExcludedFromStats: participationLine.isExcludedFromStats,
         memberId: participationLine.memberId,
         month: participationLine.month,
+        title: participationLine.title,
         year: participationLine.year,
       },
     );
@@ -358,6 +362,7 @@ export class FamilyService {
         distributionLine.label,
         family.distributionLines.map((item) => item.id),
       ),
+      isExcludedFromStats: distributionLine.isExcludedFromStats,
       memberAmounts: distributionLine.memberAmounts,
       month: distributionLine.month,
       year: distributionLine.year,
@@ -391,6 +396,7 @@ export class FamilyService {
         amount: distributionLine.amount,
         createdAt: existingLine.createdAt,
         id: existingLine.id,
+        isExcludedFromStats: distributionLine.isExcludedFromStats,
         memberAmounts: distributionLine.memberAmounts,
         month: distributionLine.month,
         year: distributionLine.year,
@@ -698,9 +704,11 @@ function normalizeMemberName(name: string): string {
 
 interface NormalizedParticipationLineInput {
   amount: number;
+  isExcludedFromStats: boolean;
   member: FamilyMember;
   memberId: string;
   month: number;
+  title: string | undefined;
   year: number;
 }
 
@@ -739,15 +747,18 @@ function normalizeParticipationLineInput(
 
   return {
     amount,
+    isExcludedFromStats: input.isExcludedFromStats,
     member,
     memberId,
     month,
+    title: input.title?.trim() || undefined,
     year,
   };
 }
 
 interface NormalizedDistributionLineInput {
   amount: number;
+  isExcludedFromStats: boolean;
   label: string;
   memberAmounts: DistributionMemberAmount[];
   month: number;
@@ -759,9 +770,9 @@ function normalizeDistributionLineInput(
   input: CreateDistributionLineInput | UpdateDistributionLineInput,
   currentDate: Date,
 ): NormalizedDistributionLineInput {
-  const amount = requirePositiveNumber(
+  const amount = requireNonNegativeNumber(
     input.amount,
-    "Distribution amount is required.",
+    "Distribution amount is invalid.",
   );
   const year = requireInteger(input.year, "Distribution year is invalid.");
   const month = requireInteger(input.month, "Distribution month is invalid.");
@@ -804,7 +815,7 @@ function normalizeDistributionLineInput(
     }
 
     return {
-      amount: requireNonNegativeNumber(
+      amount: requireFiniteNumber(
         item.amount,
         "Distribution member amount is invalid.",
       ),
@@ -821,6 +832,7 @@ function normalizeDistributionLineInput(
 
   return {
     amount,
+    isExcludedFromStats: input.isExcludedFromStats,
     label: `${memberNames.join("-")}-${year}-${month}`,
     memberAmounts,
     month,

@@ -84,6 +84,7 @@ export function FamilyLoansDashboard({
   const [selectedLine, setSelectedLine] = useState<LoanRepaymentLine | null>(
     null,
   );
+  const [isLineExclusionSaving, setIsLineExclusionSaving] = useState(false);
   const [loanPendingDeletion, setLoanPendingDeletion] =
     useState<FamilyLoanBalance | null>(null);
   const [linePendingDeletion, setLinePendingDeletion] =
@@ -200,7 +201,10 @@ export function FamilyLoansDashboard({
       if (lineDialogMode === "create") {
         await onCreateRepaymentLine(input);
       } else if (selectedLine) {
-        await onUpdateRepaymentLine(selectedLine.id, input);
+        await onUpdateRepaymentLine(selectedLine.id, {
+          ...input,
+          isExcludedFromStats: selectedLine.isExcludedFromStats,
+        });
       }
 
       setLocalError(null);
@@ -209,6 +213,29 @@ export function FamilyLoansDashboard({
       setYear(input.year);
     } catch {
       return;
+    }
+  }
+
+  async function handleToggleLineExclusion(line: FamilyLoanRepaymentLine) {
+    if (!canWrite) {
+      return;
+    }
+
+    setIsLineExclusionSaving(true);
+
+    try {
+      await onUpdateRepaymentLine(line.line.id, {
+        feesAmount: line.line.feesAmount,
+        isExcludedFromStats: !line.line.isExcludedFromStats,
+        loanId: line.line.loanId,
+        month: line.line.month,
+        paidAmount: line.line.paidAmount,
+        year: line.line.year,
+      });
+    } catch {
+      return;
+    } finally {
+      setIsLineExclusionSaving(false);
     }
   }
 
@@ -264,11 +291,13 @@ export function FamilyLoansDashboard({
         <FamilyLoansTable
           disabled={isSaving}
           hasLoans={repaymentLoans.length > 0}
+          isLineExclusionSaving={isLineExclusionSaving}
           key={year}
           monthGroups={projection.monthGroups}
           onAddLine={handleAddLine}
           onDeleteLine={setLinePendingDeletion}
           onEditLine={handleEditLine}
+          onToggleLineExclusion={handleToggleLineExclusion}
           readonly={!canWrite}
         />
         <FeedbackSnackbar

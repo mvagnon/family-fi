@@ -24,25 +24,29 @@ import {
 import { useFamilyFormat } from "./use-family-format";
 
 const participationTableGridColumns = {
-  md: "44px minmax(180px, 1fr) minmax(112px, 140px) minmax(112px, 140px) 96px",
-  xs: "40px minmax(128px, 1fr) minmax(92px, 112px) minmax(92px, 112px) 88px",
+  md: "44px minmax(180px, 1fr) minmax(112px, 140px) minmax(112px, 140px) 152px",
+  xs: "40px minmax(128px, 1fr) minmax(92px, 112px) minmax(92px, 112px) 124px",
 };
 
 interface FamilyParticipationsTableProps {
   disabled?: boolean;
+  isLineExclusionSaving?: boolean;
   monthGroups: FamilyParticipationMonthGroup[];
   onAddLine: () => void;
   onDeleteLine: (line: FamilyParticipationLine) => void;
   onEditLine: (line: FamilyParticipationLine) => void;
+  onToggleLineExclusion: (line: FamilyParticipationLine) => void;
   readonly?: boolean;
 }
 
 export function FamilyParticipationsTable({
   disabled = false,
+  isLineExclusionSaving = false,
   monthGroups,
   onAddLine,
   onDeleteLine,
   onEditLine,
+  onToggleLineExclusion,
   readonly = false,
 }: FamilyParticipationsTableProps) {
   const { t } = useTranslation();
@@ -89,10 +93,12 @@ export function FamilyParticipationsTable({
           createdAtFormatter={createdAtFormatter}
           disabled={disabled}
           group={group}
+          isLineExclusionSaving={isLineExclusionSaving}
           key={group.id}
           monthLabel={monthLabel}
           onDeleteLine={onDeleteLine}
           onEditLine={onEditLine}
+          onToggleLineExclusion={onToggleLineExclusion}
           readonly={readonly}
           onToggle={onToggle}
         />
@@ -109,9 +115,11 @@ function ParticipationMonthGroup({
   createdAtFormatter,
   disabled,
   group,
+  isLineExclusionSaving,
   monthLabel,
   onDeleteLine,
   onEditLine,
+  onToggleLineExclusion,
   readonly,
   onToggle,
 }: {
@@ -120,9 +128,11 @@ function ParticipationMonthGroup({
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
   group: FamilyParticipationMonthGroup;
+  isLineExclusionSaving: boolean;
   monthLabel: string;
   onDeleteLine: (line: FamilyParticipationLine) => void;
   onEditLine: (line: FamilyParticipationLine) => void;
+  onToggleLineExclusion: (line: FamilyParticipationLine) => void;
   readonly: boolean;
   onToggle: () => void;
 }) {
@@ -163,9 +173,11 @@ function ParticipationMonthGroup({
                 createdAtFormatter={createdAtFormatter}
                 disabled={disabled}
                 group={memberGroup}
+                isLineExclusionSaving={isLineExclusionSaving}
                 key={memberGroup.id}
                 onDeleteLine={onDeleteLine}
                 onEditLine={onEditLine}
+                onToggleLineExclusion={onToggleLineExclusion}
                 readonly={readonly}
               />
             ))}
@@ -180,15 +192,19 @@ function ParticipationMemberGroup({
   createdAtFormatter,
   disabled,
   group,
+  isLineExclusionSaving,
   onDeleteLine,
   onEditLine,
+  onToggleLineExclusion,
   readonly,
 }: {
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
   group: FamilyParticipationMemberMonthGroup;
+  isLineExclusionSaving: boolean;
   onDeleteLine: (line: FamilyParticipationLine) => void;
   onEditLine: (line: FamilyParticipationLine) => void;
+  onToggleLineExclusion: (line: FamilyParticipationLine) => void;
   readonly: boolean;
 }) {
   const familyFormat = useFamilyFormat();
@@ -247,10 +263,12 @@ function ParticipationMemberGroup({
           <ParticipationLineRow
             createdAtFormatter={createdAtFormatter}
             disabled={disabled}
+            isLineExclusionSaving={isLineExclusionSaving}
             key={line.line.id}
             line={line}
             onDeleteLine={onDeleteLine}
             onEditLine={onEditLine}
+            onToggleLineExclusion={onToggleLineExclusion}
             readonly={readonly}
           />
         ))
@@ -289,22 +307,28 @@ function ParticipationEmptyLine() {
 function ParticipationLineRow({
   createdAtFormatter,
   disabled,
+  isLineExclusionSaving,
   line,
   onDeleteLine,
   onEditLine,
+  onToggleLineExclusion,
   readonly,
 }: {
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
+  isLineExclusionSaving: boolean;
   line: FamilyParticipationLine;
   onDeleteLine: (line: FamilyParticipationLine) => void;
   onEditLine: (line: FamilyParticipationLine) => void;
+  onToggleLineExclusion: (line: FamilyParticipationLine) => void;
   readonly: boolean;
 }) {
   const { t } = useTranslation();
-  const lineLabel = `${line.member.name} ${createdAtFormatter.format(
-    new Date(line.line.createdAt),
-  )}`;
+  const isExcluded = line.line.isExcludedFromStats;
+  const createdAt = createdAtFormatter.format(new Date(line.line.createdAt));
+  const lineLabel = [line.member.name, line.line.title, createdAt]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <Box
@@ -312,14 +336,26 @@ function ParticipationLineRow({
         borderTop: `1px solid ${theme.palette.divider}`,
         display: "grid",
         gridTemplateColumns: participationTableGridColumns,
+        opacity: isExcluded ? 0.56 : 1,
         ...familyBudgetMonthTableRowPaddingSx,
       })}
     >
       <Box aria-hidden="true" />
       <Box sx={{ minWidth: 0, px: { md: 2, xs: 1 }, py: 1.5 }}>
-        <Typography color="text.secondary" sx={{ fontWeight: 600 }} noWrap>
-          {createdAtFormatter.format(new Date(line.line.createdAt))}
-        </Typography>
+        {line.line.title ? (
+          <>
+            <Typography sx={{ fontWeight: 600 }} noWrap>
+              {line.line.title}
+            </Typography>
+            <Typography color="text.secondary" noWrap variant="body2">
+              {createdAt}
+            </Typography>
+          </>
+        ) : (
+          <Typography color="text.secondary" sx={{ fontWeight: 600 }} noWrap>
+            {createdAt}
+          </Typography>
+        )}
       </Box>
       <FamilyBudgetAmountCell
         tone="positive"
@@ -340,8 +376,22 @@ function ParticipationLineRow({
           disabled={disabled}
           editLabel={t("participations.line.editLabel", { label: lineLabel })}
           editTooltip={t("participations.line.editTooltip")}
+          excludeLabel={t(
+            isExcluded
+              ? "participations.line.includeLabel"
+              : "participations.line.excludeLabel",
+            { label: lineLabel },
+          )}
+          excludeTooltip={t(
+            isExcluded
+              ? "participations.line.includeTooltip"
+              : "participations.line.excludeTooltip",
+          )}
+          isExcluded={isExcluded}
+          isExcludeSaving={isLineExclusionSaving}
           onDelete={() => onDeleteLine(line)}
           onEdit={() => onEditLine(line)}
+          onToggleExcluded={() => onToggleLineExclusion(line)}
         />
       )}
     </Box>

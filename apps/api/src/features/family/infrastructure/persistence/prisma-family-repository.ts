@@ -773,6 +773,7 @@ function toDistributionLineCreateInput(line: DistributionLine) {
     amountCents: toCents(line.amount),
     createdAt: new Date(line.createdAt),
     id: line.id,
+    isExcludedFromStats: line.isExcludedFromStats,
     memberAmounts: {
       create: line.memberAmounts.map((memberAmount) => ({
         amountCents: toCents(memberAmount.amount),
@@ -787,6 +788,7 @@ function toDistributionLineCreateInput(line: DistributionLine) {
 function toDistributionLineUpdateInput(line: DistributionLine) {
   return {
     amountCents: toCents(line.amount),
+    isExcludedFromStats: line.isExcludedFromStats,
     month: line.month,
     year: line.year,
   };
@@ -797,6 +799,7 @@ function toDistributionLine(line: DistributionLineRecord): DistributionLine {
     amount: fromCents(line.amountCents),
     createdAt: line.createdAt.toISOString(),
     id: line.id,
+    isExcludedFromStats: line.isExcludedFromStats,
     memberAmounts: line.memberAmounts.map((memberAmount) => ({
       amount: fromCents(memberAmount.amountCents),
       memberId: memberAmount.memberId,
@@ -839,6 +842,7 @@ function toLoanRepaymentLineCreateInput(line: LoanRepaymentLine) {
     createdAt: new Date(line.createdAt),
     feesCents: toCents(line.feesAmount),
     id: line.id,
+    isExcludedFromStats: line.isExcludedFromStats,
     loanId: line.loanId,
     month: line.month,
     paidCents: toCents(line.paidAmount),
@@ -849,6 +853,7 @@ function toLoanRepaymentLineCreateInput(line: LoanRepaymentLine) {
 function toLoanRepaymentLineUpdateInput(line: LoanRepaymentLine) {
   return {
     feesCents: toCents(line.feesAmount),
+    isExcludedFromStats: line.isExcludedFromStats,
     loanId: line.loanId,
     month: line.month,
     paidCents: toCents(line.paidAmount),
@@ -861,6 +866,7 @@ function toLoanRepaymentLine(line: LoanRepaymentLineRecord): LoanRepaymentLine {
     createdAt: line.createdAt.toISOString(),
     feesAmount: fromCents(line.feesCents),
     id: line.id,
+    isExcludedFromStats: line.isExcludedFromStats,
     loanId: line.loanId,
     month: line.month,
     paidAmount: fromCents(line.paidCents),
@@ -873,8 +879,10 @@ function toParticipationLineCreateInput(line: ParticipationLine) {
     amountCents: toCents(line.amount),
     createdAt: new Date(line.createdAt),
     id: line.id,
+    isExcludedFromStats: line.isExcludedFromStats,
     memberId: line.memberId,
     month: line.month,
+    title: line.title ?? null,
     year: line.year,
   };
 }
@@ -882,8 +890,10 @@ function toParticipationLineCreateInput(line: ParticipationLine) {
 function toParticipationLineUpdateInput(line: ParticipationLine) {
   return {
     amountCents: toCents(line.amount),
+    isExcludedFromStats: line.isExcludedFromStats,
     memberId: line.memberId,
     month: line.month,
+    title: line.title ?? null,
     year: line.year,
   };
 }
@@ -893,8 +903,10 @@ function toParticipationLine(line: ParticipationLineRecord): ParticipationLine {
     amount: fromCents(line.amountCents),
     createdAt: line.createdAt.toISOString(),
     id: line.id,
+    isExcludedFromStats: line.isExcludedFromStats,
     memberId: line.memberId,
     month: line.month,
+    title: line.title ?? undefined,
     year: line.year,
   };
 }
