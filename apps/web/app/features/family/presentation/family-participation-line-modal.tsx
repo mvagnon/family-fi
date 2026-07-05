@@ -146,7 +146,6 @@ export function FamilyParticipationLineModal({
       },
       resolver: zodResolver(formSchema),
       shouldFocusError: true,
-      shouldUnregister: true,
     },
   );
   const amountInputRef = useRef<HTMLInputElement | null>(null);

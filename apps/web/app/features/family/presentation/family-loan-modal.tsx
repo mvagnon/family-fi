@@ -93,7 +93,6 @@ export function FamilyLoanModal({
     },
     resolver: zodResolver(formSchema),
     shouldFocusError: true,
-    shouldUnregister: true,
   });
   const { ref: titleRef, ...titleField } = register("title");
   const { ref: initialAmountRef, ...initialAmountField } =

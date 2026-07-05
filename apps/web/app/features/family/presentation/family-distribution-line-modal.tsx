@@ -175,7 +175,6 @@ export function FamilyDistributionLineModal({
     },
     resolver: zodResolver(formSchema),
     shouldFocusError: true,
-    shouldUnregister: true,
   });
   const { fields, append, remove } = useFieldArray({
     control,

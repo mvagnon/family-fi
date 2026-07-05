@@ -27,6 +27,7 @@ import {
 interface FamilyBudgetTableProps {
   categories: FamilyCategory[];
   disabled?: boolean;
+  generatedSavingLineId?: string | null;
   isGeneratedLineSettingSaving?: boolean;
   lines: FamilyBudgetLine[];
   onAddLine: () => void;
@@ -41,6 +42,7 @@ interface FamilyBudgetTableProps {
 export function FamilyBudgetTable({
   categories,
   disabled = false,
+  generatedSavingLineId = null,
   isGeneratedLineSettingSaving = false,
   lines,
   onAddLine,
@@ -125,6 +127,7 @@ export function FamilyBudgetTable({
             {categoryGroups.map((group) => (
               <FamilyBudgetCategoryGroup
                 disabled={disabled}
+                generatedSavingLineId={generatedSavingLineId}
                 group={group}
                 isGeneratedLineSettingSaving={isGeneratedLineSettingSaving}
                 key={group.id}

@@ -115,6 +115,9 @@ export function FamilyDashboard({
     useState<SidebarDeletionTarget | null>(null);
   const [summaryLine, setSummaryLine] = useState<FamilyBudgetLine | null>(null);
   const [selectedLine, setSelectedLine] = useState<RecurringLine | null>(null);
+  const [generatedSavingLineId, setGeneratedSavingLineId] = useState<
+    string | null
+  >(null);
   const hiddenMemberIds = new Set(
     family.members.flatMap((member) =>
       isMemberVisible(member.id) ? [] : [member.id],
@@ -284,6 +287,8 @@ export function FamilyDashboard({
       return;
     }
 
+    setGeneratedSavingLineId(line.line.id);
+
     try {
       await onUpdateGeneratedRecurringLineSetting({
         isEnabled: !line.isEnabled,
@@ -292,6 +297,8 @@ export function FamilyDashboard({
       });
     } catch {
       return;
+    } finally {
+      setGeneratedSavingLineId(null);
     }
   }
 
@@ -358,6 +365,7 @@ export function FamilyDashboard({
         <FamilyBudgetTable
           categories={visibleCategories}
           disabled={isSaving}
+          generatedSavingLineId={generatedSavingLineId}
           isGeneratedLineSettingSaving={isGeneratedLineSettingSaving}
           lines={budgetLines}
           onAddLine={handleAddLine}
