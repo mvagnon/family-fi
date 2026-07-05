@@ -84,7 +84,9 @@ export function FamilyLoansDashboard({
   const [selectedLine, setSelectedLine] = useState<LoanRepaymentLine | null>(
     null,
   );
-  const [isLineExclusionSaving, setIsLineExclusionSaving] = useState(false);
+  const [exclusionSavingLineId, setExclusionSavingLineId] = useState<
+    string | null
+  >(null);
   const [loanPendingDeletion, setLoanPendingDeletion] =
     useState<FamilyLoanBalance | null>(null);
   const [linePendingDeletion, setLinePendingDeletion] =
@@ -221,7 +223,7 @@ export function FamilyLoansDashboard({
       return;
     }
 
-    setIsLineExclusionSaving(true);
+    setExclusionSavingLineId(line.line.id);
 
     try {
       await onUpdateRepaymentLine(line.line.id, {
@@ -235,7 +237,7 @@ export function FamilyLoansDashboard({
     } catch {
       return;
     } finally {
-      setIsLineExclusionSaving(false);
+      setExclusionSavingLineId(null);
     }
   }
 
@@ -291,7 +293,7 @@ export function FamilyLoansDashboard({
         <FamilyLoansTable
           disabled={isSaving}
           hasLoans={repaymentLoans.length > 0}
-          isLineExclusionSaving={isLineExclusionSaving}
+          exclusionSavingLineId={exclusionSavingLineId}
           key={year}
           monthGroups={projection.monthGroups}
           onAddLine={handleAddLine}

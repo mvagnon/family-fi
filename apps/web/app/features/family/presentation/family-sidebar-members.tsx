@@ -24,6 +24,7 @@ interface FamilySidebarMembersProps {
   onAddMember?: () => void;
   onDeleteMember?: (member: FamilyMember) => void;
   onEditMember?: (member: FamilyMember) => void;
+  onQuickAddMember?: (member: FamilyMember) => void;
   onToggleMemberVisibility?: (member: FamilyMember) => void;
 }
 
@@ -35,6 +36,7 @@ export function FamilySidebarMembers({
   onAddMember,
   onDeleteMember,
   onEditMember,
+  onQuickAddMember,
   onToggleMemberVisibility,
 }: FamilySidebarMembersProps) {
   const { t } = useTranslation();
@@ -70,6 +72,7 @@ export function FamilySidebarMembers({
             member={member}
             onDeleteMember={onDeleteMember}
             onEditMember={onEditMember}
+            onQuickAddMember={onQuickAddMember}
             onToggleMemberVisibility={onToggleMemberVisibility}
           />
         ))}
@@ -84,6 +87,7 @@ function FamilySidebarMemberRow({
   member,
   onDeleteMember,
   onEditMember,
+  onQuickAddMember,
   onToggleMemberVisibility,
   secondaryContent,
 }: {
@@ -92,12 +96,16 @@ function FamilySidebarMemberRow({
   member: FamilyMember;
   onDeleteMember?: (member: FamilyMember) => void;
   onEditMember?: (member: FamilyMember) => void;
+  onQuickAddMember?: (member: FamilyMember) => void;
   onToggleMemberVisibility?: (member: FamilyMember) => void;
   secondaryContent?: ReactNode;
 }) {
   const { t } = useTranslation();
   const hasActions = Boolean(
-    onDeleteMember || onEditMember || onToggleMemberVisibility,
+    onDeleteMember ||
+    onEditMember ||
+    onQuickAddMember ||
+    onToggleMemberVisibility,
   );
 
   return (
@@ -146,6 +154,18 @@ function FamilySidebarMemberRow({
       </Box>
       {hasActions ? (
         <Stack direction="row" spacing={0.25}>
+          {onQuickAddMember && member.isActive ? (
+            <ActionIconButton
+              disabled={disabled}
+              icon={<AddIcon fontSize="small" />}
+              label={t("family.sidebar.members.quickAddLabel", {
+                name: member.name,
+              })}
+              onClick={() => onQuickAddMember(member)}
+              size="small"
+              tooltip={t("family.sidebar.members.quickAddTooltip")}
+            />
+          ) : null}
           {onEditMember ? (
             <ActionIconButton
               disabled={disabled}

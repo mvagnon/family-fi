@@ -18,6 +18,7 @@ interface FormDialogProps {
   maxWidth?: DialogProps["maxWidth"];
   noValidate?: boolean;
   onClose: () => void;
+  onEntered?: () => void;
   onExited?: () => void;
   onSubmit: FormEventHandler<HTMLFormElement>;
   open: boolean;
@@ -33,6 +34,7 @@ export function FormDialog({
   maxWidth = "sm",
   noValidate = false,
   onClose,
+  onEntered,
   onExited,
   onSubmit,
   open,
@@ -45,7 +47,11 @@ export function FormDialog({
       maxWidth={maxWidth}
       onClose={isSubmitting ? undefined : onClose}
       open={open}
-      slotProps={onExited ? { transition: { onExited } } : undefined}
+      slotProps={
+        onEntered || onExited
+          ? { transition: { onEntered, onExited } }
+          : undefined
+      }
     >
       <DialogTitle>{title}</DialogTitle>
       <Box component="form" noValidate={noValidate} onSubmit={onSubmit}>

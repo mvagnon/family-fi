@@ -83,7 +83,9 @@ export function FamilyDistributionsDashboard({
   const [lineDialogMode, setLineDialogMode] = useState<"create" | "edit">(
     "create",
   );
-  const [isLineExclusionSaving, setIsLineExclusionSaving] = useState(false);
+  const [exclusionSavingLineId, setExclusionSavingLineId] = useState<
+    string | null
+  >(null);
   const [linePendingDeletion, setLinePendingDeletion] =
     useState<FamilyDistributionLine | null>(null);
   const [memberPendingDeletion, setMemberPendingDeletion] =
@@ -240,7 +242,7 @@ export function FamilyDistributionsDashboard({
       return;
     }
 
-    setIsLineExclusionSaving(true);
+    setExclusionSavingLineId(line.line.id);
 
     try {
       await onUpdateDistributionLine(line.line.id, {
@@ -250,7 +252,7 @@ export function FamilyDistributionsDashboard({
     } catch {
       return;
     } finally {
-      setIsLineExclusionSaving(false);
+      setExclusionSavingLineId(null);
     }
   }
 
@@ -301,7 +303,7 @@ export function FamilyDistributionsDashboard({
         <FamilyDistributionsTable
           disabled={isSaving}
           hasMembers={projection.activeMembers.length > 0}
-          isLineExclusionSaving={isLineExclusionSaving}
+          exclusionSavingLineId={exclusionSavingLineId}
           key={year}
           monthGroups={projection.monthGroups}
           onAddLine={handleAddLine}

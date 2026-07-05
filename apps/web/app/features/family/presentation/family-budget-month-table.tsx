@@ -7,6 +7,7 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
 import IconButton from "@mui/material/IconButton";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -218,6 +219,7 @@ export function FamilyBudgetMonthGroupHeader({
   gridColumns,
   monthLabel,
   onToggle,
+  subtitle,
   summary,
   toggleLabel,
 }: {
@@ -227,6 +229,7 @@ export function FamilyBudgetMonthGroupHeader({
   gridColumns: FamilyBudgetTableGridColumns;
   monthLabel: string;
   onToggle: () => void;
+  subtitle?: ReactNode;
   summary: ReactNode;
   toggleLabel: string;
 }) {
@@ -255,38 +258,49 @@ export function FamilyBudgetMonthGroupHeader({
               <KeyboardArrowDownIcon fontSize="small" />
             )}
           </IconButton>
-          <Box
-            sx={{
-              alignItems: "baseline",
-              display: "flex",
-              gap: 1,
-              justifyContent: "flex-start",
-              minWidth: 0,
-              px: { md: 2, xs: 1 },
-            }}
-          >
-            <Typography
-              noWrap
+          <Box sx={{ minWidth: 0, px: { md: 2, xs: 1 } }}>
+            <Box
               sx={{
-                fontWeight: 700,
+                alignItems: "baseline",
+                display: "flex",
+                gap: 1,
+                justifyContent: "flex-start",
                 minWidth: 0,
-                textTransform: "capitalize",
               }}
             >
-              {monthLabel}
-            </Typography>
-            <Typography
-              color="text.secondary"
-              noWrap
-              sx={{
-                flexShrink: 0,
-                fontSize: { sm: "0.8125rem", xs: "0.75rem" },
-                fontWeight: 400,
-              }}
-              variant="body2"
-            >
-              {summary}
-            </Typography>
+              <Typography
+                noWrap
+                sx={{
+                  fontWeight: 700,
+                  minWidth: 0,
+                  textTransform: "capitalize",
+                }}
+              >
+                {monthLabel}
+              </Typography>
+              <Typography
+                color="text.secondary"
+                noWrap
+                sx={{
+                  flexShrink: 0,
+                  fontSize: { sm: "0.8125rem", xs: "0.75rem" },
+                  fontWeight: 400,
+                }}
+                variant="body2"
+              >
+                {summary}
+              </Typography>
+            </Box>
+            {subtitle ? (
+              <Typography
+                color="text.secondary"
+                noWrap
+                sx={{ fontSize: { sm: "0.8125rem", xs: "0.75rem" } }}
+                variant="body2"
+              >
+                {subtitle}
+              </Typography>
+            ) : null}
           </Box>
           {amountCells}
           <Box aria-hidden="true" />
@@ -374,7 +388,9 @@ export function FamilyBudgetLineActions({
           aria-disabled={disabled || undefined}
           disabled={disabled && !isExcludeSaving}
           icon={
-            isExcluded ? (
+            isExcludeSaving ? (
+              <CircularProgress color="inherit" size={18} />
+            ) : isExcluded ? (
               <VisibilityOffIcon fontSize="small" />
             ) : (
               <VisibilityIcon fontSize="small" />

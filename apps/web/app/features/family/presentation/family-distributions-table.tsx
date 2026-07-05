@@ -31,7 +31,7 @@ const distributionsTableGridColumns = {
 interface FamilyDistributionsTableProps {
   disabled?: boolean;
   hasMembers: boolean;
-  isLineExclusionSaving?: boolean;
+  exclusionSavingLineId?: string | null;
   monthGroups: FamilyDistributionMonthGroup[];
   onAddLine: () => void;
   onDeleteLine: (line: FamilyDistributionLine) => void;
@@ -43,7 +43,7 @@ interface FamilyDistributionsTableProps {
 export function FamilyDistributionsTable({
   disabled = false,
   hasMembers,
-  isLineExclusionSaving = false,
+  exclusionSavingLineId = null,
   monthGroups,
   onAddLine,
   onDeleteLine,
@@ -95,7 +95,7 @@ export function FamilyDistributionsTable({
           createdAtFormatter={createdAtFormatter}
           disabled={disabled}
           group={group}
-          isLineExclusionSaving={isLineExclusionSaving}
+          exclusionSavingLineId={exclusionSavingLineId}
           key={group.id}
           monthLabel={monthLabel}
           onDeleteLine={onDeleteLine}
@@ -117,7 +117,7 @@ function DistributionMonthGroup({
   createdAtFormatter,
   disabled,
   group,
-  isLineExclusionSaving,
+  exclusionSavingLineId,
   monthLabel,
   onDeleteLine,
   onEditLine,
@@ -130,7 +130,7 @@ function DistributionMonthGroup({
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
   group: FamilyDistributionMonthGroup;
-  isLineExclusionSaving: boolean;
+  exclusionSavingLineId: string | null;
   monthLabel: string;
   onDeleteLine: (line: FamilyDistributionLine) => void;
   onEditLine: (line: FamilyDistributionLine) => void;
@@ -179,7 +179,7 @@ function DistributionMonthGroup({
               <DistributionLineRow
                 createdAtFormatter={createdAtFormatter}
                 disabled={disabled}
-                isLineExclusionSaving={isLineExclusionSaving}
+                exclusionSavingLineId={exclusionSavingLineId}
                 key={line.line.id}
                 line={line}
                 onDeleteLine={onDeleteLine}
@@ -198,7 +198,7 @@ function DistributionMonthGroup({
 function DistributionLineRow({
   createdAtFormatter,
   disabled,
-  isLineExclusionSaving,
+  exclusionSavingLineId,
   line,
   onDeleteLine,
   onEditLine,
@@ -207,7 +207,7 @@ function DistributionLineRow({
 }: {
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
-  isLineExclusionSaving: boolean;
+  exclusionSavingLineId: string | null;
   line: FamilyDistributionLine;
   onDeleteLine: (line: FamilyDistributionLine) => void;
   onEditLine: (line: FamilyDistributionLine) => void;
@@ -289,7 +289,7 @@ function DistributionLineRow({
               : "distributions.line.excludeTooltip",
           )}
           isExcluded={isExcluded}
-          isExcludeSaving={isLineExclusionSaving}
+          isExcludeSaving={exclusionSavingLineId === line.line.id}
           onDelete={() => onDeleteLine(line)}
           onEdit={() => onEditLine(line)}
           onToggleExcluded={() => onToggleLineExclusion(line)}
