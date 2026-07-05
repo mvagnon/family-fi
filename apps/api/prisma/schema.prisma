@@ -180,15 +180,17 @@ model GeneratedRecurringLineSetting {
 }
 
 model ParticipationLine {
-  id          String   @id
-  familyId    String   @map("family_id")
-  family      Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
-  memberId    String   @map("member_id")
-  amountCents Int      @map("amount_cents")
-  year        Int
-  month       Int
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id                  String   @id
+  familyId            String   @map("family_id")
+  family              Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  memberId            String   @map("member_id")
+  title               String?
+  amountCents         Int      @map("amount_cents")
+  year                Int
+  month               Int
+  isExcludedFromStats Boolean  @default(false) @map("is_excluded_from_stats")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
 
   @@index([familyId])
   @@index([familyId, memberId])
@@ -196,15 +198,16 @@ model ParticipationLine {
 }
 
 model DistributionLine {
-  id            String                     @id
-  familyId      String                     @map("family_id")
-  family        Family                     @relation(fields: [familyId], references: [id], onDelete: Cascade)
-  amountCents   Int                        @map("amount_cents")
-  memberAmounts DistributionMemberAmount[]
-  year          Int
-  month         Int
-  createdAt     DateTime                   @default(now()) @map("created_at")
-  updatedAt     DateTime                   @updatedAt @map("updated_at")
+  id                  String                     @id
+  familyId            String                     @map("family_id")
+  family              Family                     @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  amountCents         Int                        @map("amount_cents")
+  memberAmounts       DistributionMemberAmount[]
+  year                Int
+  month               Int
+  isExcludedFromStats Boolean                    @default(false) @map("is_excluded_from_stats")
+  createdAt           DateTime                   @default(now()) @map("created_at")
+  updatedAt           DateTime                   @updatedAt @map("updated_at")
 
   @@index([familyId])
   @@map("distribution_lines")
@@ -239,17 +242,18 @@ model Loan {
 }
 
 model LoanRepaymentLine {
-  id        String   @id
-  familyId  String   @map("family_id")
-  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
-  loanId    String   @map("loan_id")
-  loan      Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
-  paidCents Int      @map("paid_cents")
-  feesCents Int      @map("fees_cents")
-  year      Int
-  month     Int
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id                  String   @id
+  familyId            String   @map("family_id")
+  family              Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  loanId              String   @map("loan_id")
+  loan                Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  paidCents           Int      @map("paid_cents")
+  feesCents           Int      @map("fees_cents")
+  year                Int
+  month               Int
+  isExcludedFromStats Boolean  @default(false) @map("is_excluded_from_stats")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
 
   @@index([familyId])
   @@index([familyId, loanId])

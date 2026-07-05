@@ -49,6 +49,7 @@ function createParticipationLineFormSchema(
         (value) => value >= 1 && value <= 12,
         { message: messages.monthRequired },
       ),
+      title: z.string().optional(),
       year: requiredIntegerTextSchema(messages.yearRequired)
         .refine((value) => value > 0, { message: messages.yearRequired })
         .refine((value) => value <= currentYear, {
@@ -140,6 +141,7 @@ export function FamilyParticipationLineModal({
         amount: initialLine ? String(initialLine.amount) : "",
         memberId: initialLine?.memberId ?? defaultMemberId,
         month: String(initialLine?.month ?? currentMonthIndex + 1),
+        title: initialLine?.title ?? "",
         year: String(initialLine?.year ?? defaultYear),
       },
       resolver: zodResolver(formSchema),
@@ -148,6 +150,7 @@ export function FamilyParticipationLineModal({
     },
   );
   const { ref: amountRef, ...amountField } = register("amount");
+  const { ref: titleRef, ...titleField } = register("title");
   const { ref: yearRef, ...yearField } = register("year");
   const selectedYear = Number(watch("year"));
   const monthLabelYear = Number.isFinite(selectedYear)
@@ -217,6 +220,17 @@ export function FamilyParticipationLineModal({
               ))}
             </TextField>
           )}
+        />
+
+        <TextField
+          {...titleField}
+          disabled={isSaving}
+          error={Boolean(errors.title)}
+          fullWidth
+          helperText={getFieldErrorMessage(errors.title)}
+          id="participation-line-title"
+          inputRef={titleRef}
+          label={t("participations.creation.titleField")}
         />
 
         <Stack direction={{ sm: "row", xs: "column" }} spacing={2}>

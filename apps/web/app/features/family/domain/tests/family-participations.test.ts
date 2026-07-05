@@ -125,6 +125,34 @@ test("family participation projection shows all months for past years", () => {
   );
 });
 
+test("family participation projection excludes flagged lines from summary but keeps them in month groups", () => {
+  const family = createFamily();
+  family.participationLines = family.participationLines.map((line) =>
+    line.id === "lea-expense" ? { ...line, isExcludedFromStats: true } : line,
+  );
+
+  const projection = getFamilyParticipationProjection(family, {
+    currentMonthIndex: 4,
+    currentYear: 2026,
+    year: 2026,
+  });
+  const mayGroup = projection.monthGroups.find(
+    (group) => group.id === "2026-05",
+  );
+
+  assert.deepEqual(projection.summary, {
+    difference: 90,
+    expenses: 10,
+    income: 100,
+  });
+  assert.ok(mayGroup);
+  assert.equal(mayGroup.total, 70);
+  assert.deepEqual(
+    mayGroup.lines.map((item) => item.line.id),
+    ["lea-income", "lea-expense"],
+  );
+});
+
 test("family participation member resolution distinguishes active states", () => {
   const family = createFamily();
 
@@ -156,6 +184,7 @@ function createFamily(): Family {
         amount: 100,
         createdAt: "2026-05-01T10:00:00.000Z",
         id: "lea-income",
+        isExcludedFromStats: false,
         memberId: "lea",
         month: 5,
         year: 2026,
@@ -164,6 +193,7 @@ function createFamily(): Family {
         amount: -30,
         createdAt: "2026-05-02T10:00:00.000Z",
         id: "lea-expense",
+        isExcludedFromStats: false,
         memberId: "lea",
         month: 5,
         year: 2026,
@@ -172,6 +202,7 @@ function createFamily(): Family {
         amount: -10,
         createdAt: "2026-04-01T10:00:00.000Z",
         id: "marc-expense",
+        isExcludedFromStats: false,
         memberId: "marc",
         month: 4,
         year: 2026,
@@ -180,6 +211,7 @@ function createFamily(): Family {
         amount: 999,
         createdAt: "2026-06-01T10:00:00.000Z",
         id: "future-line",
+        isExcludedFromStats: false,
         memberId: "lea",
         month: 6,
         year: 2026,
@@ -188,6 +220,7 @@ function createFamily(): Family {
         amount: 50,
         createdAt: "2026-05-03T10:00:00.000Z",
         id: "missing-member-line",
+        isExcludedFromStats: false,
         memberId: "missing",
         month: 5,
         year: 2026,
@@ -196,6 +229,7 @@ function createFamily(): Family {
         amount: 70,
         createdAt: "2025-12-01T10:00:00.000Z",
         id: "past-line",
+        isExcludedFromStats: false,
         memberId: "lea",
         month: 12,
         year: 2025,

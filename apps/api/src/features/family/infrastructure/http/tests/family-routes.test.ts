@@ -464,6 +464,8 @@ test("family routes create participation lines for active members", async () => 
   assert.ok(!Number.isNaN(Date.parse(line.createdAt)));
   assert.equal(line.month, month);
   assert.equal(line.year, year);
+  assert.equal(line.isExcludedFromStats, false);
+  assert.equal(line.title, undefined);
 
   const expenseResponse = await authenticatedRequest(
     app,
@@ -471,8 +473,10 @@ test("family routes create participation lines for active members", async () => 
     {
       body: JSON.stringify({
         amount: -12.75,
+        isExcludedFromStats: true,
         memberId: member.id,
         month,
+        title: " Prime ",
         year,
       }),
       headers: { "Content-Type": "application/json" },
@@ -486,6 +490,58 @@ test("family routes create participation lines for active members", async () => 
 
   assert.equal(expenseResponse.status, 201);
   assert.equal(expenseLine?.amount, -12.75);
+  assert.equal(expenseLine?.isExcludedFromStats, true);
+  assert.equal(expenseLine?.title, "Prime");
+});
+
+test("family routes create distribution lines with zero base and negative member amounts", async () => {
+  const app = createTestApp();
+  const currentDate = new Date();
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth() + 1;
+
+  const { member } = await createMember(app, { name: "Léa" });
+
+  const response = await authenticatedRequest(
+    app,
+    `${familyPath}/distribution-lines`,
+    {
+      body: JSON.stringify({
+        amount: 0,
+        memberAmounts: [{ amount: -150, memberId: member.id }],
+        month,
+        year,
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
+  const family = await response.json();
+  const line = family.distributionLines.find(
+    (item: { amount: number }) => item.amount === 0,
+  );
+
+  assert.equal(response.status, 201);
+  assert.ok(line);
+  assert.equal(line.isExcludedFromStats, false);
+  assert.deepEqual(line.memberAmounts, [{ amount: -150, memberId: member.id }]);
+
+  const invalidResponse = await authenticatedRequest(
+    app,
+    `${familyPath}/distribution-lines`,
+    {
+      body: JSON.stringify({
+        amount: -1,
+        memberAmounts: [{ amount: 10, memberId: member.id }],
+        month,
+        year,
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    },
+  );
+
+  assert.equal(invalidResponse.status, 400);
 });
 
 test("family routes reject participation lines for inactive members", async () => {

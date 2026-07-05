@@ -24,27 +24,31 @@ import {
 import { useFamilyFormat } from "./use-family-format";
 
 const distributionsTableGridColumns = {
-  md: "44px minmax(220px, 1fr) minmax(112px, 140px) minmax(112px, 140px) minmax(112px, 140px) 96px",
-  xs: "40px minmax(180px, 1fr) minmax(96px, 112px) minmax(96px, 112px) minmax(96px, 112px) 88px",
+  md: "44px minmax(220px, 1fr) minmax(112px, 140px) minmax(112px, 140px) minmax(112px, 140px) 152px",
+  xs: "40px minmax(180px, 1fr) minmax(96px, 112px) minmax(96px, 112px) minmax(96px, 112px) 124px",
 };
 
 interface FamilyDistributionsTableProps {
   disabled?: boolean;
   hasMembers: boolean;
+  isLineExclusionSaving?: boolean;
   monthGroups: FamilyDistributionMonthGroup[];
   onAddLine: () => void;
   onDeleteLine: (line: FamilyDistributionLine) => void;
   onEditLine: (line: FamilyDistributionLine) => void;
+  onToggleLineExclusion: (line: FamilyDistributionLine) => void;
   readonly?: boolean;
 }
 
 export function FamilyDistributionsTable({
   disabled = false,
   hasMembers,
+  isLineExclusionSaving = false,
   monthGroups,
   onAddLine,
   onDeleteLine,
   onEditLine,
+  onToggleLineExclusion,
   readonly = false,
 }: FamilyDistributionsTableProps) {
   const { t } = useTranslation();
@@ -91,10 +95,12 @@ export function FamilyDistributionsTable({
           createdAtFormatter={createdAtFormatter}
           disabled={disabled}
           group={group}
+          isLineExclusionSaving={isLineExclusionSaving}
           key={group.id}
           monthLabel={monthLabel}
           onDeleteLine={onDeleteLine}
           onEditLine={onEditLine}
+          onToggleLineExclusion={onToggleLineExclusion}
           readonly={readonly}
           onToggle={onToggle}
         />
@@ -111,9 +117,11 @@ function DistributionMonthGroup({
   createdAtFormatter,
   disabled,
   group,
+  isLineExclusionSaving,
   monthLabel,
   onDeleteLine,
   onEditLine,
+  onToggleLineExclusion,
   readonly,
   onToggle,
 }: {
@@ -122,9 +130,11 @@ function DistributionMonthGroup({
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
   group: FamilyDistributionMonthGroup;
+  isLineExclusionSaving: boolean;
   monthLabel: string;
   onDeleteLine: (line: FamilyDistributionLine) => void;
   onEditLine: (line: FamilyDistributionLine) => void;
+  onToggleLineExclusion: (line: FamilyDistributionLine) => void;
   readonly: boolean;
   onToggle: () => void;
 }) {
@@ -169,10 +179,12 @@ function DistributionMonthGroup({
               <DistributionLineRow
                 createdAtFormatter={createdAtFormatter}
                 disabled={disabled}
+                isLineExclusionSaving={isLineExclusionSaving}
                 key={line.line.id}
                 line={line}
                 onDeleteLine={onDeleteLine}
                 onEditLine={onEditLine}
+                onToggleLineExclusion={onToggleLineExclusion}
                 readonly={readonly}
               />
             ))}
@@ -186,20 +198,25 @@ function DistributionMonthGroup({
 function DistributionLineRow({
   createdAtFormatter,
   disabled,
+  isLineExclusionSaving,
   line,
   onDeleteLine,
   onEditLine,
+  onToggleLineExclusion,
   readonly,
 }: {
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
+  isLineExclusionSaving: boolean;
   line: FamilyDistributionLine;
   onDeleteLine: (line: FamilyDistributionLine) => void;
   onEditLine: (line: FamilyDistributionLine) => void;
+  onToggleLineExclusion: (line: FamilyDistributionLine) => void;
   readonly: boolean;
 }) {
   const { t } = useTranslation();
   const familyFormat = useFamilyFormat();
+  const isExcluded = line.line.isExcludedFromStats;
   const createdAt = createdAtFormatter.format(new Date(line.line.createdAt));
   const lineLabel = `${createdAt} ${line.memberAmounts
     .map((memberAmount) => memberAmount.member.name)
@@ -211,6 +228,7 @@ function DistributionLineRow({
         borderTop: `1px solid ${theme.palette.divider}`,
         display: "grid",
         gridTemplateColumns: distributionsTableGridColumns,
+        opacity: isExcluded ? 0.56 : 1,
         ...familyBudgetMonthTableRowPaddingSx,
       })}
     >
@@ -259,8 +277,22 @@ function DistributionLineRow({
           disabled={disabled}
           editLabel={t("distributions.line.editLabel", { label: lineLabel })}
           editTooltip={t("distributions.line.editTooltip")}
+          excludeLabel={t(
+            isExcluded
+              ? "distributions.line.includeLabel"
+              : "distributions.line.excludeLabel",
+            { label: lineLabel },
+          )}
+          excludeTooltip={t(
+            isExcluded
+              ? "distributions.line.includeTooltip"
+              : "distributions.line.excludeTooltip",
+          )}
+          isExcluded={isExcluded}
+          isExcludeSaving={isLineExclusionSaving}
           onDelete={() => onDeleteLine(line)}
           onEdit={() => onEditLine(line)}
+          onToggleExcluded={() => onToggleLineExclusion(line)}
         />
       )}
     </Box>

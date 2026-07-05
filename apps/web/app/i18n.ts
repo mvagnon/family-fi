@@ -303,6 +303,7 @@ export const resources = {
           month: "Month",
           editTitle: "Edit participation line",
           title: "Add participation line",
+          titleField: "Title (optional)",
           validation: {
             amountNonZero: "Amount must be different from 0.",
             amountRequired: "Amount is required.",
@@ -324,6 +325,10 @@ export const resources = {
           deleteTooltip: "Delete participation",
           editLabel: "Edit {{label}}",
           editTooltip: "Edit participation",
+          excludeLabel: "Exclude {{label}} from statistics",
+          excludeTooltip: "Exclude from statistics",
+          includeLabel: "Include {{label}} in statistics",
+          includeTooltip: "Include in statistics",
         },
         meta: {
           description: "Family member participation tracking.",
@@ -381,8 +386,9 @@ export const resources = {
           removeMember: "Remove member",
           title: "Add distribution",
           validation: {
+            amountInvalid: "Base amount must be 0 or more.",
             amountRequired: "Base amount is required.",
-            memberAmountInvalid: "Member amount must be 0 or more.",
+            memberAmountInvalid: "Member amount is invalid.",
             memberDuplicate: "This member is already included.",
             memberRequired: "Member is required.",
             membersRequired: "At least one member is required.",
@@ -402,6 +408,10 @@ export const resources = {
           deleteTooltip: "Delete distribution",
           editLabel: "Edit {{label}}",
           editTooltip: "Edit distribution",
+          excludeLabel: "Exclude {{label}} from statistics",
+          excludeTooltip: "Exclude from statistics",
+          includeLabel: "Include {{label}} in statistics",
+          includeTooltip: "Include in statistics",
         },
         meta: {
           description: "Salary distribution tracking.",
@@ -455,6 +465,10 @@ export const resources = {
           deleteTooltip: "Delete repayment",
           editLabel: "Edit {{label}}",
           editTooltip: "Edit repayment",
+          excludeLabel: "Exclude {{label}} from statistics",
+          excludeTooltip: "Exclude from statistics",
+          includeLabel: "Include {{label}} in statistics",
+          includeTooltip: "Include in statistics",
         },
         loanModal: {
           editTitle: "Edit loan",
@@ -872,6 +886,7 @@ export const resources = {
           month: "Mois",
           editTitle: "Modifier une ligne de participation",
           title: "Ajouter une ligne de participation",
+          titleField: "Titre (optionnel)",
           validation: {
             amountNonZero: "Le montant doit être différent de 0.",
             amountRequired: "Le montant est obligatoire.",
@@ -893,6 +908,10 @@ export const resources = {
           deleteTooltip: "Supprimer la participation",
           editLabel: "Modifier {{label}}",
           editTooltip: "Modifier la participation",
+          excludeLabel: "Exclure {{label}} des statistiques",
+          excludeTooltip: "Exclure des statistiques",
+          includeLabel: "Inclure {{label}} dans les statistiques",
+          includeTooltip: "Inclure dans les statistiques",
         },
         meta: {
           description: "Suivi des participations par membre du foyer.",
@@ -951,9 +970,10 @@ export const resources = {
           removeMember: "Retirer le membre",
           title: "Ajouter une distribution",
           validation: {
+            amountInvalid:
+              "La somme de base doit être supérieure ou égale à 0.",
             amountRequired: "La somme de base est obligatoire.",
-            memberAmountInvalid:
-              "La somme du membre doit être supérieure ou égale à 0.",
+            memberAmountInvalid: "La somme du membre est invalide.",
             memberDuplicate: "Ce membre est déjà intégré.",
             memberRequired: "Le membre est obligatoire.",
             membersRequired: "Au moins un membre est obligatoire.",
@@ -973,6 +993,10 @@ export const resources = {
           deleteTooltip: "Supprimer la distribution",
           editLabel: "Modifier {{label}}",
           editTooltip: "Modifier la distribution",
+          excludeLabel: "Exclure {{label}} des statistiques",
+          excludeTooltip: "Exclure des statistiques",
+          includeLabel: "Inclure {{label}} dans les statistiques",
+          includeTooltip: "Inclure dans les statistiques",
         },
         meta: {
           description: "Suivi des distributions de salaire.",
@@ -1028,6 +1052,10 @@ export const resources = {
           deleteTooltip: "Supprimer le remboursement",
           editLabel: "Modifier {{label}}",
           editTooltip: "Modifier le remboursement",
+          excludeLabel: "Exclure {{label}} des statistiques",
+          excludeTooltip: "Exclure des statistiques",
+          includeLabel: "Inclure {{label}} dans les statistiques",
+          includeTooltip: "Inclure dans les statistiques",
         },
         loanModal: {
           editTitle: "Modifier un prêt",
@@ -1434,6 +1462,7 @@ export const resources = {
           month: "月",
           editTitle: "持分明細を編集",
           title: "持分明細を追加",
+          titleField: "タイトル（任意）",
           validation: {
             amountNonZero: "金額は0以外にしてください。",
             amountRequired: "金額は必須です。",
@@ -1454,6 +1483,10 @@ export const resources = {
           deleteTooltip: "持分を削除",
           editLabel: "{{label}}を編集",
           editTooltip: "持分を編集",
+          excludeLabel: "{{label}}を統計から除外",
+          excludeTooltip: "統計から除外",
+          includeLabel: "{{label}}を統計に含める",
+          includeTooltip: "統計に含める",
         },
         meta: {
           description: "家族メンバー別の持分追跡。",
@@ -1509,8 +1542,9 @@ export const resources = {
           removeMember: "メンバーを削除",
           title: "分配を追加",
           validation: {
+            amountInvalid: "基準額は0以上にしてください。",
             amountRequired: "基準額は必須です。",
-            memberAmountInvalid: "メンバー金額は0以上にしてください。",
+            memberAmountInvalid: "メンバー金額が無効です。",
             memberDuplicate: "このメンバーはすでに含まれています。",
             memberRequired: "メンバーは必須です。",
             membersRequired: "少なくとも1人のメンバーが必要です。",
@@ -1530,6 +1564,10 @@ export const resources = {
           deleteTooltip: "分配を削除",
           editLabel: "{{label}}を編集",
           editTooltip: "分配を編集",
+          excludeLabel: "{{label}}を統計から除外",
+          excludeTooltip: "統計から除外",
+          includeLabel: "{{label}}を統計に含める",
+          includeTooltip: "統計に含める",
         },
         meta: {
           description: "給与分配の追跡。",
@@ -1582,6 +1620,10 @@ export const resources = {
           deleteTooltip: "返済を削除",
           editLabel: "{{label}}を編集",
           editTooltip: "返済を編集",
+          excludeLabel: "{{label}}を統計から除外",
+          excludeTooltip: "統計から除外",
+          includeLabel: "{{label}}を統計に含める",
+          includeTooltip: "統計に含める",
         },
         loanModal: {
           editTitle: "ローンを編集",
