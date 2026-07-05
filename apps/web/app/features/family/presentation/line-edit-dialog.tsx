@@ -21,11 +21,13 @@ import { recurringLineInputSchema } from "../domain/family";
 import { useFamilyFormat } from "./use-family-format";
 
 const recurrenceOptions = [1, 2, 3, 6, 12];
+const customRecurrenceValue = "custom";
 
 interface LineFormValidationMessages {
   amountNonZero: string;
   amountRequired: string;
   categoryRequired: string;
+  customRecurrenceInvalid: string;
   estimateSameSign: string;
   maxNonZero: string;
   maxRequired: string;
@@ -38,15 +40,12 @@ interface LineFormValidationMessages {
 function createLineFormBaseSchema(messages: LineFormValidationMessages) {
   return z.object({
     categoryId: requiredTextSchema(messages.categoryRequired),
+    customRecurrenceMonths: z.string().optional(),
     description: z
       .string()
       .optional()
       .transform((value) => value?.trim() ?? ""),
-    recurrenceMonths: requiredNumberTextSchema(
-      messages.recurrenceRequired,
-    ).refine((value) => value > 0, {
-      message: messages.recurrenceRequired,
-    }),
+    recurrenceChoice: requiredTextSchema(messages.recurrenceRequired),
     title: requiredTextSchema(messages.titleRequired),
   });
 }
@@ -70,6 +69,17 @@ function createLineFormRawSchema(messages: LineFormValidationMessages) {
       }),
     ])
     .superRefine((values, context) => {
+      if (
+        values.recurrenceChoice === customRecurrenceValue &&
+        !isPositiveIntegerText(values.customRecurrenceMonths)
+      ) {
+        context.addIssue({
+          code: "custom",
+          message: messages.customRecurrenceInvalid,
+          path: ["customRecurrenceMonths"],
+        });
+      }
+
       if (!values.isEstimate) {
         if (values.amount === 0) {
           context.addIssue({
@@ -267,7 +277,11 @@ function LineEditDialogForm({
     shouldUnregister: true,
   });
   const isEstimate = watch("isEstimate");
+  const recurrenceChoice = watch("recurrenceChoice");
   const { ref: titleRef, ...titleField } = register("title");
+  const { ref: customRecurrenceRef, ...customRecurrenceField } = register(
+    "customRecurrenceMonths",
+  );
   const { ref: amountRef, ...amountField } = register("amount");
   const { ref: minAmountRef, ...minAmountField } = register("minAmount");
   const { ref: maxAmountRef, ...maxAmountField } = register("maxAmount");
@@ -369,36 +383,55 @@ function LineEditDialogForm({
           )}
         />
 
-        <Controller
-          control={control}
-          name="recurrenceMonths"
-          render={({ field }) => (
-            <TextField
-              disabled={isSaving}
-              error={Boolean(errors.recurrenceMonths)}
-              fullWidth
-              helperText={getFieldErrorMessage(errors.recurrenceMonths)}
-              id={`${line.id}-edit-recurrence`}
-              inputRef={field.ref}
-              label={t("family.line.fields.recurrence")}
-              name={field.name}
-              onBlur={field.onBlur}
-              onChange={field.onChange}
-              required
-              select
-              value={field.value ?? ""}
-            >
-              <MenuItem disabled value="">
-                {t("family.line.selectRecurrence")}
-              </MenuItem>
-              {recurrenceOptions.map((months) => (
-                <MenuItem key={months} value={String(months)}>
-                  {familyFormat.formatRecurrence(months)}
+        <Stack direction={{ sm: "row", xs: "column" }} spacing={2}>
+          <Controller
+            control={control}
+            name="recurrenceChoice"
+            render={({ field }) => (
+              <TextField
+                disabled={isSaving}
+                error={Boolean(errors.recurrenceChoice)}
+                fullWidth
+                helperText={getFieldErrorMessage(errors.recurrenceChoice)}
+                id={`${line.id}-edit-recurrence`}
+                inputRef={field.ref}
+                label={t("family.line.fields.recurrence")}
+                name={field.name}
+                onBlur={field.onBlur}
+                onChange={field.onChange}
+                required
+                select
+                value={field.value ?? ""}
+              >
+                <MenuItem disabled value="">
+                  {t("family.line.selectRecurrence")}
                 </MenuItem>
-              ))}
-            </TextField>
-          )}
-        />
+                {recurrenceOptions.map((months) => (
+                  <MenuItem key={months} value={String(months)}>
+                    {familyFormat.formatRecurrence(months)}
+                  </MenuItem>
+                ))}
+                <MenuItem value={customRecurrenceValue}>
+                  {t("family.line.customRecurrence")}
+                </MenuItem>
+              </TextField>
+            )}
+          />
+          {recurrenceChoice === customRecurrenceValue ? (
+            <TextField
+              {...customRecurrenceField}
+              disabled={isSaving}
+              error={Boolean(errors.customRecurrenceMonths)}
+              fullWidth
+              helperText={getFieldErrorMessage(errors.customRecurrenceMonths)}
+              id={`${line.id}-edit-custom-recurrence`}
+              inputRef={customRecurrenceRef}
+              label={t("family.line.fields.customRecurrenceMonths")}
+              required
+              slotProps={{ htmlInput: { inputMode: "numeric" } }}
+            />
+          ) : null}
+        </Stack>
 
         <FormControlLabel
           control={
@@ -467,10 +500,16 @@ function LineEditDialogForm({
 }
 
 function getLineFormDefaultValues(line: RecurringLine): LineFormInput {
+  const isPresetRecurrence = recurrenceOptions.includes(line.recurrenceMonths);
   const baseValues = {
     categoryId: line.categoryId,
+    customRecurrenceMonths: isPresetRecurrence
+      ? ""
+      : String(line.recurrenceMonths),
     description: line.description,
-    recurrenceMonths: String(line.recurrenceMonths),
+    recurrenceChoice: isPresetRecurrence
+      ? String(line.recurrenceMonths)
+      : customRecurrenceValue,
     title: line.title,
   };
 
@@ -503,7 +542,7 @@ function toRecurringLineInput(
       description: values.description,
       isEstimate: false,
       movement: getMovementFromSignedAmount(values.amount),
-      recurrenceMonths: values.recurrenceMonths,
+      recurrenceMonths: getRecurrenceMonths(values),
       title: values.title,
     };
   }
@@ -525,9 +564,21 @@ function toRecurringLineInput(
     maxAmount,
     minAmount,
     movement: getMovementFromSignedAmount(values.minAmount),
-    recurrenceMonths: values.recurrenceMonths,
+    recurrenceMonths: getRecurrenceMonths(values),
     title: values.title,
   };
+}
+
+function getRecurrenceMonths(values: LineFormRawValues): number {
+  return values.recurrenceChoice === customRecurrenceValue
+    ? Number(values.customRecurrenceMonths)
+    : Number(values.recurrenceChoice);
+}
+
+function isPositiveIntegerText(value: string | undefined): boolean {
+  const months = Number(value?.trim());
+
+  return Number.isInteger(months) && months > 0;
 }
 
 function getLineFormValidationMessages(
@@ -537,6 +588,9 @@ function getLineFormValidationMessages(
     amountNonZero: t("family.line.validation.amountNonZero"),
     amountRequired: t("family.line.validation.amountRequired"),
     categoryRequired: t("family.line.validation.categoryRequired"),
+    customRecurrenceInvalid: t(
+      "family.line.validation.customRecurrenceInvalid",
+    ),
     estimateSameSign: t("family.line.validation.estimateSameSign"),
     maxNonZero: t("family.line.validation.maxNonZero"),
     maxRequired: t("family.line.validation.maxRequired"),

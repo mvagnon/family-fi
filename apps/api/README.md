@@ -38,6 +38,12 @@ Auth settings:
 - `LOGTO_CLIENT_SECRET`: Family-Fi application secret from Logto.
 - `OPENAPI_SERVER_URL`: server URL advertised in the generated OpenAPI spec,
   default request origin.
+- `AUTH_DEV_USER_EMAIL`: local-only bypass. When set (and `NODE_ENV` is not
+  `production`), `/api/auth/login` signs in as this test user without contacting
+  Logto, so Family-Fi runs without the Iki auth server. Unset it to use real
+  Logto.
+- `AUTH_DEV_USER_NAME`: display name for the bypass test user, default
+  `Dev Tester`.
 
 Production deployments must set `WEB_ORIGIN`, `LOGTO_ENDPOINT`,
 `LOGTO_ISSUER`, `LOGTO_CLIENT_ID`, and `LOGTO_CLIENT_SECRET`. Logto provider

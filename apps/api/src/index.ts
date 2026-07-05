@@ -13,6 +13,7 @@ const logtoIssuer = getRequiredHttpUrl("LOGTO_ISSUER");
 const openApiServerUrl = getOptionalHttpOrigin("OPENAPI_SERVER_URL");
 const authProvider = createLogtoAuthProvider(prisma, {
   baseUrl: webOrigin,
+  devUser: resolveDevUser(),
   logtoClientId: getRequiredEnv("LOGTO_CLIENT_ID"),
   logtoClientSecret: getRequiredEnv("LOGTO_CLIENT_SECRET"),
   logtoDiscoveryUrl: new URL(
@@ -41,6 +42,23 @@ serve(
     console.log(`Server is running on http://localhost:${info.port}`);
   },
 );
+
+function resolveDevUser(): { email: string; name: string } | undefined {
+  if (process.env.NODE_ENV === "production") {
+    return undefined;
+  }
+
+  const email = getOptionalEnv("AUTH_DEV_USER_EMAIL");
+
+  if (!email) {
+    return undefined;
+  }
+
+  return {
+    email,
+    name: getOptionalEnv("AUTH_DEV_USER_NAME") ?? "Dev Tester",
+  };
+}
 
 function getRequiredEnv(name: string): string {
   const value = getOptionalEnv(name);

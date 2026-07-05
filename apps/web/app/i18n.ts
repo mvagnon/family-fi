@@ -196,6 +196,7 @@ export const resources = {
         },
         line: {
           createTitle: "Add line",
+          customRecurrence: "Custom",
           deleteLabel: "Delete {{title}}",
           deleteTooltip: "Delete line",
           editLabel: "Edit {{title}}",
@@ -204,6 +205,7 @@ export const resources = {
           fields: {
             amount: "Amount",
             category: "Category",
+            customRecurrenceMonths: "Number of months",
             description: "Description",
             maxAmount: "Maximum value",
             minAmount: "Minimum value",
@@ -224,6 +226,8 @@ export const resources = {
             amountNonZero: "Amount must be different from 0.",
             amountRequired: "Amount is required.",
             categoryRequired: "Category is required.",
+            customRecurrenceInvalid:
+              "Number of months must be a positive whole number.",
             estimateSameSign:
               "Minimum and maximum values must use the same sign.",
             maxNonZero: "Maximum value must be different from 0.",
@@ -761,6 +765,7 @@ export const resources = {
         },
         line: {
           createTitle: "Ajouter une ligne",
+          customRecurrence: "Personnalisé",
           deleteLabel: "Supprimer {{title}}",
           deleteTooltip: "Supprimer la ligne",
           editLabel: "Modifier {{title}}",
@@ -769,6 +774,7 @@ export const resources = {
           fields: {
             amount: "Montant",
             category: "Catégorie",
+            customRecurrenceMonths: "Nombre de mois",
             description: "Description",
             maxAmount: "Valeur maximale",
             minAmount: "Valeur minimale",
@@ -789,6 +795,8 @@ export const resources = {
             amountNonZero: "Le montant doit être différent de 0.",
             amountRequired: "Le montant est obligatoire.",
             categoryRequired: "La catégorie est obligatoire.",
+            customRecurrenceInvalid:
+              "Le nombre de mois doit être un entier positif.",
             estimateSameSign:
               "Les valeurs minimale et maximale doivent avoir le même signe.",
             maxNonZero: "La valeur maximale doit être différente de 0.",
@@ -1323,6 +1331,7 @@ export const resources = {
         },
         line: {
           createTitle: "明細を追加",
+          customRecurrence: "カスタム",
           deleteLabel: "{{title}}を削除",
           deleteTooltip: "明細を削除",
           editLabel: "{{title}}を編集",
@@ -1331,6 +1340,7 @@ export const resources = {
           fields: {
             amount: "金額",
             category: "カテゴリ",
+            customRecurrenceMonths: "月数",
             description: "説明",
             maxAmount: "最大値",
             minAmount: "最小値",
@@ -1351,6 +1361,7 @@ export const resources = {
             amountNonZero: "金額は0以外にしてください。",
             amountRequired: "金額は必須です。",
             categoryRequired: "カテゴリは必須です。",
+            customRecurrenceInvalid: "月数は正の整数で入力してください。",
             estimateSameSign: "最小値と最大値は同じ符号にしてください。",
             maxNonZero: "最大値は0以外にしてください。",
             maxRequired: "最大値は必須です。",

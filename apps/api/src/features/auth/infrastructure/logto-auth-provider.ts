@@ -6,6 +6,7 @@ import type { AuthSession } from "../domain/auth.js";
 
 interface LogtoAuthProviderOptions {
   baseUrl: string;
+  devUser?: { email: string; name: string };
   logtoClientId: string;
   logtoClientSecret: string;
   logtoDiscoveryUrl: string;
@@ -115,6 +116,17 @@ export function createLogtoAuthProvider(
       const url = new URL(request.url);
 
       if (request.method === "GET" && url.pathname === "/api/auth/login") {
+        if (options.devUser) {
+          return startDevSignIn(prisma, {
+            allowedCallbackOrigins,
+            defaultCallbackUrl,
+            devUser: options.devUser,
+            options,
+            request,
+            requestUrl: url,
+          });
+        }
+
         try {
           return await startLogtoSignIn(prisma, {
             allowedCallbackOrigins,
@@ -152,6 +164,13 @@ export function createLogtoAuthProvider(
       }
 
       if (request.method === "POST" && url.pathname === "/api/auth/sign-out") {
+        if (options.devUser) {
+          return signOutDevSession(prisma, {
+            options,
+            request,
+          });
+        }
+
         return signOut(prisma, {
           metadata,
           options,
@@ -222,6 +241,104 @@ async function startLogtoSignIn(
   authorizationUrl.searchParams.set("code_challenge_method", "S256");
 
   return redirectResponse(authorizationUrl.toString());
+}
+
+// tradeoff: local-only Logto bypass so Family-Fi can run without the Iki auth
+// server; enabled solely when AUTH_DEV_USER_EMAIL is set outside production.
+async function startDevSignIn(
+  prisma: PrismaClient,
+  input: {
+    allowedCallbackOrigins: Set<string>;
+    defaultCallbackUrl: string;
+    devUser: { email: string; name: string };
+    options: LogtoAuthProviderOptions;
+    request: Request;
+    requestUrl: URL;
+  },
+): Promise<Response> {
+  const callbackUrl = getAllowedRedirectUrl(
+    input.requestUrl.searchParams.get("callbackURL"),
+    input.defaultCallbackUrl,
+    input.allowedCallbackOrigins,
+  );
+  const identitySubject = `dev|${input.devUser.email}`;
+  const user = await prisma.user.upsert({
+    create: {
+      email: input.devUser.email,
+      emailVerified: true,
+      id: randomUUID(),
+      identitySubject,
+      image: null,
+      name: input.devUser.name,
+    },
+    update: {
+      email: input.devUser.email,
+      emailVerified: true,
+      name: input.devUser.name,
+    },
+    where: {
+      identitySubject,
+    },
+  });
+  const sessionToken = createRandomToken();
+  const sessionExpiresAt = new Date(
+    Date.now() + SESSION_COOKIE_MAX_AGE_SECONDS * 1000,
+  );
+
+  await prisma.session.create({
+    data: {
+      expiresAt: sessionExpiresAt,
+      id: randomUUID(),
+      ipAddress: getClientIpAddress(input.request),
+      token: hashToken(sessionToken),
+      userAgent: input.request.headers.get("user-agent"),
+      userId: user.id,
+    },
+  });
+
+  await ensureUserIsProvisioned(prisma, {
+    id: user.id,
+    identitySubject,
+  });
+
+  return redirectResponse(callbackUrl, {
+    "Set-Cookie": serializeSessionCookie({
+      baseUrl: input.options.baseUrl,
+      expiresAt: sessionExpiresAt,
+      token: sessionToken,
+    }),
+  });
+}
+
+async function signOutDevSession(
+  prisma: PrismaClient,
+  input: {
+    options: LogtoAuthProviderOptions;
+    request: Request;
+  },
+): Promise<Response> {
+  const rawSessionToken = getSessionCookie(
+    input.request,
+    input.options.baseUrl,
+  );
+
+  if (rawSessionToken) {
+    await prisma.session.deleteMany({
+      where: {
+        token: hashToken(rawSessionToken),
+      },
+    });
+  }
+
+  return jsonResponse(
+    {
+      redirectUrl: input.options.postSignOutRedirectUrl,
+    },
+    200,
+    {
+      "Set-Cookie": serializeExpiredSessionCookie(input.options.baseUrl),
+    },
+  );
 }
 
 async function handleLogtoCallback(
@@ -562,6 +679,12 @@ async function loadOAuthMetadata(
     throw new Error("Logto OIDC discovery issuer does not match LOGTO_ISSUER.");
   }
 
+  // tradeoff: auth/session are browser-facing so they use the public issuer,
+  // while token/userinfo are back-channel calls that must reach Logto from the
+  // API runtime (e.g. host.docker.internal in Docker) rather than the public
+  // issuer host the discovery document advertises.
+  const internalOrigin = new URL(options.logtoDiscoveryUrl).origin;
+
   return {
     authorizationEndpoint: createLogtoPublicEndpoint(
       options.logtoIssuer,
@@ -572,8 +695,14 @@ async function loadOAuthMetadata(
       "session/end",
     ),
     issuer,
-    tokenEndpoint: getString(payload, "token_endpoint"),
-    userInfoEndpoint: getString(payload, "userinfo_endpoint"),
+    tokenEndpoint: createLogtoInternalEndpoint(
+      getString(payload, "token_endpoint"),
+      internalOrigin,
+    ),
+    userInfoEndpoint: createLogtoInternalEndpoint(
+      getString(payload, "userinfo_endpoint"),
+      internalOrigin,
+    ),
   };
 }
 
@@ -600,6 +729,18 @@ function createSignOutRedirectUrl(
 
 function createLogtoPublicEndpoint(issuer: string, path: string): string {
   return `${normalizeIssuer(issuer)}/${path}`;
+}
+
+function createLogtoInternalEndpoint(
+  discoveredEndpoint: string,
+  internalOrigin: string,
+): string {
+  const url = new URL(discoveredEndpoint);
+  const internal = new URL(internalOrigin);
+  url.protocol = internal.protocol;
+  url.host = internal.host;
+
+  return url.toString();
 }
 
 function hasJwtIssuer(token: string, issuer: string): boolean {
