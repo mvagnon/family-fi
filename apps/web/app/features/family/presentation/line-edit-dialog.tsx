@@ -274,7 +274,6 @@ function LineEditDialogForm({
     defaultValues: getLineFormDefaultValues(line),
     resolver: zodResolver(lineFormSchema),
     shouldFocusError: true,
-    shouldUnregister: true,
   });
   const isEstimate = watch("isEstimate");
   const recurrenceChoice = watch("recurrenceChoice");
