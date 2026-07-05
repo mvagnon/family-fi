@@ -19,6 +19,7 @@ import { useFamilyFormat } from "./use-family-format";
 
 interface FamilyBudgetCategoryGroupProps {
   disabled: boolean;
+  generatedSavingLineId: string | null;
   group: {
     id: string;
     isGenerated?: boolean;
@@ -36,6 +37,7 @@ interface FamilyBudgetCategoryGroupProps {
 
 export function FamilyBudgetCategoryGroup({
   disabled,
+  generatedSavingLineId,
   group,
   isGeneratedLineSettingSaving,
   onDeleteLine,
@@ -86,6 +88,7 @@ export function FamilyBudgetCategoryGroup({
       {group.lines.map((line) => (
         <FamilyBudgetLineRow
           disabled={disabled}
+          generatedSavingLineId={generatedSavingLineId}
           isGeneratedLineSettingSaving={isGeneratedLineSettingSaving}
           key={line.line.id}
           line={line}

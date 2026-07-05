@@ -168,7 +168,6 @@ export function FamilyLoanRepaymentLineModal({
       },
       resolver: zodResolver(formSchema),
       shouldFocusError: true,
-      shouldUnregister: true,
     },
   );
   const { ref: paidAmountRef, ...paidAmountField } = register("paidAmount");

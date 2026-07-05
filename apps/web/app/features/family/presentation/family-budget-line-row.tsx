@@ -1,5 +1,6 @@
 import Box from "@mui/material/Box";
 import ButtonBase from "@mui/material/ButtonBase";
+import CircularProgress from "@mui/material/CircularProgress";
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
@@ -20,6 +21,7 @@ import { useFamilyFormat } from "./use-family-format";
 
 interface FamilyBudgetLineRowProps {
   disabled: boolean;
+  generatedSavingLineId: string | null;
   isGeneratedLineSettingSaving: boolean;
   line: FamilyBudgetLine;
   onDeleteLine: (line: RecurringLine) => void;
@@ -32,6 +34,7 @@ interface FamilyBudgetLineRowProps {
 
 export function FamilyBudgetLineRow({
   disabled,
+  generatedSavingLineId,
   isGeneratedLineSettingSaving,
   line,
   onDeleteLine,
@@ -52,6 +55,8 @@ export function FamilyBudgetLineRow({
     disabled && !shouldPreserveGeneratedLineAnimation;
   const isGeneratedToggleNativelyDisabled =
     disabled && !shouldPreserveGeneratedLineAnimation;
+  const isGeneratedToggleSaving =
+    isGenerated && recurringLine.id === generatedSavingLineId;
   const lineTitle = getFamilyBudgetLineTitle(line, t);
 
   function handleLineClick() {
@@ -128,7 +133,9 @@ export function FamilyBudgetLineRow({
                 aria-disabled={disabled || undefined}
                 disabled={isGeneratedToggleNativelyDisabled}
                 icon={
-                  line.isEnabled ? (
+                  isGeneratedToggleSaving ? (
+                    <CircularProgress color="inherit" size={18} />
+                  ) : line.isEnabled ? (
                     <VisibilityIcon fontSize="small" />
                   ) : (
                     <VisibilityOffIcon fontSize="small" />
