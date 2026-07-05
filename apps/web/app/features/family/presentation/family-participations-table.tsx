@@ -30,7 +30,7 @@ const participationTableGridColumns = {
 
 interface FamilyParticipationsTableProps {
   disabled?: boolean;
-  isLineExclusionSaving?: boolean;
+  exclusionSavingLineId?: string | null;
   monthGroups: FamilyParticipationMonthGroup[];
   onAddLine: () => void;
   onDeleteLine: (line: FamilyParticipationLine) => void;
@@ -41,7 +41,7 @@ interface FamilyParticipationsTableProps {
 
 export function FamilyParticipationsTable({
   disabled = false,
-  isLineExclusionSaving = false,
+  exclusionSavingLineId = null,
   monthGroups,
   onAddLine,
   onDeleteLine,
@@ -93,7 +93,7 @@ export function FamilyParticipationsTable({
           createdAtFormatter={createdAtFormatter}
           disabled={disabled}
           group={group}
-          isLineExclusionSaving={isLineExclusionSaving}
+          exclusionSavingLineId={exclusionSavingLineId}
           key={group.id}
           monthLabel={monthLabel}
           onDeleteLine={onDeleteLine}
@@ -115,7 +115,7 @@ function ParticipationMonthGroup({
   createdAtFormatter,
   disabled,
   group,
-  isLineExclusionSaving,
+  exclusionSavingLineId,
   monthLabel,
   onDeleteLine,
   onEditLine,
@@ -128,7 +128,7 @@ function ParticipationMonthGroup({
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
   group: FamilyParticipationMonthGroup;
-  isLineExclusionSaving: boolean;
+  exclusionSavingLineId: string | null;
   monthLabel: string;
   onDeleteLine: (line: FamilyParticipationLine) => void;
   onEditLine: (line: FamilyParticipationLine) => void;
@@ -141,6 +141,21 @@ function ParticipationMonthGroup({
   const toggleLabel = collapsed
     ? t("participations.table.expandMonth", { month: monthLabel })
     : t("participations.table.collapseMonth", { month: monthLabel });
+  const contributingMemberGroups = group.memberGroups
+    .filter((memberGroup) => memberGroup.lines.length > 0)
+    .sort((left, right) => Math.abs(right.total) - Math.abs(left.total));
+  const contributorsSubtitle =
+    contributingMemberGroups.length > 0
+      ? `${contributingMemberGroups
+          .slice(0, 2)
+          .map((memberGroup) =>
+            t("participations.table.monthContributor", {
+              amount: familyFormat.formatCurrency(memberGroup.total),
+              member: memberGroup.member.name,
+            }),
+          )
+          .join(", ")}${contributingMemberGroups.length > 2 ? "…" : ""}`
+      : undefined;
 
   return (
     <>
@@ -162,6 +177,7 @@ function ParticipationMonthGroup({
         gridColumns={participationTableGridColumns}
         monthLabel={monthLabel}
         onToggle={onToggle}
+        subtitle={contributorsSubtitle}
         summary={familyFormat.formatCurrency(group.total)}
         toggleLabel={toggleLabel}
       />
@@ -173,7 +189,7 @@ function ParticipationMonthGroup({
                 createdAtFormatter={createdAtFormatter}
                 disabled={disabled}
                 group={memberGroup}
-                isLineExclusionSaving={isLineExclusionSaving}
+                exclusionSavingLineId={exclusionSavingLineId}
                 key={memberGroup.id}
                 onDeleteLine={onDeleteLine}
                 onEditLine={onEditLine}
@@ -192,7 +208,7 @@ function ParticipationMemberGroup({
   createdAtFormatter,
   disabled,
   group,
-  isLineExclusionSaving,
+  exclusionSavingLineId,
   onDeleteLine,
   onEditLine,
   onToggleLineExclusion,
@@ -201,7 +217,7 @@ function ParticipationMemberGroup({
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
   group: FamilyParticipationMemberMonthGroup;
-  isLineExclusionSaving: boolean;
+  exclusionSavingLineId: string | null;
   onDeleteLine: (line: FamilyParticipationLine) => void;
   onEditLine: (line: FamilyParticipationLine) => void;
   onToggleLineExclusion: (line: FamilyParticipationLine) => void;
@@ -263,7 +279,7 @@ function ParticipationMemberGroup({
           <ParticipationLineRow
             createdAtFormatter={createdAtFormatter}
             disabled={disabled}
-            isLineExclusionSaving={isLineExclusionSaving}
+            exclusionSavingLineId={exclusionSavingLineId}
             key={line.line.id}
             line={line}
             onDeleteLine={onDeleteLine}
@@ -307,7 +323,7 @@ function ParticipationEmptyLine() {
 function ParticipationLineRow({
   createdAtFormatter,
   disabled,
-  isLineExclusionSaving,
+  exclusionSavingLineId,
   line,
   onDeleteLine,
   onEditLine,
@@ -316,7 +332,7 @@ function ParticipationLineRow({
 }: {
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
-  isLineExclusionSaving: boolean;
+  exclusionSavingLineId: string | null;
   line: FamilyParticipationLine;
   onDeleteLine: (line: FamilyParticipationLine) => void;
   onEditLine: (line: FamilyParticipationLine) => void;
@@ -388,7 +404,7 @@ function ParticipationLineRow({
               : "participations.line.excludeTooltip",
           )}
           isExcluded={isExcluded}
-          isExcludeSaving={isLineExclusionSaving}
+          isExcludeSaving={exclusionSavingLineId === line.line.id}
           onDelete={() => onDeleteLine(line)}
           onEdit={() => onEditLine(line)}
           onToggleExcluded={() => onToggleLineExclusion(line)}

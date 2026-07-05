@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { TFunction } from "i18next";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
@@ -149,6 +149,7 @@ export function FamilyParticipationLineModal({
       shouldUnregister: true,
     },
   );
+  const amountInputRef = useRef<HTMLInputElement | null>(null);
   const { ref: amountRef, ...amountField } = register("amount");
   const { ref: titleRef, ...titleField } = register("title");
   const { ref: yearRef, ...yearField } = register("year");
@@ -180,6 +181,7 @@ export function FamilyParticipationLineModal({
       cancelLabel={t("common.cancel")}
       noValidate
       onClose={onClose}
+      onEntered={() => amountInputRef.current?.focus()}
       onSubmit={handleSubmit(handleValidSubmit)}
       open={open}
       submitLabel={mode === "create" ? t("common.add") : t("common.save")}
@@ -296,7 +298,10 @@ export function FamilyParticipationLineModal({
           fullWidth
           helperText={getFieldErrorMessage(errors.amount)}
           id="participation-line-amount"
-          inputRef={amountRef}
+          inputRef={(element: HTMLInputElement | null) => {
+            amountRef(element);
+            amountInputRef.current = element;
+          }}
           label={t("participations.creation.amount")}
           required
           slotProps={amountSlotProps}

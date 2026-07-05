@@ -83,7 +83,10 @@ export function FamilyParticipationsDashboard({
   const [lineDialogMode, setLineDialogMode] = useState<"create" | "edit">(
     "create",
   );
-  const [isLineExclusionSaving, setIsLineExclusionSaving] = useState(false);
+  const [exclusionSavingLineId, setExclusionSavingLineId] = useState<
+    string | null
+  >(null);
+  const [quickAddMemberId, setQuickAddMemberId] = useState<string | null>(null);
   const [linePendingDeletion, setLinePendingDeletion] =
     useState<ParticipationLine | null>(null);
   const [memberPendingDeletion, setMemberPendingDeletion] =
@@ -110,7 +113,7 @@ export function FamilyParticipationsDashboard({
   });
   const defaultCreationMember = projection.activeMembers[0];
   const lineModalDefaultMemberId =
-    selectedLine?.memberId ?? defaultCreationMember?.id;
+    selectedLine?.memberId ?? quickAddMemberId ?? defaultCreationMember?.id;
   const lineModalMembers = getParticipationLineModalMembers(
     projection.activeMembers,
     visibleMembers,
@@ -133,6 +136,18 @@ export function FamilyParticipationsDashboard({
 
     setLineDialogMode("create");
     setSelectedLine(null);
+    setQuickAddMemberId(null);
+    setIsLineModalOpen(true);
+  }
+
+  function handleQuickAddLine(member: FamilyMember) {
+    if (!canWrite || !member.isActive) {
+      return;
+    }
+
+    setLineDialogMode("create");
+    setSelectedLine(null);
+    setQuickAddMemberId(member.id);
     setIsLineModalOpen(true);
   }
 
@@ -244,6 +259,7 @@ export function FamilyParticipationsDashboard({
       setLocalError(null);
       setIsLineModalOpen(false);
       setSelectedLine(null);
+      setQuickAddMemberId(null);
       setYear(input.year);
     } catch {
       return;
@@ -255,7 +271,7 @@ export function FamilyParticipationsDashboard({
       return;
     }
 
-    setIsLineExclusionSaving(true);
+    setExclusionSavingLineId(line.line.id);
 
     try {
       await onUpdateParticipationLine(line.line.id, {
@@ -265,7 +281,7 @@ export function FamilyParticipationsDashboard({
     } catch {
       return;
     } finally {
-      setIsLineExclusionSaving(false);
+      setExclusionSavingLineId(null);
     }
   }
 
@@ -315,7 +331,7 @@ export function FamilyParticipationsDashboard({
       <AppShellContent>
         <FamilyParticipationsTable
           disabled={isSaving}
-          isLineExclusionSaving={isLineExclusionSaving}
+          exclusionSavingLineId={exclusionSavingLineId}
           key={year}
           monthGroups={projection.monthGroups}
           onAddLine={handleAddLine}
@@ -392,6 +408,7 @@ export function FamilyParticipationsDashboard({
           onAddMember={canWrite ? handleRequestAddMember : undefined}
           onDeleteMember={canWrite ? setMemberPendingDeletion : undefined}
           onEditMember={canWrite ? handleRequestEditMember : undefined}
+          onQuickAddMember={canWrite ? handleQuickAddLine : undefined}
           onToggleMemberVisibility={(member) =>
             toggleMemberVisibility(member.id)
           }

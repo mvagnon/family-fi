@@ -30,7 +30,7 @@ const loansTableGridColumns = {
 interface FamilyLoansTableProps {
   disabled?: boolean;
   hasLoans: boolean;
-  isLineExclusionSaving?: boolean;
+  exclusionSavingLineId?: string | null;
   monthGroups: FamilyLoanMonthGroup[];
   onAddLine: () => void;
   onDeleteLine: (line: FamilyLoanRepaymentLine) => void;
@@ -42,7 +42,7 @@ interface FamilyLoansTableProps {
 export function FamilyLoansTable({
   disabled = false,
   hasLoans,
-  isLineExclusionSaving = false,
+  exclusionSavingLineId = null,
   monthGroups,
   onAddLine,
   onDeleteLine,
@@ -95,7 +95,7 @@ export function FamilyLoansTable({
           createdAtFormatter={createdAtFormatter}
           disabled={disabled}
           group={group}
-          isLineExclusionSaving={isLineExclusionSaving}
+          exclusionSavingLineId={exclusionSavingLineId}
           key={group.id}
           monthLabel={monthLabel}
           onDeleteLine={onDeleteLine}
@@ -117,7 +117,7 @@ function LoanMonthGroup({
   createdAtFormatter,
   disabled,
   group,
-  isLineExclusionSaving,
+  exclusionSavingLineId,
   monthLabel,
   onDeleteLine,
   onEditLine,
@@ -130,7 +130,7 @@ function LoanMonthGroup({
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
   group: FamilyLoanMonthGroup;
-  isLineExclusionSaving: boolean;
+  exclusionSavingLineId: string | null;
   monthLabel: string;
   onDeleteLine: (line: FamilyLoanRepaymentLine) => void;
   onEditLine: (line: FamilyLoanRepaymentLine) => void;
@@ -176,7 +176,7 @@ function LoanMonthGroup({
               <LoanLineRow
                 createdAtFormatter={createdAtFormatter}
                 disabled={disabled}
-                isLineExclusionSaving={isLineExclusionSaving}
+                exclusionSavingLineId={exclusionSavingLineId}
                 key={line.line.id}
                 line={line}
                 onDeleteLine={onDeleteLine}
@@ -195,7 +195,7 @@ function LoanMonthGroup({
 function LoanLineRow({
   createdAtFormatter,
   disabled,
-  isLineExclusionSaving,
+  exclusionSavingLineId,
   line,
   onDeleteLine,
   onEditLine,
@@ -204,7 +204,7 @@ function LoanLineRow({
 }: {
   createdAtFormatter: Intl.DateTimeFormat;
   disabled: boolean;
-  isLineExclusionSaving: boolean;
+  exclusionSavingLineId: string | null;
   line: FamilyLoanRepaymentLine;
   onDeleteLine: (line: FamilyLoanRepaymentLine) => void;
   onEditLine: (line: FamilyLoanRepaymentLine) => void;
@@ -259,7 +259,7 @@ function LoanLineRow({
               : "loans.line.excludeTooltip",
           )}
           isExcluded={isExcluded}
-          isExcludeSaving={isLineExclusionSaving}
+          isExcludeSaving={exclusionSavingLineId === line.line.id}
           onDelete={() => onDeleteLine(line)}
           onEdit={() => onEditLine(line)}
           onToggleExcluded={() => onToggleLineExclusion(line)}
