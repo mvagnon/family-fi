@@ -2,6 +2,7 @@ import AddIcon from "@mui/icons-material/Add";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import Box from "@mui/material/Box";
 import Collapse from "@mui/material/Collapse";
+import Stack from "@mui/material/Stack";
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
@@ -21,6 +22,8 @@ import {
   FamilyBudgetMonthTable,
   familyBudgetMonthTableRowPaddingSx,
 } from "./family-budget-month-table";
+import { GoldMedal } from "./medals/gold-medal";
+import { SilverMedal } from "./medals/silver-medal";
 import { useFamilyFormat } from "./use-family-format";
 
 const participationTableGridColumns = {
@@ -141,21 +144,44 @@ function ParticipationMonthGroup({
   const toggleLabel = collapsed
     ? t("participations.table.expandMonth", { month: monthLabel })
     : t("participations.table.collapseMonth", { month: monthLabel });
-  const contributingMemberGroups = group.memberGroups
+  const topContributors = group.memberGroups
     .filter((memberGroup) => memberGroup.lines.length > 0)
-    .sort((left, right) => Math.abs(right.total) - Math.abs(left.total));
+    .sort((left, right) => Math.abs(right.total) - Math.abs(left.total))
+    .slice(0, 2);
   const contributorsSubtitle =
-    contributingMemberGroups.length > 0
-      ? `${contributingMemberGroups
-          .slice(0, 2)
-          .map((memberGroup) =>
-            t("participations.table.monthContributor", {
-              amount: familyFormat.formatCurrency(memberGroup.total),
-              member: memberGroup.member.name,
-            }),
-          )
-          .join(", ")}${contributingMemberGroups.length > 2 ? "…" : ""}`
-      : undefined;
+    topContributors.length > 0 ? (
+      <Stack spacing={0.25}>
+        {topContributors.map((memberGroup, index) => (
+          <Stack
+            direction="row"
+            key={memberGroup.id}
+            spacing={0.75}
+            sx={{ alignItems: "center", minWidth: 0 }}
+          >
+            <Box
+              sx={{
+                display: "inline-flex",
+                flexShrink: 0,
+                fontSize: "0.875rem",
+              }}
+            >
+              {index === 0 ? <GoldMedal /> : <SilverMedal />}
+            </Box>
+            <Typography
+              color="text.secondary"
+              noWrap
+              sx={{ fontSize: { sm: "0.8125rem", xs: "0.75rem" } }}
+              variant="body2"
+            >
+              {t("participations.table.monthContributor", {
+                amount: familyFormat.formatCurrency(memberGroup.total),
+                member: memberGroup.member.name,
+              })}
+            </Typography>
+          </Stack>
+        ))}
+      </Stack>
+    ) : undefined;
 
   return (
     <>

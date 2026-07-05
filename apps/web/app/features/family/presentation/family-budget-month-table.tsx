@@ -292,14 +292,7 @@ export function FamilyBudgetMonthGroupHeader({
               </Typography>
             </Box>
             {subtitle ? (
-              <Typography
-                color="text.secondary"
-                noWrap
-                sx={{ fontSize: { sm: "0.8125rem", xs: "0.75rem" } }}
-                variant="body2"
-              >
-                {subtitle}
-              </Typography>
+              <Box sx={{ minWidth: 0, mt: 0.25 }}>{subtitle}</Box>
             ) : null}
           </Box>
           {amountCells}
